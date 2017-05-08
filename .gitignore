@@ -1,0 +1,22 @@
+# IDE files
+.idea/*
+.eclipse/
+**/*.iml
+.vscode/
+
+# exclude run configurations
+!.idea/runConfigurations/
+
+# NPM files
+
+**/node_modules/
+**/*.log*
+
+# dumps
+dump/
+
+**/.dist/
+.logs/
+
+*.DS_Store
+*.swp

@@ -1,0 +1,7 @@
+.idea/**/*
+.logs/**/*
+.tmp/**/*
+
+gulpfile.js
+
+**/dist/**/*
