@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "pretest": "yarn run build",
-    "test": "mocha",
+    "test": "NODE_ENV=test mocha",
     "test-coverage": "rm -rf coverage/* && nyc --cache --reporter=html --reporter=text-lcov mocha",
     "ci": "yarn run test-coverage && codecov < coverage/coverage-remapped.lcov",
     "build": "git rev-parse HEAD > .commithash && webpack -p",

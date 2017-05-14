@@ -12,10 +12,14 @@
 **/node_modules/
 **/*.log*
 
+# coverage
+**/coverage/
+**/.nyc_output
+
 # dumps
 dump/
 
-**/.dist/
+**/dist/
 .logs/
 
 *.DS_Store

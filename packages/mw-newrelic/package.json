@@ -2,17 +2,15 @@
   "name": "@stellarjs/mw-newrelic",
   "version": "0.1.0",
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
   "src": [
     "src/**/*"
   ],
   "scripts": {
     "pretest": "yarn run build",
-    "test": "mocha",
+    "test": "NODE_ENV=test mocha",
     "test-coverage": "rm -rf coverage/* && nyc --cache --reporter=html --reporter=text-lcov mocha",
     "ci": "yarn run test-coverage && codecov < coverage/coverage-remapped.lcov",
-    "build": "git rev-parse HEAD > .commithash && webpack -p",
-    "watch:browser": "webpack -d --watch",
+    "build": "git rev-parse HEAD > .commithash",
     "prepublish": "yarn run build",
     "lint": "eslint src"
   },

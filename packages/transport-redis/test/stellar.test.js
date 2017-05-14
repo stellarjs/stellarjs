@@ -8,7 +8,7 @@ const log = console;
 const {StellarPubSub, StellarRequest, StellarHandler, StellarError} = require('@stellarjs/core');
 const RedisClient = require('../src/config-redisclient');
 
-const redisTransport = require('../src/redisTransportFactory').default(log);
+const redisTransport = require('../src/redisTransportFactory')(log);
 
 const stellarRequest = new StellarRequest(redisTransport, 'test', console, 1000);
 const stellarHandler = new StellarHandler(redisTransport, 'test', console, 'testservice');

@@ -7,11 +7,11 @@ function webpackConfig(context) {
       extensions: ['.js'],
     },
     entry: {
-      'index': `${context}/src/index.browser.js`,
+      'index': `${context}/src/index.js`,
     },
     output: {
       path: path.resolve(context, 'dist'),
-      filename: '[name].js',
+      filename: '[name].browser.js',
     },
     module: {
       loaders: [
