@@ -16,6 +16,9 @@
     "prepublish": "yarn run build",
     "lint": "eslint src"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": "stellarjs/stellar",
   "keywords": [
     "microservices",

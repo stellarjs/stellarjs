@@ -16,6 +16,9 @@
     "prepublish": "yarn run build",
     "lint": "eslint src"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "acorn": "4.0.4",
     "chalk": "^1.1.3",
