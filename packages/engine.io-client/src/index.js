@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const eio = require('engine.io-client');
-const { stellarRequest } = require('@stellarjs/transport-socket');
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
@@ -39,18 +38,18 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
         });
 }
 
-function _reconnect(url, options) {
-    log.info(`@StellarEngineIO: Reconnecting`);
-    // eslint-disable-next-line no-use-before-define
-    _exponentialBackoff(() => socketWrapper._doConnect(url, options), MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
-}
-
-const socketWrapper = {
+const socketWrapper = stellarRequest => ({
     socket: null,
     stellar: stellarRequest(),
     handlers: {},
     state: 'disconnected',
     userId: null,
+    _reconnect(url, options) {
+        log.info(`@StellarEngineIO: Reconnecting`);
+        // eslint-disable-next-line no-use-before-define
+        _exponentialBackoff(() => this._doConnect(url, options), MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
+    },
+
     on(event, handler) {
         if (!this.handlers[event]) {
             this.handlers[event] = [];
@@ -66,7 +65,7 @@ const socketWrapper = {
     },
     connect(url, options) {
         log.info(`@StellarEngineIO.connect`);
-        tryToReconnect = true;
+        tryToReconnect = options.tryToReconnect !== false;
         if (options.sendPings) {
             this.on('open', () => {
                 setTimeout(
@@ -113,7 +112,12 @@ const socketWrapper = {
         this.options = options;
         return this._closeIfNeeded()
           .then(() => this._doConnect(url, options))
-          .catch(() => _reconnect(url, options));
+          .catch((e) => {
+              if (tryToReconnect) {
+                  return this._reconnect(url, options);
+              }
+              return e;
+          });
     },
     _closeIfNeeded() {
         return new Promise((resolve) => {
@@ -135,7 +139,7 @@ const socketWrapper = {
             }
         });
     },
-    _doConnect(url, { userId, token, secure }) {
+    _doConnect(url, { userId, token, secure, tokenType, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
         log.info(`@StellarEngineIO._doConnect: ${userId}, ${token}`);
         return new Promise((resolve, reject) => {
             this.state = 'connecting';
@@ -144,8 +148,8 @@ const socketWrapper = {
             try {
                 socketAttempt = new eio.Socket(
                     // eslint-disable-next-line max-len
-                    `${secure ? 'wss' : 'ws'}://${url}?x-auth-user=${encodeURIComponent(userId)}&x-auth-token=${encodeURIComponent(token)}`,
-                    { upgrade: true, rememberUpgrade: true },
+                    `${secure ? 'wss' : 'ws'}://${url}?x-auth-user=${encodeURIComponent(userId)}&x-auth-token=${encodeURIComponent(token)}&x-auth-token-type=${encodeURIComponent(tokenType)}`,
+                    eioConfig,
                 );
             } catch (e) {
                 log.info(`@StellarEngineIO error`, e);
@@ -185,7 +189,7 @@ const socketWrapper = {
                 if (this.state === 'connected') {
                     this.trigger('close');
                     this.state = 'disconnected';
-                    _reconnect(url, { userId, token, secure });
+                    this._reconnect(url, { userId, token, secure });
                 }
             });
 
@@ -212,6 +216,6 @@ const socketWrapper = {
             this.socket.close();
         }
     },
-};
+});
 
 module.exports = socketWrapper;
