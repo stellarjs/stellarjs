@@ -8,9 +8,8 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 
 const { StellarHandler, StellarPubSub, StellarRequest } = require('@stellarjs/core');
-const redisTransportFactory = require('./redisTransportFactory');
 
-const requestTimeout = 3000; // TODO set from env variable or options obj
+const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 3000;
 
 let log = null;
 function configureStellarLog(serverLog) {
@@ -92,34 +91,34 @@ function _getInstance(name, builder) {
     return StellarServer.instances[name];
 }
 
-function stellarAppPubSub(app = process.env.APP) {
-    return _getInstance('stellarAppPubSub', () => new StellarPubSub(redisTransportFactory(log), setSource, log, app));
+function stellarAppPubSub(transportFactory, app = process.env.APP) {
+    return _getInstance('stellarAppPubSub', () => new StellarPubSub(transportFactory(log), setSource, log, app));
 }
 
-function stellarNodePubSub() {
-    return _getInstance('stellarNodePubSub', () => new StellarPubSub(redisTransportFactory(log), setSource, log));
+function stellarNodePubSub(transportFactory) {
+    return _getInstance('stellarNodePubSub', () => new StellarPubSub(transportFactory(log), setSource, log));
 }
 
-function stellarRequest() {
+function stellarRequest(transportFactory) {
     console.log(`stellarRequest creation ${setSource}`);
     return _getInstance('stellarRequest',
-                        () => new StellarRequest(redisTransportFactory(log), setSource, log, requestTimeout, stellarNodePubSub()));
+                        () => new StellarRequest(transportFactory(log), setSource, log, requestTimeout, stellarNodePubSub(transportFactory)));
 }
 
-function stellarHandler(app = process.env.APP) {
-    return _getInstance('stellarHandler', () => new StellarHandler(redisTransportFactory(log), setSource, log, app));
+function stellarHandler(transportFactory, app = process.env.APP) {
+    return _getInstance('stellarHandler', () => new StellarHandler(transportFactory(log), setSource, log, app));
 }
 
-function stellarPublish(app) {
+function stellarPublish(transportFactory, app) {
     return _getInstance('stellarPublish', () => {
-        const pubsub = stellarAppPubSub(app);
+        const pubsub = stellarAppPubSub(transportFactory, app);
         return pubsub.publish.bind(pubsub);
     });
 }
 
-function stellarSubscribe(app) {
+function stellarSubscribe(transportFactory, app) {
     return _getInstance('stellarSubscribe', () => {
-        const pubsub = stellarAppPubSub(app);
+        const pubsub = stellarAppPubSub(transportFactory, app);
         return pubsub.subscribe.bind(pubsub);
     });
 }

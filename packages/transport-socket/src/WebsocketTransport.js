@@ -1,32 +1,39 @@
 /**
  * Created by arolave on 06/10/2016.
  */
-const _ = require('lodash');
+const get = require('lodash/get');
 const Promise = require('bluebird');
 const { EventEmitter } = require('events');
 
 class WebsocketTransport {
-    constructor(socket, log) {
+    constructor(socket, log, sendingOnly) {
+        this.log = log;
+        this.sendingOnly = sendingOnly;
+        this.messageHandler = new EventEmitter();
+
         this.socket = new Promise((resolve, reject) => {
             this.socketResolver = resolve;
             this.socketRejecter = reject;
             this.setSocket(socket);
         });
-        this.log = log;
-        this.messageHandler = new EventEmitter();
     }
 
     setSocket(socket) {
-        if (socket) {
+        if (!socket) {
+            return;
+        }
+
+        if (!this.sendingOnly) {
             socket.on('message', (str) => {
                 // log.info(`@Stellar.Websocket message received: ${str}`);
                 const command = JSON.parse(str);
-                if (_.get(command, 'queue.name')) {
+                if (get(command, 'queue.name')) {
                     this.messageHandler.emit(command.queue.name, command);
                 }
             });
-            setTimeout(() => this.socketResolver(socket), 250);
         }
+
+        setTimeout(() => this.socketResolver(socket), 250);
     }
 
     onClose() {
@@ -36,7 +43,7 @@ class WebsocketTransport {
         });
     }
 
-    getSubscribers(channel) { // eslint-disable-line no-unused-vars, class-methods-use-this
+    getSubscribers(channel) { // eslint-disable-line no-unused-vars
         return Promise.resolve();
     }
 

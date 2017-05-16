@@ -118,7 +118,6 @@ class StellarRequest extends StellarCore {
                 resolve(responseJob.data.body);
               }
             };
-            // TODO add timeout handling
           })),
     });
 
