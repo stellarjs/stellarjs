@@ -1,18 +1,18 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-const assign = require('lodash/assign');
-const defaults = require('lodash/defaults');
-const get = require('lodash/get');
-const lowerCase = require('lodash/lowerCase');
+import assign from 'lodash/assign';
+import defaults from 'lodash/defaults';
+import get from 'lodash/get';
+import lowerCase from 'lodash/lowerCase';
 
-const Promise = require('bluebird');
+import Promise from 'bluebird';
 
-const StellarError = require('./StellarError');
-const StellarCore = require('./StellarCore');
-const StellarPubSub = require('./StellarPubSub');
+import { StellarError } from './StellarError';
+import StellarCore from './StellarCore';
+import StellarPubSub from './StellarPubSub';
 
-class StellarRequest extends StellarCore {
+export default class StellarRequest extends StellarCore {
   constructor(transport, source, log, requestTimeout, pubsub) {
     super(transport, source, log);
     this.requestTimeout = requestTimeout;
@@ -130,5 +130,3 @@ class StellarRequest extends StellarCore {
 }
 
 StellarRequest.METHODS = ['GET', 'CREATE', 'UPDATE', 'REMOVE', 'SUBSCRIBE'];
-
-module.exports = StellarRequest;

@@ -2,15 +2,16 @@
  * Created by arolave on 01/11/2016.
  */
 /* eslint-disable */
-const { expect } = require('chai'); // eslint-disable-line
-const chai = require('chai');  // eslint-disable-line
-const chaiAsPromised = require('chai-as-promised'); // eslint-disable-line
-const _ = require('lodash');
-const Promise = require('bluebird');
-const RedisClient = require('../src/config-redisclient');
-const log = console;
+import { expect } from 'chai'; // eslint-disable-line
+import chai from 'chai';  // eslint-disable-line
+import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
+import _ from 'lodash';
+import Promise from 'bluebird';
+import RedisClient from '../src/config-redisclient';
+import redisTransportFactory from '../src/redisTransportFactory';
 
-const redisTransport = require('../src/redisTransportFactory')(log);
+const log = console;
+const redisTransport = redisTransportFactory(log)
 
 chai.use(chaiAsPromised);
 chai.should();

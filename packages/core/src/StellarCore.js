@@ -1,11 +1,11 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-const assign = require('lodash/assign');
-const first = require('lodash/first');
-const isObject = require('lodash/isObject');
+import assign from 'lodash/assign';
+import first from 'lodash/first';
+import isObject from 'lodash/isObject';
 
-const Promise = require('bluebird');
+import Promise from 'bluebird';
 
 function stringify(val, log) {
   try {
@@ -133,4 +133,4 @@ class StellarCore {
 
 }
 
-module.exports = StellarCore;
+export default StellarCore;

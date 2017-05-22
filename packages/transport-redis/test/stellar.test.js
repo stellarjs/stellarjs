@@ -1,15 +1,15 @@
 /* eslint-disable */
-const { expect } = require('chai'); // eslint-disable-line
-const chai = require('chai');  // eslint-disable-line
-const chaiAsPromised = require('chai-as-promised'); // eslint-disable-line
-const Promise = require('bluebird');
+import { expect } from 'chai'; // eslint-disable-line
+import chai from 'chai';  // eslint-disable-line
+import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
+import Promise from 'bluebird';
+
+import {StellarPubSub, StellarRequest, StellarHandler, StellarError} from '@stellarjs/core';
+import RedisClient from '../src/config-redisclient';
+import redisTransportFactory from '../src/redisTransportFactory';
+
 const log = console;
-
-const {StellarPubSub, StellarRequest, StellarHandler, StellarError} = require('@stellarjs/core');
-const RedisClient = require('../src/config-redisclient');
-
-const redisTransport = require('../src/redisTransportFactory')(log);
-
+const redisTransport = redisTransportFactory(log);
 const stellarRequest = new StellarRequest(redisTransport, 'test', console, 1000);
 const stellarHandler = new StellarHandler(redisTransport, 'test', console, 'testservice');
 

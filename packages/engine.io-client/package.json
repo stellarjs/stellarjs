@@ -7,13 +7,14 @@
     "src/**/*"
   ],
   "scripts": {
-    "pretest": "yarn run build",
-    "test": "NODE_ENV=test mocha",
-    "test-coverage": "rm -rf coverage/* && nyc --cache --reporter=html --reporter=text-lcov mocha",
-    "ci": "yarn run test-coverage && codecov < coverage/coverage-remapped.lcov",
-    "build": "git rev-parse HEAD > .commithash && webpack -p",
-    "watch:browser": "webpack -d --watch",
-    "prepublish": "yarn run build",
+    "ci": "yarn run lint && yarn run test-coverage",
+    "clean": "rimraf lib lib-es6",
+    "compile": "npm run compile:es6 && npm run compile:umd",
+    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:umd": "webpack -p",
+    "test": "NODE_ENV=test mocha --require babel-register",
+    "test:coverage": "rm -rf coverage/* && NODE_ENV=test nyc --cache --require babel-register --reporter=html --reporter=text-lcov mocha",
+    "prepublish": "yarn run compile",
     "lint": "eslint src"
   },
   "publishConfig": {
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "acorn": "4.0.4",
+    "babel-cli": "^6.24.1",
     "chalk": "^1.1.3",
     "codecov.io": "^0.1.6",
     "console-group": "^0.3.1",
@@ -33,6 +35,7 @@
     "nyc": "^10.3.2",
     "remap-istanbul": "^0.6.4",
     "require-relative": "^0.8.7",
+    "rimraf": "^2.6.1",
     "source-map": "^0.5.6",
     "sourcemap-codec": "^1.3.0"
   },

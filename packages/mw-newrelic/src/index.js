@@ -1,9 +1,9 @@
-const newrelic = require('newrelic');
-const Promise = require('bluebird');
-const _ = require('lodash');
+import newrelic from 'newrelic';
+import Promise from 'bluebird';
+import get from 'lodash/get';
 
-function mw(req, next) {
-    if (_.get(req, 'headers.queueName') == null) {
+export default function (req, next) {
+    if (get(req, 'headers.queueName') == null) {
         return next();
     }
 
@@ -23,5 +23,3 @@ function mw(req, next) {
         })();
     });
 }
-
-module.exports = mw;

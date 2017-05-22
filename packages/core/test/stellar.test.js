@@ -1,13 +1,13 @@
-const { expect } = require('chai'); // eslint-disable-line
-const chai = require('chai');  // eslint-disable-line
-const chaiAsPromised = require('chai-as-promised'); // eslint-disable-line
-const _ = require('lodash');
-const Promise = require('bluebird');
-const StellarCore = require('../src/StellarCore');
-const StellarPubSub = require('../src/StellarPubSub');
-const StellarRequest = require('../src/StellarRequest');
-const StellarHandler = require('../src/StellarHandler');
-const StellarError = require('../src/StellarError');
+import { expect } from 'chai'; // eslint-disable-line
+import chai from 'chai';  // eslint-disable-line
+import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
+import _ from 'lodash';
+import Promise from 'bluebird';
+import StellarCore from '../src/StellarCore';
+import StellarPubSub from '../src/StellarPubSub';
+import StellarRequest from '../src/StellarRequest';
+import StellarHandler from '../src/StellarHandler';
+import { StellarError } from '../src/StellarError';
 
 const log = console;
 

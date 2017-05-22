@@ -20,6 +20,8 @@
 dump/
 
 **/dist/
+**/lib/
+**/lib-es6/
 .logs/
 
 *.DS_Store

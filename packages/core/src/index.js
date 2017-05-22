@@ -1,11 +1,10 @@
 /**
  * Created by arolave on 10/04/2017.
  */
-module.exports = {
-  logger: require('./logger').logger,
-  StellarError: require('./StellarError'),
-  StellarCore: require('./StellarCore'),
-  StellarPubSub: require('./StellarPubSub'),
-  StellarRequest: require('./StellarRequest'),
-  StellarHandler: require('./StellarHandler'),
-};
+export { default as logger } from './logger';
+export { StellarError } from './StellarError';
+export { default as StellarCore } from './StellarCore';
+export { default as StellarPubSub } from './StellarPubSub';
+export { default as StellarRequest } from './StellarRequest';
+export { default as StellarHandler } from './StellarHandler';
+

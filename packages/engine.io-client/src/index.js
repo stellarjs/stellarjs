@@ -1,5 +1,5 @@
-const Promise = require('bluebird');
-const eio = require('engine.io-client');
+import Promise from 'bluebird';
+import eio from 'engine.io-client';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
@@ -123,16 +123,19 @@ const socketWrapper = stellarRequest => ({
         return new Promise((resolve) => {
             try {
                 if (this.socket) {
+                    log.info('@StellarEngineIO.closeIfNeeded: Already open socket. Closing it before reconnect.');
                     this.socket.off('close');
                     this.socket.on('close', () => {
                         this.socket.off('close');
                         log.info(`@StellarEngineIO: Closed`);
+                        this.stellar.transport.onClose();
                         resolve(this.state);
                     });
                     this.socket.close();
+                } else {
+                    log.info('@StellarEngineIO.closeIfNeeded: Clean slate');
+                    resolve(this.state);
                 }
-
-                resolve(this.state);
             } catch (e) {
                 log.warn('unable to close socket');
                 resolve(this.state);
@@ -218,4 +221,4 @@ const socketWrapper = stellarRequest => ({
     },
 });
 
-module.exports = socketWrapper;
+export default socketWrapper;
