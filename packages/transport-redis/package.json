@@ -1,7 +1,7 @@
 {
   "name": "@stellarjs/transport-redis",
   "version": "0.3.1",
-  "main": "dist/index.js",
+  "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
   ],

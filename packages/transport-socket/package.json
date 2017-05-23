@@ -1,8 +1,8 @@
 {
   "name": "@stellarjs/transport-socket",
   "version": "0.3.0",
-  "main": "dist/index.js",
-  "browser": "dist/index.browser.js",
+  "main": "lib-es6/index.js",
+  "browser": "lib/index.browser.js",
   "src": [
     "src/**/*"
   ],
