@@ -1,12 +1,12 @@
 /* eslint-disable */
-const Redis = require('ioredis');  // eslint-disable-line import/no-extraneous-dependencies
+import Redis from 'ioredis';  // eslint-disable-line import/no-extraneous-dependencies
 
-const redisConfig = require('./config-redis');
+import redisConfig from './config-redis';
 
 let connectionCount = 0;
 let connectionInterval = null;
 
-class RedisClient {
+export class RedisClient {
   constructor(log) {
     this.log = log;
     Object.assign(this, {
@@ -40,4 +40,4 @@ class RedisClient {
   }
 }
 
-module.exports = RedisClient;
+export default RedisClient;

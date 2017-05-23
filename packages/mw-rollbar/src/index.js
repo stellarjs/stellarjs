@@ -1,10 +1,10 @@
-const Promise = require('bluebird');
-const rollbar = require('rollbar');
-const logger = require('rollbar/lib/logger');
-const StellarError = require('@stellarjs/core');
+import Promise from 'bluebird';
+import rollbar from 'rollbar';
+import logger from 'rollbar/lib/logger';
+import { StellarError } from '@stellarjs/core';
 
 /* reimplementation of rollbar.errorHandler() for promise based middleware */
-function mw(req, next) {
+export default function (req, next) {
     return new Promise((resolve, reject) => {
         next()
             .then(response => resolve(response))
@@ -29,5 +29,3 @@ function mw(req, next) {
             });
     });
 }
-
-module.exports = mw;

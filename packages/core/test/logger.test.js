@@ -2,9 +2,9 @@
  * Created by arolave on 25/12/2016.
  */
 /* eslint-disable */
-const { should } = require('chai'); // eslint-disable-line
-const chai = require('chai');  // eslint-disable-line
-const { logger, initLogger } = require('../src/logger');
+import { should } from 'chai'; // eslint-disable-line
+import chai from 'chai';  // eslint-disable-line
+import { logger, initLogger } from '../src/logger';
 
 chai.should();
 

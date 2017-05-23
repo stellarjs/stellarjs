@@ -2,12 +2,12 @@
  * Created by arolave on 05/10/2016.
  */
 /* eslint-disable */
-const http = require('http');
-const uuid = require('uuid');
-const Promise = require('bluebird');
-const _ = require('lodash');
+import http from 'http';
+import uuid from 'uuid';
+import Promise from 'bluebird';
+import _ from 'lodash';
 
-const { StellarHandler, StellarPubSub, StellarRequest } = require('@stellarjs/core');
+import { StellarHandler, StellarPubSub, StellarRequest } from '@stellarjs/core';
 
 const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 3000;
 

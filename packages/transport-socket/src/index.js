@@ -4,16 +4,15 @@
 /* eslint-disable */
 /* global window */
 
-const { StellarRequest, logger } = require('@stellarjs/core');
+import { StellarRequest, logger } from '@stellarjs/core';
+import WebsocketTransport from './WebsocketTransport';
 
-const WebsocketTransport = require('./WebsocketTransport');
-
-const requestTimeout = 3000; // TODO set from env variable or options obj
+const requestTimeout = 30000; // TODO set from env variable or options obj
 
 // setup the log
 let log = null;
 function configureStellar(clientLog) {
-    log = loggerProxy(clientLog);
+    log = logger(clientLog);
 }
 configureStellar(console);
 
@@ -59,4 +58,4 @@ const stellarRequest = socket => new StellarRequest(
     requestTimeout
 );
 
-module.exports = { stellarRequest, configureStellar, WebsocketTransport };
+export { stellarRequest, configureStellar, WebsocketTransport };

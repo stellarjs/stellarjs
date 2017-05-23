@@ -18,16 +18,16 @@
     "publish": "lerna publish",
     "publish:canary": "yarn run publish -- --canary",
     "pretest": "yarn run compile",
-    "test": "yarn run testonly",
+    "test": "yarn run test",
     "posttest": "yarn run lint",
-    "testonly": "lerna run testonly",
-    "coverage": "lerna run coverage",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "ci": "lerna run ci",
+    "coverage": "lerna run test:coverage"
   },
   "devDependencies": {
     "babel-loader": "^7.0.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-es2015": "^6.24.1",
+    "babel-preset-node6": "^11.0.0",
     "chai": "3.5.0",
     "chai-as-promised": "^5.3.0",
     "eslint": "^3.19.0",

@@ -1,7 +1,7 @@
 /**
  * Created by arolave on 02/02/2017.
  */
-const Job = require('bull/lib/job');
+import Job from 'bull/lib/job';
 
 class Enqueuer {
     constructor(name, { keyPrefix, client }) {
@@ -23,4 +23,4 @@ class Enqueuer {
     }
 }
 
-module.exports = Enqueuer;
+export default Enqueuer;

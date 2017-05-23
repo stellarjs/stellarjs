@@ -1,16 +1,16 @@
 /**
  * Created by arolave on 02/10/2016.
  */
-const assign = require('lodash/assign');
-const forEach = require('lodash/forEach');
-const get = require('lodash/get');
-const isEmpty = require('lodash/isEmpty');
+import assign from 'lodash/assign';
+import forEach from 'lodash/forEach';
+import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
 
-const uuid = require('uuid');
+import uuid from 'uuid';
 
-const StellarCore = require('./StellarCore');
+import StellarCore from './StellarCore';
 
-class StellarPubSub extends StellarCore {
+export default class StellarPubSub extends StellarCore {
     constructor(transport, source, log, service) {
         super(transport, source, log);
         this.service = service;
@@ -89,5 +89,3 @@ class StellarPubSub extends StellarCore {
             });
     }
 }
-
-module.exports = StellarPubSub;

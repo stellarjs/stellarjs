@@ -1,13 +1,12 @@
 /**
  * Created by arolave on 13/11/2016.
  */
-const assign = require('lodash/assign');
-const first = require('lodash/first');
-const mapValues = require('lodash/mapValues');
-const size = require('lodash/size');
-const snakecase = require('lodash/snakecase');
+import assign from 'lodash/assign';
+import mapValues from 'lodash/mapValues';
+import size from 'lodash/size';
+import snakeCase from 'lodash/snakecase';
 
-function StellarError(message) { // eslint-disable-line
+function StellarError(message) {
   if (!Error.captureStackTrace) {
     this.stack = (new Error()).stack;
   } else {
@@ -50,4 +49,4 @@ StellarError.prototype.addPropertyError = function (propertyPath, error) {
   this._add(propertyPath, error);
 };
 
-module.exports = StellarError;
+export { StellarError };

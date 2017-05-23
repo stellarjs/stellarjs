@@ -10,7 +10,7 @@ function webpackConfig(context) {
       'index': `${context}/src/index.js`,
     },
     output: {
-      path: path.resolve(context, 'dist'),
+      path: path.resolve(context, 'lib'),
       filename: '[name].browser.js',
     },
     module: {
@@ -21,6 +21,7 @@ function webpackConfig(context) {
           use: {
             loader: 'babel-loader',
             options: {
+              babelrc: false,
               presets: [
                 ['es2015', { modules: false }]
               ],

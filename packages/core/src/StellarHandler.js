@@ -1,16 +1,16 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-const assign = require('lodash/assign');
-const lowerCase = require('lodash/lowerCase');
-const pick = require('lodash/pick');
+import assign from 'lodash/assign';
+import lowerCase from 'lodash/lowerCase';
+import pick from 'lodash/pick';
 
-const Promise = require('bluebird');
+import Promise from 'bluebird';
 
-const StellarError = require('./StellarError');
-const StellarCore = require('./StellarCore');
+import { StellarError } from './StellarError';
+import StellarCore from './StellarCore';
 
-class StellarHandler extends StellarCore {
+export default class StellarHandler extends StellarCore {
   constructor(transport, nodeName, log) {
     super(transport, nodeName, log);
     this.messageHandlers = {};
@@ -117,5 +117,3 @@ though it processes the ${serviceInbox} queue`);
 }
 
 StellarHandler.isProcessing = new Set();
-
-module.exports = StellarHandler;

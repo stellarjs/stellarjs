@@ -2,13 +2,13 @@
  * Created by arolave on 06/10/2016.
  */
 /* eslint-disable */
-const Queue = require('bull');
-const _ = require('lodash');
-const Promise = require('bluebird');
-const RedisExclusiveTask = require('redis-exclusive-task').default;
+import Queue from 'bull';
+import _ from 'lodash';
+import Promise from 'bluebird';
+import RedisExclusiveTask from 'redis-exclusive-task';
 
-const RedisClient = require('./config-redisclient');
-const Enqueuer = require('./Enqueuer');
+import RedisClient from './config-redisclient';
+import Enqueuer from './Enqueuer';
 
 const MINUTE_1 = 60 * 1000; // 1 minute
 const DEFAULT_INTERVAL = 15 * MINUTE_1; // 15 minutes
@@ -212,4 +212,4 @@ class RedisTransport {
   }
 }
 
-module.exports = RedisTransport.getInstance.bind(RedisTransport);
+export default RedisTransport.getInstance.bind(RedisTransport);

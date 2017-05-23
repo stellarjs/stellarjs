@@ -1,9 +1,9 @@
 /**
  * Created by arolave on 06/10/2016.
  */
-const get = require('lodash/get');
-const Promise = require('bluebird');
-const { EventEmitter } = require('events');
+import get from 'lodash/get';
+import Promise from 'bluebird';
+import { EventEmitter } from 'events';
 
 class WebsocketTransport {
     constructor(socket, log, sendingOnly) {
@@ -83,5 +83,5 @@ class WebsocketTransport {
 
 WebsocketTransport.START_2016 = new Date(2016, 1, 1).getTime();
 
-module.exports = WebsocketTransport;
+export default WebsocketTransport;
 
