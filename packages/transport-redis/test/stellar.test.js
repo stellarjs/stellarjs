@@ -6,7 +6,7 @@ import Promise from 'bluebird';
 
 import {StellarPubSub, StellarRequest, StellarHandler, StellarError} from '@stellarjs/core';
 import RedisClient from '../src/config-redisclient';
-import redisTransportFactory from '../src/redisTransportFactory';
+import redisTransportFactory from '../src/index';
 
 const log = console;
 const redisTransport = redisTransportFactory(log);

@@ -8,7 +8,7 @@ import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
 import _ from 'lodash';
 import Promise from 'bluebird';
 import RedisClient from '../src/config-redisclient';
-import redisTransportFactory from '../src/redisTransportFactory';
+import redisTransportFactory from '../src/index';
 
 const log = console;
 const redisTransport = redisTransportFactory(log)
