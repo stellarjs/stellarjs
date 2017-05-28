@@ -350,11 +350,11 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@3.4.6:
-  version "3.4.6"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.4.6.tgz#01da8d821d87813d158967e743d5fe6c62cf8c0f"
+bluebird@3.4.7:
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.4.7.tgz#f72d760be09b7f76d08ed8fae98b289a8d05fab3"
 
-bluebird@^3.3.3, bluebird@^3.3.4, bluebird@^3.4.7:
+bluebird@^3.3.3, bluebird@^3.3.4, bluebird@^3.4.6:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
 
@@ -397,18 +397,24 @@ builtin-modules@^1.0.0, builtin-modules@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-1.1.1.tgz#270f076c5a72c02f5b65a47df94c5fe3a278892f"
 
-bull@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/bull/-/bull-2.1.2.tgz#85b7897ff44a25132576b719bb08fd9223ab0b02"
+bull-redlock@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/bull-redlock/-/bull-redlock-2.2.1.tgz#98aa093d2d069cc54039526c8756a864b8785be9"
   dependencies:
-    bluebird "^3.4.7"
+    bluebird "^3.3.3"
+
+"bull@https://github.com/sloops77/bull/archive/a5135def39ae0957a682c21df362b1f67dc93c3a.tar.gz":
+  version "2.0.0"
+  resolved "https://github.com/sloops77/bull/archive/a5135def39ae0957a682c21df362b1f67dc93c3a.tar.gz#42239943f8f85b46dc2a9b9f9d0a2bf85c5dd3ec"
+  dependencies:
+    bluebird "^3.4.6"
+    bull-redlock "^2.2.1"
     debuglog "^1.0.0"
     disturbed "^1.0.6"
-    ioredis "^2.5.0"
-    lodash "^4.17.4"
-    redlock "^2.1.0"
+    ioredis "^2.4.0"
+    lodash "^4.17.2"
     semver "^5.3.0"
-    uuid "^3.0.1"
+    uuid "^3.0.0"
 
 caching-transform@^1.0.0:
   version "1.0.1"
@@ -1463,7 +1469,7 @@ invert-kv@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"
 
-ioredis@^2.4.0, ioredis@^2.5.0:
+ioredis@^2.4.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-2.5.0.tgz#fb6fdf0a1a7e0974614c67b6e5e11308a8cf95b9"
   dependencies:
@@ -1907,11 +1913,11 @@ lodash.templatesettings@^3.0.0:
     lodash._reinterpolate "^3.0.0"
     lodash.escape "^3.0.0"
 
-lodash@4.15.0:
+lodash@4.15.0, lodash@^4.0.0, lodash@^4.2.0, lodash@^4.3.0, lodash@^4.8.2:
   version "4.15.0"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.15.0.tgz#3162391d8f0140aa22cf8f6b3c34d6b7f63d3aa9"
 
-lodash@^4.0.0, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.3.0, lodash@^4.8.2:
+lodash@^4.17.2:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -2479,12 +2485,6 @@ redis-parser@^1.3.0:
 redlock@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/redlock/-/redlock-2.0.0.tgz#c9b22e837a95a2bd551bf4971d42fdf9732e58ae"
-  dependencies:
-    bluebird "^3.3.3"
-
-redlock@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/redlock/-/redlock-2.1.0.tgz#f00ddff6b74069dfbf4d2fd11ed8104475bfef76"
   dependencies:
     bluebird "^3.3.3"
 

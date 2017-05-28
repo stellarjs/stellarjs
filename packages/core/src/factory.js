@@ -7,7 +7,9 @@ import uuid from 'uuid';
 import Promise from 'bluebird';
 import _ from 'lodash';
 
-import { StellarHandler, StellarPubSub, StellarRequest } from '@stellarjs/core';
+import StellarHandler from './StellarHandler';
+import StellarPubSub from './StellarPubSub';
+import StellarRequest from './StellarRequest';
 
 const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 3000;
 
