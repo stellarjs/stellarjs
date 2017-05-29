@@ -8,7 +8,7 @@
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
-    "compile": "npm run compile:es6",
+    "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "test": "NODE_ENV=test mocha --require babel-register",
     "test:coverage": "rm -rf coverage/* && NODE_ENV=test nyc --cache --require babel-register --reporter=html --reporter=text-lcov mocha",
@@ -19,23 +19,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "acorn": "4.0.4",
     "babel-cli": "^6.24.1",
-    "chalk": "^1.1.3",
-    "codecov.io": "^0.1.6",
-    "console-group": "^0.3.1",
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb-base": "^11.1.3",
-    "eslint-plugin-import": "^2.2.0",
-    "istanbul": "^0.4.3",
-    "locate-character": "^2.0.0",
     "mocha": "^3.0.0",
-    "nyc": "^10.3.2",
-    "remap-istanbul": "^0.6.4",
-    "require-relative": "^0.8.7",
-    "rimraf": "^2.6.1",
-    "source-map": "^0.5.6",
-    "sourcemap-codec": "^1.3.0"
+    "rimraf": "^2.6.1"
   },
   "dependencies": {
     "@stellarjs/core": "^0.3.4",
