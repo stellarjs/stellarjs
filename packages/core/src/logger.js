@@ -6,26 +6,26 @@ import size from 'lodash/size';
 let enableLogging = true;
 
 export function initLogger() {
-    enableLogging = size(process.env.STELLAR_DEBUG_LOGS)
+  enableLogging = size(process.env.STELLAR_DEBUG_LOGS)
         ? process.env.STELLAR_DEBUG_LOGS !== 'false'
         : process.env.NODE_ENV === 'development';
 }
 
 const loggerHandler = {
-    get: (target, propKey) => {
-        const origMethod = target[propKey];
-        return function (...args) { // eslint-ignore-line func-names
-            if (enableLogging) {
-                return origMethod.apply(target, args);
-            }
+  get: (target, propKey) => {
+    const origMethod = target[propKey];
+    return function (...args) { // eslint-ignore-line func-names
+      if (enableLogging) {
+        return origMethod.apply(target, args);
+      }
 
-            return true;
-        };
-    },
+      return true;
+    };
+  },
 };
 
 initLogger();
 
 export function logger(log) {
-    return global.Proxy ? new Proxy(log, loggerHandler) : log;
+  return global.Proxy ? new Proxy(log, loggerHandler) : log;
 }

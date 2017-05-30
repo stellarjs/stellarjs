@@ -57,10 +57,6 @@ class StellarCore {
     this.handlerChain.push({ pattern, fn });
   }
 
-  _match(url, pattern) {
-    return url.match(pattern);
-  }
-
   flush() {
     if (this.transport.flush) {
       this.transport.flush();
@@ -92,7 +88,10 @@ class StellarCore {
     );
   }
 
-  _executeMiddlewares(handlers, jobData, options) {
+  _executeMiddlewares(handlers, jobData, options) { // eslint-disable-line class-methods-use-this
+    function match(url, pattern) {
+      return url.match(pattern);
+    }
     // this.log.info(`@StellarCore.executeMiddlewares: handlers ${_.size(handlers)}`);
 
     const runMw = (i) => {
@@ -104,7 +103,7 @@ class StellarCore {
 
       // this.log.info(`@StellarCore.executeMiddlewares: run ${i} ${stringify(jobData, this.log)}`);
       if (handlers[i].pattern === undefined ||
-        this._match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
+        match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
         return handlers[i].fn(jobData, next, options);
       }
 

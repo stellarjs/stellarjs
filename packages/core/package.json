@@ -15,7 +15,8 @@
     "test": "NODE_ENV=test mocha --require babel-register",
     "test:coverage": "rm -rf coverage/* && NODE_ENV=test nyc --cache --require babel-register --reporter=html --reporter=text-lcov mocha",
     "prepublish": "yarn run compile",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
     "access": "public"
@@ -35,6 +36,9 @@
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.3.0",
     "mocha": "^3.0.0",
     "rimraf": "^2.6.1"
   },

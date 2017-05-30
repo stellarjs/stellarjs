@@ -4,7 +4,7 @@
 import assign from 'lodash/assign';
 import mapValues from 'lodash/mapValues';
 import size from 'lodash/size';
-import snakeCase from 'lodash/snakecase';
+import snakeCase from 'lodash/snakeCase';
 
 function StellarError(message) {
   if (!Error.captureStackTrace) {
@@ -49,4 +49,4 @@ StellarError.prototype.addPropertyError = function (propertyPath, error) {
   this._add(propertyPath, error);
 };
 
-export { StellarError };
+export { StellarError }; // eslint-disable-line import/prefer-default-export
