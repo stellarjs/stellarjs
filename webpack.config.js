@@ -7,7 +7,7 @@ function webpackConfig(context) {
       extensions: ['.js'],
     },
     entry: {
-      'index': `${context}/src/index.js`,
+      index: `${context}/src/index.js`,
     },
     output: {
       path: path.resolve(context, 'lib'),
@@ -23,7 +23,7 @@ function webpackConfig(context) {
             options: {
               babelrc: false,
               presets: [
-                ['es2015', { modules: false }]
+                ['es2015', { modules: false }],
               ],
             },
           },
