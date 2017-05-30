@@ -79,6 +79,13 @@ class WebsocketTransport {
     });
     return Promise.resolve();
   }
+
+  static getInstance(socket, sendingOnly, log) {
+    if (!this.instance) {
+      this.instance = new WebsocketTransport(socket, log, sendingOnly);
+    }
+    return this.instance;
+  }
 }
 
 WebsocketTransport.START_2016 = new Date(2016, 1, 1).getTime();

@@ -1,4 +1,5 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals');
 
 function webpackConfig(context) {
   return {
@@ -13,6 +14,7 @@ function webpackConfig(context) {
       path: path.resolve(context, 'lib'),
       filename: '[name].browser.js',
     },
+    externals: [nodeExternals()], // in order to ignore all modules in node_modules folder
     module: {
       loaders: [
         {

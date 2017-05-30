@@ -2,89 +2,57 @@
  * Created by arolave on 05/10/2016.
  */
 /* eslint-disable */
-import http from 'http';
-import uuid from 'uuid';
-import Promise from 'bluebird';
-import _ from 'lodash';
+import forEach from 'lodash/forEach';
+import get from 'lodash/get';
+import size from 'lodash/size';
 
 import StellarHandler from './StellarHandler';
 import StellarPubSub from './StellarPubSub';
 import StellarRequest from './StellarRequest';
 
-const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 3000;
+const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 30000;
 
-let log = null;
-function configureStellarLog(serverLog) {
-  if (serverLog) {
-    log = serverLog;
+let _log = null;
+function configureStellarLog(stellarLog) {
+  if (stellarLog) {
+    _log = stellarLog;
   }
 }
-configureStellarLog(console);
 
-function generateSource() {
-  const getFromInstanceId = (instanceId) => {
-    const app = process.env.APP;
-    return app ? `${app}:${instanceId}` : instanceId;
-  };
-
-  if (process.env.NODE_ENV === 'test') {
-    log.info(`@StellarCore: sending request`);
-    log.info(`@StellarCore Running test`);
-    return Promise.resolve(getFromInstanceId(uuid.v4()));
-  }
-
-  return new Promise((resolve) => {
-    http.get({ host: 'http://169.254.169.254', path: '/latest/meta-data/instance-id', timeout: 1000 }, (res) => {
-      if (res.statusCode !== 200) {
-        log.info(`@StellarCore: Running standard`);
-        resolve(getFromInstanceId(uuid.v4()));
-      }
-
-      res.setEncoding('utf8');
-      let body = '';
-      res.on('data', (data) => {
-        log.info(`@StellarCore: data ${data}`);
-        body += data;
-      });
-      res.on('end', () => {
-        log.info(`@StellarCore: Running in AWS`);
-        log.info(`@StellarCore: end ${body}`);
-        resolve(getFromInstanceId(body));
-      });
-    }).on('error', () => {
-      log.info(`@StellarCore: Running standard`);
-      resolve(getFromInstanceId(uuid.v4()));
-    });
-  });
-}
-
-let setSource = null;
-
+let _defaultSourceGenerator = null;
+let _sourceGenerators = null;
+let _source = null;
 const StellarServer = { instances: {} };
 
 function doSetSource(s) {
-  setSource = s;
+  _source = s;
 
-  _.forEach(['stellarRequest', 'stellarHandler', 'stellarAppPubSub', 'stellarNodePubSub'], (name) => {
-    const instance = _.get(StellarServer.instances, name);
+  forEach(['stellarRequest', 'stellarHandler', 'stellarAppPubSub', 'stellarNodePubSub'], (name) => {
+    const instance = get(StellarServer.instances, name);
     if (instance) {
-      log.info(`setting source on ${name}`);
+      _log.info(`setting source on ${name}`);
       instance.setSource(s);
     }
   });
 }
 
-function configureStellar(_log, _source) {
-  configureStellarLog(_log);
-  if (_source) {
-    doSetSource(_source);  // overrides generated source
-  }
+function getSourceGenerator(value) {
+  return _sourceGenerators[ value || process.env.STELLAR_SOURCE_GENERATOR || defaultSourceGenerator ];
 }
 
-generateSource().then((source) => {
-  log.info(`setting source ${source}`);
-  doSetSource(source);
-});
+function configureStellar({ log, source, sourceGenerator }) {
+  configureStellarLog(log);
+
+  if (source) {
+    _log.info(`setting source ${_source}`);
+    doSetSource(source);  // overrides generated source
+  } else {
+    getSourceGenerator(sourceGenerator)(_log).then((generatedSource) => {
+      _log.info(`setting source ${generatedSource}`);
+      doSetSource(generatedSource);
+    });
+  }
+}
 
 function _getInstance(name, builder) {
   if (!StellarServer.instances[name]) {
@@ -93,22 +61,31 @@ function _getInstance(name, builder) {
   return StellarServer.instances[name];
 }
 
+function resetCache() {
+  _log.info(`@factory.resetCache`);
+  _source = null;
+  for (let key in StellarServer.instances) {
+    delete StellarServer.instances[key];
+  }
+  _log.info(size(StellarServer.instances));
+}
+
 function stellarAppPubSub(transportFactory, app = process.env.APP) {
-  return _getInstance('stellarAppPubSub', () => new StellarPubSub(transportFactory(log), setSource, log, app));
+  return _getInstance('stellarAppPubSub', () => new StellarPubSub(transportFactory(_log), _source, _log, app));
 }
 
 function stellarNodePubSub(transportFactory) {
-  return _getInstance('stellarNodePubSub', () => new StellarPubSub(transportFactory(log), setSource, log));
+  return _getInstance('stellarNodePubSub', () => new StellarPubSub(transportFactory(_log), _source, _log));
 }
 
 function stellarRequest(transportFactory) {
-  console.log(`stellarRequest creation ${setSource}`);
+  _log.info(`stellarRequest creation ${_source}`);
   return _getInstance('stellarRequest',
-                      () => new StellarRequest(transportFactory(log), setSource, log, requestTimeout, stellarNodePubSub(transportFactory)));
+                      () => new StellarRequest(transportFactory(_log), _source, _log, requestTimeout, stellarNodePubSub(transportFactory)));
 }
 
 function stellarHandler(transportFactory, app = process.env.APP) {
-  return _getInstance('stellarHandler', () => new StellarHandler(transportFactory(log), setSource, log, app));
+  return _getInstance('stellarHandler', () => new StellarHandler(transportFactory(_log), _source, _log, app));
 }
 
 function stellarPublish(transportFactory, app) {
@@ -129,6 +106,13 @@ function stellarSource() {
   return stellarRequest().source;
 }
 
+function setSourceGenerators(defaultSourceGenerator, sourceGenerators) {
+  _defaultSourceGenerator = defaultSourceGenerator;
+  _sourceGenerators = sourceGenerators;
+}
+
+configureStellarLog(console);
+
 export {
   stellarRequest,
   stellarHandler,
@@ -138,4 +122,6 @@ export {
   stellarPublish,
   stellarSubscribe,
   stellarSource,
+  resetCache,
+  setSourceGenerators,
 };

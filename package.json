@@ -33,6 +33,7 @@
     "chai": "3.5.0",
     "chai-as-promised": "^5.3.0",
     "sinon": "^1.17.4",
-    "uglifyjs-webpack-plugin": "^0.4.3"
+    "uglifyjs-webpack-plugin": "^0.4.3",
+    "webpack-node-externals": "^1.6.0"
   }
 }

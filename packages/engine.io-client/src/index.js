@@ -192,6 +192,7 @@ const socketWrapper = stellarRequest => ({
         if (this.state === 'connected') {
           this.trigger('close');
           this.state = 'disconnected';
+          this.socket = null;
           this._reconnect(url, { userId, token, secure });
         }
       });

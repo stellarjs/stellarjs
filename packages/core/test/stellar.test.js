@@ -8,68 +8,10 @@ import StellarPubSub from '../src/StellarPubSub';
 import StellarRequest from '../src/StellarRequest';
 import StellarHandler from '../src/StellarHandler';
 import { StellarError } from '../src/StellarError';
-
-const log = console;
+import { createMockTransport } from './mocks';
 
 chai.use(chaiAsPromised);
 chai.should();
-
-function createMockTransport(autoProcess) {
-  return {
-    queues: {},
-    subscribers: {},
-    jobCounter: 1,
-    processData: {},
-
-    reset(data) {
-      this.job = { jobId: this.jobCounter++, data };
-      this.queues = {};
-      this.subscribers = {};
-      this.jobCounter = 1;
-    },
-
-    getSubscribers(channel) {
-      if (this.subscribers[channel] == null) {
-        this.subscribers[channel] = new Set();
-      }
-
-      return Promise.resolve(this.subscribers[channel].values());
-    },
-    registerSubscriber(channel, queueName) {
-      if (this.subscribers[channel] == null) {
-        this.subscribers[channel] = new Set();
-      }
-
-      return Promise.resolve(this.subscribers[channel].add(queueName))
-        .then(() => () => this._deregisterSubscriber(channel, queueName));
-    },
-    _deregisterSubscriber(channel, queueName) {
-      if (this.subscribers[channel] == null) {
-        this.subscribers[channel] = new Set();
-      }
-      return Promise.resolve(this.subscribers[channel].delete(queueName));
-    },
-    enqueue(queueName, data) {
-      return new Promise((resolve) => {
-        this.queues[queueName] = [{ data, jobId: this.jobCounter++, queue: { name: queueName } }];
-        resolve(_.last(this.queues[queueName]));
-      });
-    },
-
-    process(queueName, callback) {
-      this.callback = callback;
-
-      if (autoProcess) {
-        setTimeout(() => this.triggerJob(this.job));
-      }
-      return new Promise.resolve();
-    },
-
-    triggerJob(job) {
-      this.callback(job || this.job);
-    }
-  };
-}
 
 const stellarRequest = new StellarRequest(createMockTransport(), 'test', console, 1000);
 const stellarHandler = new StellarHandler(createMockTransport(true), 'test', console, 'testservice');
