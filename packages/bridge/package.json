@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/mw-newrelic",
+  "name": "@stellarjs/bridge",
   "version": "0.4.0",
   "main": "lib-es6/index.js",
   "src": [
@@ -7,9 +7,10 @@
   ],
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
-    "clean": "rimraf lib lib-es6",
+    "clean": "rimraf lib-es6",
     "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:umd": "webpack -p",
     "test": "NODE_ENV=test mocha --require babel-register",
     "test:coverage": "rm -rf coverage/* && NODE_ENV=test nyc --cache --require babel-register --reporter=html --reporter=text-lcov mocha",
     "prepublish": "yarn run compile",
@@ -20,17 +21,20 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/engine.io-client": "^0.4.0",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
-    "mocha": "^3.0.0",
+    "mocha": "^3.0.2",
     "rimraf": "^2.6.1"
   },
   "dependencies": {
     "@stellarjs/core": "^0.4.0",
-    "bluebird": "3.4.6",
-    "lodash": "4.15.0",
-    "newrelic": "^1.36.0"
+    "@stellarjs/transport-redis": "^0.4.0",
+    "@stellarjs/transport-socket": "^0.4.0",
+    "bluebird": "3.4.7",
+    "engine.io": "^3.1.0",
+    "lodash": "^4.17.4"
   }
 }
