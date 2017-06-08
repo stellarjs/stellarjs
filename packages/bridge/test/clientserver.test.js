@@ -8,7 +8,7 @@ import Promise from 'bluebird';
 import child_process from 'child_process';
 import stellarSocket from '@stellarjs/engine.io-client';
 
-const proc = child_process.fork(`${__dirname}/examples/index`); //, null, { env: {PORT: 12555} }
+const proc = child_process.fork(`${__dirname}/examples/index`, null, { env: {PORT: 12555} });
 
 describe('call server', () => {
   it('should work', (done) => {
