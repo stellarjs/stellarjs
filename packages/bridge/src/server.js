@@ -1,12 +1,12 @@
 import Promise from 'bluebird';
 import engine from 'engine.io';
 import _ from 'lodash';
+import stringify from 'safe-json-stringify';
 
 import {
   StellarCore,
   stellarRequest as stellarRequestFactory,
-  stellarSource,
-  stringify } from '@stellarjs/core';
+  stellarSource } from '@stellarjs/core';
 import { configureStellar } from '@stellarjs/transport-redis';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 

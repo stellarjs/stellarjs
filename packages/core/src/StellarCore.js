@@ -5,7 +5,7 @@ import assign from 'lodash/assign';
 import first from 'lodash/first';
 import Promise from 'bluebird';
 
-import stringify from './stringify';
+import stringify from 'safe-json-stringify';
 
 class StellarCore {
   constructor(transport, source, log) {

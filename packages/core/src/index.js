@@ -11,7 +11,6 @@ function configure(arg) {
 }
 
 export { configure as configureStellar };
-export { default as stringify } from './stringify';
 export { logger } from './logger';
 export { StellarError } from './StellarError';
 export { default as StellarCore } from './StellarCore';
