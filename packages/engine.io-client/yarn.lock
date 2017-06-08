@@ -2,6 +2,22 @@
 # yarn lockfile v1
 
 
+"@stellarjs/core@^0.3.7":
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.3.7.tgz#d6495d657a715501a8513615f7fad9fd34577b86"
+  dependencies:
+    bluebird "3.4.6"
+    lodash "4.15.0"
+    uuid "^3.0.1"
+
+"@stellarjs/transport-socket@^0.3.7":
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/@stellarjs/transport-socket/-/transport-socket-0.3.7.tgz#773cf1ef5e3fa56bfe411fbbe26c69fb7d0fc56e"
+  dependencies:
+    "@stellarjs/core" "^0.3.7"
+    bluebird "3.4.6"
+    lodash "4.15.0"
+
 abbrev@1:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.0.9.tgz#91b4792588a7738c25f35dd6f63752a2f8776135"
@@ -1396,6 +1412,10 @@ lodash.keys@^3.0.0:
     lodash.isarguments "^3.0.0"
     lodash.isarray "^3.0.0"
 
+lodash@4.15.0:
+  version "4.15.0"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.15.0.tgz#3162391d8f0140aa22cf8f6b3c34d6b7f63d3aa9"
+
 lodash@^4.0.0, lodash@^4.2.0, lodash@^4.3.0:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
@@ -2119,7 +2139,7 @@ util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
 
-uuid@^3.0.0:
+uuid@^3.0.0, uuid@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
 

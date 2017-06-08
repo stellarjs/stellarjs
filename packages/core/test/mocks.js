@@ -8,7 +8,7 @@ export function createMockTransport(autoProcess) {
   return {
     queues: {},
     subscribers: {},
-    jobCounter: 1,
+    jobCounters: 1,
     processData: {},
 
     reset(data) {
@@ -33,12 +33,14 @@ export function createMockTransport(autoProcess) {
       return Promise.resolve(this.subscribers[channel].add(queueName))
         .then(() => () => this._deregisterSubscriber(channel, queueName));
     },
+    
     _deregisterSubscriber(channel, queueName) {
       if (this.subscribers[channel] == null) {
         this.subscribers[channel] = new Set();
       }
       return Promise.resolve(this.subscribers[channel].delete(queueName));
     },
+
     enqueue(queueName, data) {
       return new Promise((resolve) => {
         this.queues[queueName] = [{ data, jobId: this.jobCounter++, queue: { name: queueName } }];

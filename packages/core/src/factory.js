@@ -22,6 +22,8 @@ function configureStellarLog(stellarLog) {
 let _defaultSourceGenerator = null;
 let _sourceGenerators = null;
 let _source = null;
+let _transport = null;
+let _app = null;
 const StellarServer = { instances: {} };
 
 function doSetSource(s) {
@@ -37,19 +39,22 @@ function doSetSource(s) {
 }
 
 function getSourceGenerator(value) {
-  return _sourceGenerators[ value || process.env.STELLAR_SOURCE_GENERATOR || defaultSourceGenerator ];
+  return _sourceGenerators[ value || process.env.STELLAR_SOURCE_GENERATOR || _defaultSourceGenerator ];
 }
 
-function configureStellar({ log, source, sourceGenerator }) {
+function configureStellar({ log, transportFactory, source, sourceGenerator, app = process.env.APP }) {
   configureStellarLog(log);
 
+  _transport = transportFactory(log);
+  _app = app;
+  
   if (source) {
     _log.info(`setting source ${_source}`);
-    doSetSource(source);  // overrides generated source
+    return Promise.resolve(doSetSource(source));  // overrides generated source
   } else {
-    getSourceGenerator(sourceGenerator)(_log).then((generatedSource) => {
+    return getSourceGenerator(sourceGenerator)(_log).then((generatedSource) => {
       _log.info(`setting source ${generatedSource}`);
-      doSetSource(generatedSource);
+      return doSetSource(generatedSource);
     });
   }
 }
@@ -70,34 +75,34 @@ function resetCache() {
   _log.info(size(StellarServer.instances));
 }
 
-function stellarAppPubSub(transportFactory, app = process.env.APP) {
-  return _getInstance('stellarAppPubSub', () => new StellarPubSub(transportFactory(_log), _source, _log, app));
+function stellarAppPubSub() {
+  return _getInstance('stellarAppPubSub', () => new StellarPubSub(_transport, _source, _log, _app));
 }
 
-function stellarNodePubSub(transportFactory) {
-  return _getInstance('stellarNodePubSub', () => new StellarPubSub(transportFactory(_log), _source, _log));
+function stellarNodePubSub() {
+  return _getInstance('stellarNodePubSub', () => new StellarPubSub(_transport, _source, _log));
 }
 
-function stellarRequest(transportFactory) {
-  _log.info(`stellarRequest creation ${_source}`);
+function stellarRequest() {
+  _log.info(`stellarRequest creation source=${_source}`);
   return _getInstance('stellarRequest',
-                      () => new StellarRequest(transportFactory(_log), _source, _log, requestTimeout, stellarNodePubSub(transportFactory)));
+                      () => new StellarRequest(_transport, _source, _log, requestTimeout, stellarNodePubSub()));
 }
 
-function stellarHandler(transportFactory, app = process.env.APP) {
-  return _getInstance('stellarHandler', () => new StellarHandler(transportFactory(_log), _source, _log, app));
+function stellarHandler() {
+  return _getInstance('stellarHandler', () => new StellarHandler(_transport, _source, _log, _app));
 }
 
-function stellarPublish(transportFactory, app) {
+function stellarPublish() {
   return _getInstance('stellarPublish', () => {
-    const pubsub = stellarAppPubSub(transportFactory, app);
+    const pubsub = stellarAppPubSub();
     return pubsub.publish.bind(pubsub);
   });
 }
 
-function stellarSubscribe(transportFactory, app) {
+function stellarSubscribe() {
   return _getInstance('stellarSubscribe', () => {
-    const pubsub = stellarAppPubSub(transportFactory, app);
+    const pubsub = stellarAppPubSub();
     return pubsub.subscribe.bind(pubsub);
   });
 }

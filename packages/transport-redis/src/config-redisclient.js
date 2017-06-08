@@ -6,7 +6,7 @@ import redisConfig from './config-redis';
 let connectionCount = 0;
 let connectionInterval = null;
 
-export class RedisClient {
+class RedisClient {
   constructor(log) {
     this.log = log;
     Object.assign(this, {

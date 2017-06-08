@@ -6,10 +6,10 @@ import Promise from 'bluebird';
 
 import {StellarPubSub, StellarRequest, StellarHandler, StellarError} from '@stellarjs/core';
 import RedisClient from '../src/config-redisclient';
-import redisTransportFactory from '../src/index';
+import { RedisTransport } from '../src/index';
 
 const log = console;
-const redisTransport = redisTransportFactory(log);
+const redisTransport = new RedisTransport(log);
 const stellarRequest = new StellarRequest(redisTransport, 'test', console, 1000);
 const stellarHandler = new StellarHandler(redisTransport, 'test', console, 'testservice');
 
@@ -46,6 +46,27 @@ describe('full integration req/response', () => {
     stellarRequest
       .get('testservice:resource', { text: 'hello' })
       .then(result => result.should.deep.equal({ text: 'hello worlds' }))
+      .then(() => done());
+  });
+
+
+  it('test request response across two queues', (done) => {
+    stellarHandler.handleRequest('testservice:resource:get', ({ body }) =>
+      Promise
+        .delay(50)
+        .then(() => ({ text: `${body.text} worlds` }))
+    );
+    stellarHandler.handleRequest('testservice2:resource:get', ({ body }) => ({ text: `${body.text} worlds 2` }));
+
+    Promise
+      .all([
+        stellarRequest.get('testservice:resource', { text: 'hello' }),
+        stellarRequest.get('testservice2:resource', { text: 'bye' })
+       ])
+      .then(([result1, result2]) => {
+        result1.should.deep.equal({ text: 'hello worlds' })
+        result2.should.deep.equal({ text: 'bye worlds 2' })
+      })
       .then(() => done());
   });
 

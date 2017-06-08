@@ -68,9 +68,13 @@ though it processes the ${serviceInbox} queue`);
 
       const prepareResponse = (val) => {
         const convertError = e => pick(e, ['errors', 'message']);
+        const requestId = `${StellarCore.getServiceInbox(job.data.headers.queueName)}:${job.jobId}`;
 
-        this.log.info(`@StellarHandler marshalling response for ${job.jobId}`);
-        const headers = assign(this._getHeaders(), { type: 'response', requestId: job.jobId });
+        this.log.info(`@StellarHandler marshalling response for ${requestId}`);
+        const headers = assign(this._getHeaders(), {
+          type: 'response',
+          requestId,
+        });
         let body = val;
 
         if (val instanceof Error) {

@@ -59,7 +59,7 @@ class WebsocketTransport {
     return this.socket.then((s) => {
       const command = {
         queue: { name: queueName }, // TODO remove
-        jobId: `${queueName}:${Date.now() - WebsocketTransport.START_2016}:${Math.floor(Math.random() * 10000)}`,
+        jobId: `${Date.now() - WebsocketTransport.START_2016}:${Math.floor(Math.random() * 10000)}`,
         data: obj,
       };
       const str = JSON.stringify(command);
@@ -78,13 +78,6 @@ class WebsocketTransport {
       }
     });
     return Promise.resolve();
-  }
-
-  static getInstance(socket, sendingOnly, log) {
-    if (!this.instance) {
-      this.instance = new WebsocketTransport(socket, log, sendingOnly);
-    }
-    return this.instance;
   }
 }
 

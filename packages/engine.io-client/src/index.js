@@ -1,16 +1,19 @@
 import Promise from 'bluebird';
 import eio from 'engine.io-client';
+import { configureStellar } from '@stellarjs/transport-socket';
+import { stellarRequest } from '@stellarjs/core';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
 const MAX_RECONNECT_INTERVAL = 20000;
 
 const log = console;
-let tryToReconnect = true;
+configureStellar({ log });
 
 // A function that keeps trying, "toTry" until it returns true or has
 // tried "max" number of times. First retry has a delay of "delay".
 // "callback" is called upon success.
+let tryToReconnect = true;
 function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
   log.info(`max:${max}, next delay: ${delay}, tryToReconnect: ${tryToReconnect}`);
   if (!tryToReconnect) {
@@ -38,7 +41,7 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
         });
 }
 
-const socketWrapper = stellarRequest => ({
+const socketWrapper = {
   socket: null,
   stellar: stellarRequest(),
   handlers: {},
@@ -220,6 +223,6 @@ const socketWrapper = stellarRequest => ({
       this.socket.close();
     }
   },
-});
+};
 
 export default socketWrapper;

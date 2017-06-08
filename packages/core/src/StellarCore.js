@@ -3,23 +3,9 @@
  */
 import assign from 'lodash/assign';
 import first from 'lodash/first';
-import isObject from 'lodash/isObject';
-
 import Promise from 'bluebird';
 
-function stringify(val, log) {
-  try {
-    if (!val) {
-      return '';
-    } else if (isObject(val)) {
-      return JSON.stringify(val.data || val);
-    }
-    return val;
-  } catch (e) {
-    log.error(e);
-    return '';
-  }
-}
+import stringify from './stringify';
 
 class StellarCore {
   constructor(transport, source, log) {

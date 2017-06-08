@@ -21,17 +21,17 @@ describe('factory generation', () => {
   });
 
   it('set externalSource generation', () => {
-    configureStellar({ log: console, source: 'external123' });
-    const requestObj = stellarRequest(mockTransportFactory);
+    configureStellar({ log: console, transportFactory: mockTransportFactory, source: 'external123' });
+    const requestObj = stellarRequest();
     expect(requestObj.requestTimeout).to.equal(30000);
     expect(stellarSource()).to.equal('external123');
   });
 
   it('set uuid generation', (done) => {
-    configureStellar({ log: console, sourceGenerator: 'uuid' });
-    const requestObj = stellarRequest(mockTransportFactory);
+    configureStellar({ log: console, transportFactory: mockTransportFactory, sourceGenerator: 'uuid' });
     Promise.delay(50)
       .then(() => {
+        const requestObj = stellarRequest();
         expect(requestObj.requestTimeout).to.equal(30000);
         expect(stellarSource()).to.match(/^[0-9a-f\-]+$/);
         done();
@@ -41,10 +41,10 @@ describe('factory generation', () => {
 
   it('set browser generation', (done) => {
     global.window = { localStorage: {} };
-    configureStellar({ log: console, sourceGenerator: 'browser' });
-    const requestObj = stellarRequest(mockTransportFactory);
+    configureStellar({ log: console, transportFactory: mockTransportFactory, sourceGenerator: 'browser' });
     Promise.delay(50)
       .then(() => {
+        const requestObj = stellarRequest();
         expect(requestObj.requestTimeout).to.equal(30000);
         expect(stellarSource()).to.match(/^browser:[0-9A-Za-z\/\+]+$/);
         global.window = null;

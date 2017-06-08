@@ -60,7 +60,7 @@ describe('mock request response', () => {
     result.then(() => {
       done(new Error('fail'));
     }).catch(StellarError, (e) => {
-      e.message.should.equal('Timeout error: No response to job 1 in 1000ms');
+      e.message.should.equal('Timeout error: No response to job stlr:s:testservice:inbox:1 in 1000ms');
       done();
     });
   })
@@ -71,7 +71,7 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.jobId]({ data: { body: { text: 'world' } } });
+      stellarRequest.inflightRequests[`${qName}:${job.jobId}`]({ data: { body: { text: 'world' } } });
 
       result
         .then(r => r.should.deep.equal({ text: 'world' }))
@@ -85,7 +85,7 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.jobId](
+      stellarRequest.inflightRequests[`${qName}:${job.jobId}`](
         { data: { headers: { errorType: 'Error' }, body: { message: 'blah' } } }
       );
 
@@ -104,7 +104,7 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.jobId](
+      stellarRequest.inflightRequests[`${qName}:${job.jobId}`](
         { data: { headers: { errorType: 'StellarError' }, body: { message: 'blah', errors: { x: ['shit'] } } } }
       );
 
@@ -135,7 +135,7 @@ describe('no-timeout behaviour on mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.jobId]({ data: { body: { text: 'world' } } });
+      stellarRequest.inflightRequests[`${qName}:${job.jobId}`]({ data: { body: { text: 'world' } } });
 
       result
         .then(r => r.should.deep.equal({ text: 'world' }))

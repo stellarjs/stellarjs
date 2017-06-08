@@ -84,30 +84,32 @@ export default class StellarRequest extends StellarCore {
 
   _doQueueRequest(queueName, body = {}, headers = {}, options = {}) {
     const allMiddlewares = [].concat(this.handlerChain, {
-      fn: (request, next, opts) =>
-        this._enqueue(StellarCore.getServiceInbox(queueName), request)
+      fn: (request, next, opts) => {
+        const inbox = StellarCore.getServiceInbox(queueName);
+        return this._enqueue(inbox, request)
         // TODO need to response handling to after _executeMiddlewares
           .then(job => new Promise((resolve, reject) => {
+            const requestId = `${StellarCore.getServiceInbox(queueName)}:${job.jobId}`;
             let requestTimer;
             if (this.requestTimeout && !options.requestOnly) {
               requestTimer = setTimeout(() => {
-                if (!this.inflightRequests[job.jobId]) {
+                if (!this.inflightRequests[requestId]) {
                   return;
                 }
 
                 reject(
                   new StellarError(
-                    `Timeout error: No response to job ${job.jobId} in ${this.requestTimeout}ms`)
+                    `Timeout error: No response to job ${requestId} in ${this.requestTimeout}ms`)
                 );
               }, this.requestTimeout);
             }
 
-            this.inflightRequests[job.jobId] = (responseJob) => {
+            this.inflightRequests[requestId] = (responseJob) => {
               if (requestTimer) {
                 clearTimeout(requestTimer);
               }
 
-              delete this.inflightRequests[job.jobId];
+              delete this.inflightRequests[requestId];
               if (opts.responseType === 'jobData') {
                 resolve(responseJob.data);
               } else if (get(responseJob, 'data.headers.errorType') === 'Error') {
@@ -118,7 +120,8 @@ export default class StellarRequest extends StellarCore {
                 resolve(responseJob.data.body);
               }
             };
-          })),
+          }));
+      },
     });
 
     return this.sourceSemaphore
