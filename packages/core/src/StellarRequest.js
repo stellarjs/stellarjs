@@ -114,7 +114,7 @@ export default class StellarRequest extends StellarCore {
                 resolve(responseJob.data);
               } else if (get(responseJob, 'data.headers.errorType') === 'StellarError') {
                 reject(new StellarError(responseJob.data.body));
-              } else if (_.get(responseJob, 'data.headers.errorType')) {
+              } else if (get(responseJob, 'data.headers.errorType')) {
                 reject(new Error(responseJob.data.body.message));
               } else {
                 resolve(responseJob.data.body);
