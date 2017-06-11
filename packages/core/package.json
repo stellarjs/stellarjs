@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/core",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
   "src": [
