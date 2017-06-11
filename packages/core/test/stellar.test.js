@@ -1,6 +1,3 @@
-import { expect } from 'chai'; // eslint-disable-line
-import chai from 'chai';  // eslint-disable-line
-import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
 import _ from 'lodash';
 import Promise from 'bluebird';
 import StellarCore from '../src/StellarCore';
@@ -9,9 +6,6 @@ import StellarRequest from '../src/StellarRequest';
 import StellarHandler from '../src/StellarHandler';
 import { StellarError } from '../src/StellarError';
 import { createMockTransport } from './mocks';
-
-chai.use(chaiAsPromised);
-chai.should();
 
 const stellarRequest = new StellarRequest(createMockTransport(), 'test', console, 1000);
 const stellarHandler = new StellarHandler(createMockTransport(true), 'test', console, 'testservice');
@@ -37,17 +31,17 @@ describe('mock request response', () => {
   it('send request', (done) => {
     const result = stellarRequest.create('testservice:resource', { text: 'toot' });
     setTimeout(() => {
-      result.then.should.be.a('Function');
+      expect(result.then).toBeInstanceOf(Function);
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
 
-      _.size(queue).should.equal(1);
-      job.jobId.should.equal(1);
-      job.data.headers.queueName.should.equal('testservice:resource:create');
-      job.data.headers.respondTo.should.equal(StellarCore.getNodeInbox(stellarRequest.source));
-      job.data.headers.source.should.equal(stellarRequest.source);
-      job.data.body.should.deep.equal({ text: 'toot' });
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.data.headers.queueName).toEqual('testservice:resource:create');
+      expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
+      expect(job.data.headers.source).toEqual(stellarRequest.source);
+      expect(job.data.body).toEqual({ text: 'toot' });
       done();
     }, 50); // takes a bit of time as it blocks on a semaphore before enqueuing
   });
@@ -55,15 +49,15 @@ describe('mock request response', () => {
 
   it('send request that doesnt respond in time', (done) => {
     const result = stellarRequest.update('testservice:resource', { text: 'toot' });
-    result.then.should.be.a('Function');
+    expect(result.then).toBeInstanceOf(Function);
 
     result.then(() => {
       done(new Error('fail'));
     }).catch(StellarError, (e) => {
-      e.message.should.equal('Timeout error: No response to job stlr:s:testservice:inbox:1 in 1000ms');
+      expect(e.message).toEqual('Timeout error: No response to job stlr:s:testservice:inbox:1 in 1000ms');
       done();
     });
-  })
+  });
 
   it('receive response', (done) => {
     const result = stellarRequest.create('testservice:resource', { text: 'toot' });
@@ -74,7 +68,7 @@ describe('mock request response', () => {
       stellarRequest.inflightRequests[`${qName}:${job.jobId}`]({ data: { body: { text: 'world' } } });
 
       result
-        .then(r => r.should.deep.equal({ text: 'world' }))
+        .then(r => expect(r).toEqual({ text: 'world' }))
         .then(() => done());
     });
   });
@@ -92,7 +86,7 @@ describe('mock request response', () => {
       result
         .then(() => done(new Error('fail')))
         .catch(Error, (e) => {
-          e.message.should.equal('blah');
+          expect(e.message).toEqual('blah');
           done();
         });
     });
@@ -111,8 +105,8 @@ describe('mock request response', () => {
       result
         .then(() => done(new Error('fail')))
         .catch(StellarError, (e) => {
-          e.message.should.equal('blah');
-          e.errors.should.deep.equal({ x: ['shit'] });
+          expect(e.message).toEqual('blah');
+          expect(e.errors).toEqual({ x: ['shit'] });
           done();
         });
     });
@@ -138,7 +132,7 @@ describe('no-timeout behaviour on mock request response', () => {
       stellarRequest.inflightRequests[`${qName}:${job.jobId}`]({ data: { body: { text: 'world' } } });
 
       result
-        .then(r => r.should.deep.equal({ text: 'world' }))
+        .then(r => expect(r).toEqual({ text: 'world' }))
         .then(() => done());
     });
 
@@ -146,7 +140,7 @@ describe('no-timeout behaviour on mock request response', () => {
 
   it('send no-timeout request that doesnt respond', (done) => {
     const result = stellarRequest.update('alttestservice:resource', { text: 'toot' });
-    result.then.should.be.a('Function');
+    expect(result.then).toBeInstanceOf(Function);
 
     result.then(() => {
       done(new Error('fail'));
@@ -179,13 +173,13 @@ describe('middlewares', () => {
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
 
-      _.size(queue).should.equal(1);
-      job.jobId.should.equal(1);
-      job.data.headers.queueName.should.equal('testservice:resource:get');
-      job.data.headers.userId.should.equal(1);
-      job.data.headers.respondTo.should.equal(StellarCore.getNodeInbox(stellarRequest.source));
-      job.data.headers.source.should.equal(stellarRequest.source);
-      job.data.body.should.deep.equal({ text: 'toot' });
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.data.headers.queueName).toEqual('testservice:resource:get');
+      expect(job.data.headers.userId).toEqual(1);
+      expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
+      expect(job.data.headers.source).toEqual(stellarRequest.source);
+      expect(job.data.body).toEqual({ text: 'toot' });
       done();
     });
   });
@@ -212,18 +206,18 @@ describe('middlewares', () => {
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
 
-      _.size(queue).should.equal(1);
-      job.jobId.should.equal(1);
-      job.data.headers.queueName.should.equal('testservice:resource:get');
-      middlewareRun.should.deep.equals({
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.data.headers.queueName).toEqual('testservice:resource:get');
+      expect(middlewareRun).toEqual({
                                          ".*:create": false,
                                          ".*:get": true,
                                          "testservice:resource:.*": true,
                                          "testservice:not:.*": false,
                                        });
-      job.data.headers.respondTo.should.equal(StellarCore.getNodeInbox(stellarRequest.source));
-      job.data.headers.source.should.equal(stellarRequest.source);
-      job.data.body.should.deep.equal({ text: 'toot' });
+      expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
+      expect(job.data.headers.source).toEqual(stellarRequest.source);
+      expect(job.data.body).toEqual({ text: 'toot' });
       done();
     });
   });
@@ -240,13 +234,13 @@ describe('middlewares', () => {
     });
 
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      request.body.text.should.equal('hi');
+      expect(request.body.text).toEqual('hi');
       return { text: 'world' };
     });
 
     Promise.delay(200).then(() => {
-      mwRequest.body.should.deep.equal({ text: 'hi' });
-      mwResult.should.deep.equal({ text: 'world' });
+      expect(mwRequest.body).toEqual({ text: 'hi' });
+      expect(mwResult).toEqual({ text: 'world' });
       done();
     });
   });
@@ -263,13 +257,13 @@ describe('middlewares', () => {
     });
 
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      request.body.text.should.equal('hi');
+      expect(request.body.text).toEqual('hi');
       throw new Error('terrible internal error');
     });
 
     Promise.delay(200).then(() => {
-      mwRequest.body.should.deep.equal({ text: 'hi' });
-      mwError.should.deep.equal({ message: 'terrible internal error' });
+      expect(mwRequest.body).toEqual({ text: 'hi' });
+      expect(mwError).toEqual({ message: 'terrible internal error' });
       done();
     });
   });
@@ -287,13 +281,13 @@ describe('middlewares', () => {
     });
 
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      request.body.text.should.equal('hi');
+      expect(request.body.text).toEqual('hi');
       throw new StellarError('simple validation error');
     });
 
     Promise.delay(200).then(() => {
-      mwRequest.body.should.deep.equal({ text: 'hi' });
-      mwError.should.deep.equal({ errors: {general: ['simple validation error']}, message: 'simple validation error' });
+      expect(mwRequest.body).toEqual({ text: 'hi' });
+      expect(mwError).toEqual({ errors: {general: ['simple validation error']}, message: 'simple validation error' });
       done();
     });
   });
@@ -304,16 +298,9 @@ describe('mock handler', () => {
   beforeEach(() => mockQueues(stellarHandler, 'testservice:resource:create'));
   afterEach(() => restoreQueues(stellarHandler));
 
-  it('calls the passed in handler', (done) => {
-    stellarHandler.create('testservice:resource', (request) => {
-      request.body.text.should.equal('hi');
-      done();
-    });
-  });
-
   it('if a result is returned and a respondTo is set, send a response with the result', (done) => {
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      request.body.text.should.equal('hi');
+      expect(request.body.text).toEqual('hi');
       return { text: 'world' };
     });
 
@@ -322,12 +309,12 @@ describe('mock handler', () => {
       const queue = stellarHandler.transport.queues[qName];
       const job = _.last(queue);
 
-      _.size(queue).should.equal(1);
-      job.jobId.should.equal(1);
-      job.queue.should.deep.equal({ name: qName });
-      job.data.headers.should.not.have.a.property('respondTo');
-      job.data.headers.source.should.be.present; // eslint-disable-line
-      job.data.body.should.deep.equal({ text: 'world' });
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers).not.toHaveProperty('respondTo');
+      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.body).toEqual({ text: 'world' });
       done();
     });
   });
@@ -335,7 +322,7 @@ describe('mock handler', () => {
 
   it('if an error is returned and a respondTo is set, send a error response', (done) => {
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      request.body.text.should.equal('hi');
+      expect(request.body.text).toEqual('hi');
       throw new Error('blah');
     });
 
@@ -344,20 +331,20 @@ describe('mock handler', () => {
       const queue = stellarHandler.transport.queues[qName];
       const job = _.last(queue);
 
-      _.size(queue).should.equal(1);
-      job.jobId.should.equal(1);
-      job.queue.should.deep.equal({ name: qName });
-      job.data.headers.should.not.have.a.property('respondTo');
-      job.data.headers.source.should.be.present; // eslint-disable-line
-      job.data.headers.errorType.should.equal('Error');
-      job.data.body.should.deep.equal({ message: 'blah' });
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers).not.toHaveProperty('respondTo');
+      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers.errorType).toEqual('Error');
+      expect(job.data.body).toEqual({ message: 'blah' });
       done();
     });
   });
 
   it('if validationErrors are returned and a respondTo is set, send a error response', (done) => {
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      request.body.text.should.equal('hi');
+      expect(request.body.text).toEqual('hi');
       const errors = new StellarError();
       errors.addPropertyError('x', 'blah');
       throw errors;
@@ -368,13 +355,13 @@ describe('mock handler', () => {
       const queue = stellarHandler.transport.queues[qName];
       const job = _.last(queue);
 
-      _.size(queue).should.equal(1);
-      job.jobId.should.equal(1);
-      job.queue.should.deep.equal({ name: qName });
-      job.data.headers.should.not.have.a.property('respondTo');
-      job.data.headers.source.should.be.present; // eslint-disable-line
-      job.data.headers.errorType.should.equal('StellarError');
-      job.data.body.errors.should.deep.equal({ x: ['blah'] });
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers).not.toHaveProperty('respondTo');
+      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers.errorType).toEqual('StellarError');
+      expect(job.data.body.errors).toEqual({ x: ['blah'] });
       done();
     });
   });
@@ -389,7 +376,7 @@ describe('mock pubsub', () => {
 
   it('fake subscribe handler', (done) => {
     defaultPubSub.subscribe(channel, (message) => {
-      message.text.should.equal('hi');
+      expect(message.text).toEqual('hi');
       done();
     });
     
@@ -401,7 +388,7 @@ describe('mock pubsub', () => {
 
   it('send fake publish - should send none', () => {
     defaultPubSub.publish(channel, { text: 'hi' });
-    _.size(defaultPubSub.transport.queues).should.equal(0);
+    expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(0);
   });
 
   it('send fake publish - should send one', (done) => {
@@ -410,8 +397,8 @@ describe('mock pubsub', () => {
         defaultPubSub
           .publish(channel, { text: 'hi' })
           .then(() => {
-            _.size(defaultPubSub.transport.queues).should.equal(1);
-            _.head(_.keys(defaultPubSub.transport.queues)).should.equal('POO');
+            expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(1);
+            expect(_.head(_.keys(defaultPubSub.transport.queues))).toEqual('POO');
             done();
           });
       });
@@ -423,7 +410,7 @@ describe('mock pubsub', () => {
              .map(i => defaultPubSub.transport.registerSubscriber(channel, `POO.${i}`)))
       .then(() => defaultPubSub.publish(channel, { text: 'hi' }))
       .then(() => {
-        _.size(defaultPubSub.transport.queues).should.equal(10);
+        expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(10);
         done();
       });
   });

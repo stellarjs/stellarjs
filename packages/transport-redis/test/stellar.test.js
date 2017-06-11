@@ -1,22 +1,30 @@
 /* eslint-disable */
-import { expect } from 'chai'; // eslint-disable-line
-import chai from 'chai';  // eslint-disable-line
-import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
 import Promise from 'bluebird';
 
 import {StellarPubSub, StellarRequest, StellarHandler, StellarError} from '@stellarjs/core';
 import RedisClient from '../src/config-redisclient';
-import { RedisTransport } from '../src/index';
+import transportFactory from '../src/index';
 
 const log = console;
-const redisTransport = new RedisTransport(log);
-const stellarRequest = new StellarRequest(redisTransport, 'test', console, 1000);
-const stellarHandler = new StellarHandler(redisTransport, 'test', console, 'testservice');
 
-chai.use(chaiAsPromised);
-chai.should();
+let redisClient;
+let redisTransport;
+let redisClientFactory;
+let stellarRequest;
+let stellarHandler;
 
-const redisClient = new RedisClient(log).newConnection();
+beforeAll(() => {
+  redisTransport = transportFactory({log});
+  redisClientFactory = new RedisClient(log);
+  redisClient = redisClientFactory.newConnection();
+  stellarRequest = new StellarRequest(redisTransport, 'test', log, 1000);
+  stellarHandler = new StellarHandler(redisTransport, 'test', log, 'testservice');
+});
+
+afterAll(() => {
+  // redisClientFactory.closeAll();
+});
+
 const clearRedis = (done) => {
   if (redisClient.options.db === 7) {
     log.info('Flush redis!!!');
@@ -45,7 +53,7 @@ describe('full integration req/response', () => {
 
     stellarRequest
       .get('testservice:resource', { text: 'hello' })
-      .then(result => result.should.deep.equal({ text: 'hello worlds' }))
+      .then(result => expect(result).toEqual({ text: 'hello worlds' }))
       .then(() => done());
   });
 
@@ -64,8 +72,8 @@ describe('full integration req/response', () => {
         stellarRequest.get('testservice2:resource', { text: 'bye' })
        ])
       .then(([result1, result2]) => {
-        result1.should.deep.equal({ text: 'hello worlds' })
-        result2.should.deep.equal({ text: 'bye worlds 2' })
+        expect(result1).toEqual({ text: 'hello worlds' });
+        expect(result2).toEqual({ text: 'bye worlds 2' });
       })
       .then(() => done());
   });
@@ -88,10 +96,10 @@ describe('full integration req/response', () => {
 
     stellarRequest
       .get('testservice:resource', { text: 'hello' })
-      .then(result => result.should.deep.equal({ text: 'hello worlds' }))
+      .then(result => expect(result).toEqual({ text: 'hello worlds' }))
       .then(() => {
-        handlerMw.should.equal(1);
-        requestMw.should.equal(1);
+        expect(handlerMw).toBe(1);
+        expect(requestMw).toBe(1);
         done();
       });
   });
@@ -109,7 +117,7 @@ describe('full integration req/response', () => {
       .get('testservice:resource2', { text: 'hello' })
       .then(() => done(new Error('fail')))
       .catch(StellarError, (e) => {
-        e.errors.should.deep.equal({ x: ['poop', 'pee'] });
+        expect(e.errors).toEqual({ x: ['poop', 'pee'] });
         done();
       });
   });
@@ -122,7 +130,7 @@ describe('full integration pub/sub per inbox', () => {
     const stellar = new StellarPubSub(redisTransport, 'test', console);
     stellar.subscribe('test:channel', (message) => {
       console.log('message received');
-      message.should.deep.equal({ text: 'hello world' });
+      expect(message).toEqual({ text: 'hello world' });
       done();
     }).then(() => stellar.publish('test:channel', { text: 'hello world' }));
   });
@@ -170,7 +178,7 @@ describe('full integration pub/sub per inbox', () => {
       .map(ss => ss.subscribe('ms:channel', (message) => {
         doneBy.push(ss.app);
         console.log(`message received by ${ss.app}`);
-        message.should.deep.equal({ text: 'hello world' });
+        expect(message).toEqual({ text: 'hello world' });
         if (doneBy.length === 4) {
           done();
         }
@@ -185,7 +193,7 @@ describe('full integration pub/sub per inbox', () => {
     const sub = new StellarPubSub(redisTransport, 'test6', console);
     const doneBy = [];
     const handler = i => (message) => {
-      message.should.deep.equal({ text: `hello world ${i}` });
+      expect(message).toEqual({ text: `hello world ${i}` });
       doneBy.push(1);
       if (doneBy.length === 4) {
         done();
@@ -213,7 +221,7 @@ describe('full integration pub/sub app', () => {
     const stellar = new StellarPubSub(redisTransport, 'test', console, 'P1');
     stellar.subscribe('test:channel', (message) => {
       console.log('message received');
-      message.should.deep.equal({ text: 'hello world' });
+      expect(message).toEqual({ text: 'hello world' });
       done();
     }).then(() => stellar.publish('test:channel', { text: 'hello world' }));
   });
@@ -236,7 +244,7 @@ describe('full integration pub/sub app', () => {
       .map(ss => ss.subscribe('test:channel', (message) => {
         doneBy.push(ss.app);
         console.log(`message received by ${ss.service}`);
-        message.should.deep.equal({ text: 'hello world' });
+        expect(message).toEqual({ text: 'hello world' });
         if (doneBy.length === 3) {
           done();
         }

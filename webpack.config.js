@@ -31,6 +31,7 @@ function webpackConfig(context) {
               presets: [
                 ['es2015', { modules: false }],
               ],
+              plugins: ["transform-object-rest-spread"],
             },
           },
         },

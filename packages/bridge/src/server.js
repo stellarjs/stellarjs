@@ -6,8 +6,9 @@ import stringify from 'safe-json-stringify';
 import {
   StellarCore,
   stellarRequest as stellarRequestFactory,
-  stellarSource } from '@stellarjs/core';
-import { configureStellar } from '@stellarjs/transport-redis';
+  stellarSource,
+  configureStellar } from '@stellarjs/core';
+import redisTransportFactory from '@stellarjs/transport-redis';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 
 const log = console;
@@ -30,10 +31,9 @@ server.handleRequest = function handleRequest(req, res) {
 
 let stellarRequest;
 function connectToMicroservices() {
-  return configureStellar({ log })
+  return configureStellar({ log, transportFactory: redisTransportFactory })
     .then(() => {
-      const val = stellarRequestFactory();
-      stellarRequest = val;
+      stellarRequest = stellarRequestFactory();
       stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
         _.assign(req.headers, options.session.headers);
         return next();

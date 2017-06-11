@@ -2,21 +2,25 @@
  * Created by arolave on 01/11/2016.
  */
 /* eslint-disable */
-import { expect } from 'chai'; // eslint-disable-line
-import chai from 'chai';  // eslint-disable-line
-import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line
 import _ from 'lodash';
 import Promise from 'bluebird';
 import RedisClient from '../src/config-redisclient';
 import { RedisTransport } from '../src/index';
 
 const log = console;
-const redisTransport = new RedisTransport(log);
+let redisClient;
+let redisTransport;
+let redisClientFactory;
 
-chai.use(chaiAsPromised);
-chai.should();
+beforeAll(() => {
+  redisTransport = new RedisTransport(log);
+  redisClientFactory = new RedisClient(log);
+  redisClient = redisClientFactory.newConnection()
+});
 
-const redisClient = new RedisClient(log).newConnection();
+afterAll(() => {
+  // redisClientFactory.closeAll();
+});
 
 const clearRedis = (done) => {
   if (redisClient.options.db === 7) {
@@ -40,14 +44,14 @@ describe('redis transport subscription', () => {
       .then(
         () => redisClient.zrange(redisTransport.constructor._subscribersKey(channel), 0, -1, 'WITHSCORES'))
       .then((subscribers) => {
-        _.filter(subscribers, (s, i) => i % 2 === 0).should.deep.equal([queue]);
-        _(subscribers).filter((s, i) => i % 2 === 1).forEach(ttl => ttl.should.be.above(Date.now()));
+        expect(_.filter(subscribers, (s, i) => i % 2 === 0)).toEqual([queue]);
+        _(subscribers).filter((s, i) => i % 2 === 1).forEach(ttl => expect(parseInt(ttl)).toBeGreaterThan(Date.now()));
         context.stopper();
       })
       .then(() => [redisClient.zrange(redisTransport.constructor._subscribersKey(channel), 0, -1, 'WITHSCORES')])
       .all()
       .then((subscribers) => {
-        subscribers.should.deep.equal([[]]);
+        expect(subscribers).toEqual([[]]);
         done();
       });
   });
@@ -62,7 +66,7 @@ describe('redis transport queue resources', () => {
     redisTransport.enqueue(queue, { message: 'test' })
       .then(() => redisTransport._getQueues())
       .then(queues => {
-        queues.should.deep.equal([queue])
+        expect(queues).toEqual([queue]);
         done();
       })
       // .then(
@@ -86,32 +90,32 @@ describe('removing unused queues', () => {
 
     redisTransport._registerQueue(queue)
       .then(stopper => _.assign(context, { stopper }))
-      .then(() => redisTransport.redis.countConnections().should.equal(baseConnections))
+      .then(() => expect(redisTransport.redis.countConnections()).toBe(baseConnections))
       .then(() => redisTransport.enqueue(queue, { message: 'test' }))
       .then(() => redisTransport._getQueues())
-      .then(queues => queues.should.deep.equal([queue]))
+      .then(queues => expect(queues).toEqual([queue]))
       .then(() => redisTransport._removeUnusedQueues('*:inbox'))
-      .then(res => res.should.equal(0))
-      .then(() => redisTransport.redis.countConnections().should.equal(baseConnections))
+      .then(res => expect(res).toBe(0))
+      .then(() => expect(redisTransport.redis.countConnections()).toBe(baseConnections))
       .then(() => redisClient.keys(`bull:${queue}:*`))
-      .then(keys => _.size(keys).should.equal(3))
+      .then(keys => expect(_.size(keys)).toBe(3))
       .delay(50)
       .then(() => context.stopper())
       .then(() => redisTransport._getQueues())
-      .then(queues => queues.should.deep.equal([]))
+      .then(queues => expect(queues).toEqual([]))
       .then(() => redisClient.keys(`bull:${queue}:*`))
       .then(keys => {
         console.log(keys);
-        _.size(keys).should.equal(3)
+        expect(_.size(keys)).toBe(3)
       })
       .then(() => redisTransport._removeUnusedQueues('*:inbox'))
-      .then(res => res.should.equal(1))
+      .then(res => expect(res).toBe(1))
       .then(() => redisClient.keys(`bull:*`))
       .then(keys => {
         console.log(keys);
-        _.size(keys).should.equal(0);
+        expect(_.size(keys)).toBe(0);
       })
-      .then(() => redisTransport.redis.countConnections().should.equal(baseConnections))
+      .then(() => expect(redisTransport.redis.countConnections()).toBe(baseConnections))
       .then(() => done());
   });
 });
@@ -129,15 +133,15 @@ describe('redis transport resources invalidation', () => {
     Promise.all([redisClient.zadd(redisTransport.constructor._subscribersKey(channel), score, queue),
                  redisClient.zadd(redisTransport.constructor._queueKey(), score, queue)])
       .then(() => redisTransport.getSubscribers(channel))
-      .then(subscribers => subscribers.should.deep.equal([queue]))
+      .then(subscribers => expect(subscribers).toEqual([queue]))
       .then(() => redisTransport._getQueues())
-      .then(queues => queues.should.deep.equal([queue]))
+      .then(queues => expect(queues).toEqual([queue]))
       .then(() => redisTransport._cleanResources())
       .delay(500)
       .then(() => redisTransport.getSubscribers(channel))
-      .then(subscribers => subscribers.should.deep.equal([]))
+      .then(subscribers => expect(subscribers).toEqual([]))
       .then(() => redisTransport._getQueues())
-      .then(queues => queues.should.deep.equal([]))
+      .then(queues => expect(queues).toEqual([]))
       .then(() => done());
   });
 });

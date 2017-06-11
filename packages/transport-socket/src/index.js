@@ -1,30 +1,16 @@
 /**
  * Created by arolave on 05/10/2016.
  */
-/* eslint-disable */
-/* global window */
-
-import { configureStellar as coreConfigure } from '@stellarjs/core';
 import WebsocketTransport from './WebsocketTransport';
-import assign from 'lodash/assign';
 
 let instance;
-function transportFactoryGenerator(socket, sendingOnly = false) {
-  const fn = (log) => {
-    if (!instance) {
-      instance = new WebsocketTransport(socket, log, sendingOnly);
-    }
-    return instance;
-  };
-  fn.type = `websocket`;
-  return fn;
+function transportFactory({ log, socket, sendingOnly = false }) {
+  log.info(`${process.pid}: @WebsocketTransportFactory returning instance`);
+  if (!instance) {
+    instance = new WebsocketTransport(socket, log, sendingOnly);
+  }
+  return instance;
 }
+transportFactory.type = `websocket`;
 
-function configureStellar(options) {
-  return coreConfigure(
-    assign(options, { transportFactory: transportFactoryGenerator(options.socket, options.sendingOnly === true)})
-  );
-}
-
-export { configureStellar, WebsocketTransport };
-                                                            
+export { transportFactory as default, WebsocketTransport };

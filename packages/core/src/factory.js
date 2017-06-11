@@ -5,6 +5,7 @@
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
 import size from 'lodash/size';
+import assign from 'lodash/assign';
 
 import StellarHandler from './StellarHandler';
 import StellarPubSub from './StellarPubSub';
@@ -42,12 +43,18 @@ function getSourceGenerator(value) {
   return _sourceGenerators[ value || process.env.STELLAR_SOURCE_GENERATOR || _defaultSourceGenerator ];
 }
 
-function configureStellar({ log, transportFactory, source, sourceGenerator, app = process.env.APP }) {
-  configureStellarLog(log);
+function configureTransport(transport, transportFactory, options) {
+  _transport = transport || transportFactory(options);
+  _log.info(`setting transport ${_transport}`);
+  return _transport;
+}
 
-  _transport = transportFactory(log);
+function configureStellar({ log, transport, transportFactory, source, sourceGenerator, app = process.env.APP, ...options }) {
   _app = app;
-  
+
+  configureStellarLog(log);
+  configureTransport(transport, transportFactory, assign({log}, options));
+
   if (source) {
     _log.info(`setting source ${_source}`);
     return Promise.resolve(doSetSource(source));  // overrides generated source

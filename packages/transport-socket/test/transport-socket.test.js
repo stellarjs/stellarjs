@@ -3,6 +3,6 @@
  */
 xdescribe('no tests', () => {
   xit('no test', () => {
-    
+    log.info('socket tests');
   });
 });
