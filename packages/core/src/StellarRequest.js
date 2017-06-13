@@ -84,51 +84,48 @@ export default class StellarRequest extends StellarCore {
 
   _doQueueRequest(queueName, body = {}, headers = {}, options = {}) {
     const allMiddlewares = [].concat(this.handlerChain, {
-      fn: (request, next, opts) => {
-        const inbox = StellarCore.getServiceInbox(queueName);
-        return this._enqueue(inbox, request)
+      fn: request => this._enqueue(StellarCore.getServiceInbox(queueName), request)
         // TODO need to response handling to after _executeMiddlewares
-          .then(job => new Promise((resolve, reject) => {
-            const requestId = `${StellarCore.getServiceInbox(queueName)}:${job.jobId}`;
+          .then(() => new Promise((resolve, reject) => {
             let requestTimer;
             if (this.requestTimeout && !options.requestOnly) {
               requestTimer = setTimeout(() => {
-                if (!this.inflightRequests[requestId]) {
+                if (!this.inflightRequests[headers.id]) {
                   return;
                 }
 
-                reject(
-                  new StellarError(
-                    `Timeout error: No response to job ${requestId} in ${this.requestTimeout}ms`)
-                );
+                this.log.warn(`@StellarRequest ${headers.id}: timeout after ${this.requestTimeout}ms`);
+                reject(new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`));
               }, this.requestTimeout);
             }
 
-            this.inflightRequests[requestId] = (responseJob) => {
+            this.inflightRequests[headers.id] = (responseJob) => {
               if (requestTimer) {
                 clearTimeout(requestTimer);
               }
 
-              delete this.inflightRequests[requestId];
-              if (opts.responseType === 'jobData') {
-                resolve(responseJob.data);
-              } else if (get(responseJob, 'data.headers.errorType') === 'StellarError') {
-                reject(new StellarError(responseJob.data.body));
+              delete this.inflightRequests[headers.id];
+              if (get(responseJob, 'data.headers.errorType') === 'StellarError') {
+                reject([new StellarError(responseJob.data.body), responseJob.data]);
               } else if (get(responseJob, 'data.headers.errorType')) {
-                reject(new Error(responseJob.data.body.message));
+                reject([new Error(responseJob.data.body.message), responseJob.data]);
               } else {
-                resolve(responseJob.data.body);
+                resolve(responseJob.data);
               }
             };
-          }));
-      },
+          })),
     });
 
     return this.sourceSemaphore
-      .then(() => this._executeMiddlewares(
-        allMiddlewares,
-        { headers: assign(headers, { respondTo: this.responseInbox, queueName }), body }, options)
-      );
+      .then(() => this.getNextId(queueName))
+      .then(id => assign(headers, { respondTo: this.responseInbox, id, queueName }))
+      .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
+      .then(jobData => (options.responseType === 'jobData' ? jobData : jobData.body))
+      .catch({ length: 2 }, ([error]) => error)
+      .catch((e) => {
+        this.log.error(`@StellarRequest: Unexpected error`, e);
+        return e;
+      });
   }
 }
 

@@ -110,10 +110,8 @@ function sendResponse(client, command, jobDataResp) {
   log.info(`@StellarBridge: bridging response: ${JSON.stringify(jobDataResp.headers)}`);
 
   const inbox = StellarCore.getServiceInbox(command.data.headers.queueName);
-  const headers = _.defaults(
-    { requestId: `${inbox}:${command.jobId}`, source: stellarSource() },
-    jobDataResp.headers
-  );
+  const requestId = command.data.headers.id || `${inbox}:${command.jobId}`;
+  const headers = _.defaults({ requestId, source: stellarSource() }, jobDataResp.headers);
 
   const queueName = StellarCore.getNodeInbox(command.data.headers.source);
   const obj = { headers, body: jobDataResp.body };

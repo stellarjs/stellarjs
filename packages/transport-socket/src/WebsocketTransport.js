@@ -2,6 +2,7 @@
  * Created by arolave on 06/10/2016.
  */
 import get from 'lodash/get';
+import last from 'lodash/last';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 
@@ -55,11 +56,16 @@ class WebsocketTransport {
     return this.enqueue(queueName, { headers: { channel, type: 'stopReactive' } });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  generateId() {
+    return Promise.resolve(`${Date.now() - WebsocketTransport.START_2016}:${Math.floor(Math.random() * 10000)}`);
+  }
+
   enqueue(queueName, obj) {
     return this.socket.then((s) => {
       const command = {
         queue: { name: queueName }, // TODO remove
-        jobId: `${Date.now() - WebsocketTransport.START_2016}:${Math.floor(Math.random() * 10000)}`,
+        jobId: last(obj.headers.id.split(':')),
         data: obj,
       };
       const str = JSON.stringify(command);
