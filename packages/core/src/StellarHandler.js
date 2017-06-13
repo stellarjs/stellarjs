@@ -1,6 +1,12 @@
 /**
  * Created by arolave on 25/09/2016.
  */
+import head from 'lodash/head';
+import isArray from 'lodash/isArray';
+import isPlainObject from 'lodash/isPlainObject';
+import forEach from 'lodash/forEach';
+import isFunction from 'lodash/isFunction';
+import forOwn from 'lodash/forOwn';
 import assign from 'lodash/assign';
 import lowerCase from 'lodash/lowerCase';
 import pick from 'lodash/pick';
@@ -38,6 +44,39 @@ though it processes the ${serviceInbox} queue`);
   _addHandler(url, messageHandler) {
     this.messageHandlers[url] = messageHandler;
     this._startProcessing(url);
+  }
+
+  _handleLoader(url, method, value) {
+    if (isArray(value)) {
+      const handler = head(value);
+      const middlewares = value.slice(1);
+      forEach(middlewares, m => this.use(`${url}:${method}`, m));
+      this.handleMethod(url, method, ({ headers, body }) => handler(headers, body));
+      return;
+    }
+
+    if (isFunction(value)) {
+      this.handleMethod(url, method, ({ headers, body }) => value(headers, body));
+    }
+  }
+
+  load(resource, loaders) {
+    forOwn(loaders, (value, method) => {
+      if (method === 'middlewares') {
+        forEach(value, m => this.use(resource, m));
+        return;
+      }
+
+      if (isPlainObject(value)) {
+        forOwn(value, (loader, action) => {
+          const url = action === 'default' ? resource : `${resource}:${action}`;
+          this._handleLoader(url, method, loader);
+        });
+        return;
+      }
+
+      this._handleLoader(resource, method, value);
+    });
   }
 
   get(url, handler) {
