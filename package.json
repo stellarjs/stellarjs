@@ -38,6 +38,7 @@
     "lodash": "^4.17.4",
     "sinon": "^1.17.4",
     "uglifyjs-webpack-plugin": "^0.4.3",
+    "webpack": "^2.5.1",
     "webpack-node-externals": "^1.6.0"
   }
 }
