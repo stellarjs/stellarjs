@@ -3,7 +3,6 @@
  */
 import head from 'lodash/head';
 import isArray from 'lodash/isArray';
-import slice from 'lodash/slice';
 import isPlainObject from 'lodash/isPlainObject';
 import forEach from 'lodash/forEach';
 import isFunction from 'lodash/isFunction';
@@ -50,7 +49,7 @@ though it processes the ${serviceInbox} queue`);
   _handleLoader(url, method, value) {
     if (isArray(value)) {
       const handler = head(value);
-      const middlewares = slice(value, 1);
+      const middlewares = value.slice(1);
       forEach(middlewares, m => this.use(`${url}:${method}`, m));
       this.handleMethod(url, method, ({ headers, body }) => handler(headers, body));
       return;
@@ -70,8 +69,8 @@ though it processes the ${serviceInbox} queue`);
 
       if (isPlainObject(value)) {
         forOwn(value, (loader, action) => {
-            const url = action === 'default' ? resource : `${resource}:${action}`;
-            this._handleLoader(url, method, loader);
+          const url = action === 'default' ? resource : `${resource}:${action}`;
+          this._handleLoader(url, method, loader);
         });
         return;
       }
