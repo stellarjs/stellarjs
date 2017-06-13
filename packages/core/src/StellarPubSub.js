@@ -25,14 +25,13 @@ export default class StellarPubSub extends StellarCore {
   }
 
   publish(channel, body, options = {}) {
-    const me = this;
-
     const headers = assign(this._getHeaders(options), { type: 'publish', service: this.service, channel });
-
     const allMiddlewares = [].concat(this.handlerChain, {
-      fn: message =>
-                this.transport.getSubscribers(channel)
-                    .each(queueName => me._enqueue(queueName, message)),
+      fn: message => this.transport.getSubscribers(channel)
+        .each(queueName => this.getNextId(channel).then((id) => {
+          assign(message.headers, { id });
+          return this._enqueue(queueName, message);
+        })),
     });
 
     return this._executeMiddlewares(allMiddlewares, { headers, body });

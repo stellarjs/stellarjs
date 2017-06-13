@@ -8,14 +8,18 @@ export function createMockTransport(autoProcess) {
   return {
     queues: {},
     subscribers: {},
-    jobCounters: 1,
+    jobCounter: 1,
     processData: {},
 
     reset(data) {
-      this.job = { jobId: this.jobCounter++, data };
+      this.job = { data };
       this.queues = {};
       this.subscribers = {};
       this.jobCounter = 1;
+    },
+
+    generateId(queueName) {
+      return Promise.resolve(this.jobCounter++);
     },
 
     getSubscribers(channel) {
@@ -42,17 +46,21 @@ export function createMockTransport(autoProcess) {
     },
 
     enqueue(queueName, data) {
+      console.info(`@MockTransport.enqueue queueName=${queueName} callback ${JSON.stringify(data)}`);
       return new Promise((resolve) => {
-        this.queues[queueName] = [{ data, jobId: this.jobCounter++, queue: { name: queueName } }];
+        this.queues[queueName] = [{ data, jobId: parseInt(_.last(data.headers.id.split(':'))), queue: { name: queueName } }];
         resolve(_.last(this.queues[queueName]));
       });
     },
 
     process(queueName, callback) {
+      console.info(`@MockTransport.process autoProcess=${autoProcess} queueName=${queueName}`);
       this.callback = callback;
 
       if (autoProcess) {
-        setTimeout(() => this.triggerJob(this.job));
+        setTimeout(() => {
+          this.triggerJob(this.job)
+        });
       }
       return new Promise.resolve();
     },

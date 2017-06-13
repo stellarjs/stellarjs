@@ -2,7 +2,14 @@
  * Created by arolave on 07/06/2017.
  */
 import Queue from 'bull';
-import _ from 'lodash';
+import assign from 'lodash/assign';
+import difference from 'lodash/difference';
+import forEach from 'lodash/forEach';
+import get from 'lodash/get';
+import last from 'lodash/last';
+import keys from 'lodash/keys';
+import map from 'lodash/map';
+import size from 'lodash/size';
 import Promise from 'bluebird';
 import RedisExclusiveTask from 'redis-exclusive-task';
 
@@ -66,8 +73,15 @@ class RedisTransport {
     return this._doRegistration(RedisTransport._queueKey(), queueName);
   }
 
+  generateId(queueName) {
+    return this.redis.defaultConnection.incr(`stlr:${queueName}:id`);
+  }
+
   enqueue(queueName, obj) {
-    return this._getEnqueuer(queueName).add(obj, { removeOnComplete: true, timeout: JOB_TIMEOUT });
+    const id = get(obj, 'headers.id');
+    const options = id ? { jobId: parseInt(last(id.split(':')), 10) } : {};
+    assign(options, { removeOnComplete: true, timeout: JOB_TIMEOUT });
+    return this._getEnqueuer(queueName).add(obj, options);
   }
 
   process(queueName, callback) {
@@ -75,7 +89,7 @@ class RedisTransport {
   }
 
   flush() {
-    _.forEach(_.keys(this.queues), (k) => {
+    forEach(keys(this.queues), (k) => {
       this.queues[k].close();
       delete this.queues[k];
     });
@@ -103,13 +117,16 @@ class RedisTransport {
         { match: RedisTransport._resourceKey('*'), count: 1000 });
       let numCleaned = 0;
 
-      stream.on('data', (keys) => {
+      stream.on('data', (resourceKeys) => {
+        this.log.info(`@RedisTransport.cleanResources: keys=${resourceKeys}`);
         const score = Date.now() - MINUTE_1;
-        numCleaned += _.size(keys);
-        _(keys)
-          .map((key => [key, this.redis.defaultConnection.zrangebyscore(key, 0, score)]))
-          .forEach(([key, queueNames]) =>
-                     Promise.each(queueNames, (queueName => this._unsetTempResource(key, queueName))));
+        numCleaned += size(resourceKeys);
+
+        Promise
+          .map(resourceKeys, resourceKey => [resourceKey, this.redis.defaultConnection.zrangebyscore(resourceKey, 0, score)])
+          .each(([resourceKey, queueNames]) => {
+            Promise.each(queueNames, (queueName => this._unsetTempResource(resourceKey, queueName)));
+          });
       });
 
       stream.on('end', () => {
@@ -123,11 +140,11 @@ class RedisTransport {
     return q.clean(grace, type, 5000)
       .delay(100)
       .then((jobs) => {
-        if (_.size(jobs) === 5000) {
+        if (size(jobs) === 5000) {
           return this._doClean(q, grace, type, numCleaned + 5000);
         }
 
-        const totalCleaned = numCleaned + _.size(jobs);
+        const totalCleaned = numCleaned + size(jobs);
         this.log.info(`@RedisTransport._doClean Cleaned ${totalCleaned} ${type} jobs out of ${q.name}`);
         return [q.name, type, totalCleaned];
       });
@@ -141,7 +158,7 @@ class RedisTransport {
 
   _removeUnusedQueues(inboxStyle) {
     const cleanOldJobs = q => Promise.all(
-      _.map(['completed', 'wait', 'active', 'failed'], jobState => this._doClean(q, TWO_WEEKS, jobState))
+      map(['completed', 'wait', 'active', 'failed'], jobState => this._doClean(q, TWO_WEEKS, jobState))
     );
 
     const delId = (qName) => {
@@ -161,9 +178,9 @@ class RedisTransport {
         this.log.info(`@RedisTransport._removeUnusedQueues: registeredQueues=${registeredQueues}`);
         return this._doRemoveUnusedQueues(inboxStyle, (bullQueueNames) => {
           this.log.info(`@RedisTransport._removeUnusedQueues: bullQueueNames=${bullQueueNames}`);
-          const unregisteredQueueNames = _.difference(bullQueueNames, registeredQueues);
+          const unregisteredQueueNames = difference(bullQueueNames, registeredQueues);
           this.log.info(`@RedisTransport._removeUnusedQueues: unregisteredQueueNames=${unregisteredQueueNames}`);
-          return Promise.all(_.map(unregisteredQueueNames, emptyQueue));
+          return Promise.all(map(unregisteredQueueNames, emptyQueue));
         });
       });
   }
@@ -172,11 +189,11 @@ class RedisTransport {
     const context = {};
     return this.redis.defaultConnection
       .scan(cursor, 'MATCH', `bull:${inboxStyle}:id`, 'COUNT', '1000')
-      .then(results => _.assign(context, { nextCursor: results[0], rawNames: results[1] }))
-      .then(() => _.map(context.rawNames, n => n.split(':').slice(1, -1).join(':')))
+      .then(results => assign(context, { nextCursor: results[0], rawNames: results[1] }))
+      .then(() => map(context.rawNames, n => n.split(':').slice(1, -1).join(':')))
       .then(queueNames => handler(queueNames))
       .then((cleanedQueues) => {
-        const newCount = totalCount + _.size(cleanedQueues);
+        const newCount = totalCount + size(cleanedQueues);
         return context.nextCursor === '0'
           ? newCount
           : this._doRemoveUnusedQueues(inboxStyle, handler, context.nextCursor, newCount);

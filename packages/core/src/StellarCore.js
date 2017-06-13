@@ -3,8 +3,10 @@
  */
 import assign from 'lodash/assign';
 import first from 'lodash/first';
+import get from 'lodash/get';
+import isArray from 'lodash/isArray';
+import pick from 'lodash/pick';
 import Promise from 'bluebird';
-
 import stringify from 'safe-json-stringify';
 
 class StellarCore {
@@ -26,9 +28,12 @@ class StellarCore {
     this.log.info(`Restarting Stellar Obj: ${source}`);
   }
 
+  static getServiceName(queueName) {
+    return first(queueName.split(':'));
+  }
+
   static getServiceInbox(queueName) {
-    const serviceName = first(queueName.split(':'));
-    return `stlr:s:${serviceName}:inbox`;
+    return `stlr:s:${this.getServiceName(queueName)}:inbox`;
   }
 
   static getNodeInbox(nodeName) {
@@ -47,6 +52,11 @@ class StellarCore {
     if (this.transport.flush) {
       this.transport.flush();
     }
+  }
+
+  getNextId(queueName) {
+    const prefix = StellarCore.getServiceName(queueName);
+    return this.transport.generateId(prefix).then(id => `${prefix}:${id}`);
   }
 
   /**
@@ -74,7 +84,43 @@ class StellarCore {
     );
   }
 
-  _executeMiddlewares(handlers, jobData, options) { // eslint-disable-line class-methods-use-this
+  _prepareResponse(jobData, val) {
+    return this
+      .getNextId(jobData.headers.respondTo)
+      .then((id) => {
+        const convertError = e => pick(e, ['errors', 'message']);
+
+        const headers = assign(this._getHeaders(), {
+          id,
+          type: 'response',
+          requestId: jobData.headers.id,
+          queueName: jobData.headers.respondTo,
+        });
+        let body = val;
+
+        if (val instanceof Error) {
+          assign(headers, { errorType: val.constructor.name });
+          body = convertError(val);
+        }
+
+        return { headers, body };
+      });
+  }
+
+  _handlerResult(jobData, options, result) {
+    return get(result, 'headers.type') === 'response' || jobData.headers.type !== 'request'
+      ? result
+      : this._prepareResponse(jobData, result);
+  }
+
+  _handlerRejection(jobData, options, error) {
+    if (isArray(error) || jobData.headers.type !== 'request') {
+      return Promise.reject(error);
+    }
+    return this._prepareResponse(jobData, error).then(response => Promise.reject([error, response]));
+  }
+
+  _executeMiddlewares(handlers, jobData, options = {}) { // eslint-disable-line class-methods-use-this
     function match(url, pattern) {
       return url.match(pattern);
     }
@@ -84,13 +130,17 @@ class StellarCore {
       const next = () => runMw(i + 1);
 
       if (handlers.length === i) {
+        this.log.error(`@StellarCore ${jobData}: Final Handler should not call next`);
         return Promise.reject(new Error('Final Handler should not call next'));
       }
 
       // this.log.info(`@StellarCore.executeMiddlewares: run ${i} ${stringify(jobData, this.log)}`);
       if (handlers[i].pattern === undefined ||
         match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
-        return handlers[i].fn(jobData, next, options);
+        return Promise
+          .try(() => handlers[i].fn(jobData, next, options))
+          .then(result => this._handlerResult(jobData, options, result))
+          .catch(error => this._handlerRejection(jobData, options, error));
       }
 
       return next();
@@ -111,7 +161,7 @@ class StellarCore {
 
   _process(queueName, callback) {
     return this.transport.process(queueName, (job) => {
-      this.log.info(`@StellarCore.process ${queueName}: ${job.jobId}: ${stringify(job.data)}`);
+      this.log.info(`@StellarCore.process ${job.data.headers.id}: ${stringify(job.data)}`);
       return callback(job);
     });
   }

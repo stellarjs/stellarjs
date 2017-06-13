@@ -11,8 +11,12 @@ const stellarRequest = new StellarRequest(createMockTransport(), 'test', console
 const stellarHandler = new StellarHandler(createMockTransport(true), 'test', console, 'testservice');
 const defaultPubSub = new StellarPubSub(createMockTransport(), 'test', console);
 
-const mockQueues = (obj, channel) => {
-    obj.transport.reset({ headers: { queueName: channel, respondTo: 'myQueue', channel }, body: { text: 'hi' } });
+const mockRequest = (obj, queueName) => {
+    obj.transport.reset({ headers: { queueName, respondTo: 'myQueue', type:'request' }, body: { text: 'hi' } });
+};
+
+const mockPublish = (obj, channel) => {
+  obj.transport.reset({ headers: { channel, respondTo: 'myQueue', type: 'publish' }, body: { text: 'hi' } });
 };
 
 const restoreQueues = (obj) => {
@@ -26,8 +30,9 @@ const restoreQueues = (obj) => {
 
 describe('mock request response', () => {
   // beforeEach(clearRedis);
-  beforeEach(() => mockQueues(stellarRequest, 'testservice:resource:create'));
+  beforeEach(() => mockRequest(stellarRequest, 'testservice:resource:create'));
   afterEach(() => restoreQueues(stellarRequest));
+
   it('send request', (done) => {
     const result = stellarRequest.create('testservice:resource', { text: 'toot' });
     setTimeout(() => {
@@ -38,6 +43,7 @@ describe('mock request response', () => {
 
       expect(queue).toHaveLength(1);
       expect(job.jobId).toEqual(1);
+      expect(job.data.headers.id).toEqual('testservice:1');
       expect(job.data.headers.queueName).toEqual('testservice:resource:create');
       expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
       expect(job.data.headers.source).toEqual(stellarRequest.source);
@@ -52,11 +58,11 @@ describe('mock request response', () => {
     expect(result.then).toBeInstanceOf(Function);
 
     result.then(() => {
-      done(new Error('fail'));
+      done(new Error('should send a StellarError 1'));
     }).catch(StellarError, (e) => {
       expect(e.message).toEqual('Timeout error: No response to job stlr:s:testservice:inbox:1 in 1000ms');
       done();
-    });
+    }).catch(e => new Error('should send a StellarError 2'));
   });
 
   it('receive response', (done) => {
@@ -65,7 +71,8 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[`${qName}:${job.jobId}`]({ data: { body: { text: 'world' } } });
+      expect(job.data.headers.id).toEqual(`testservice:${job.jobId}`);
+      stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'}, body: { text: 'world' } } });
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -79,8 +86,8 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[`${qName}:${job.jobId}`](
-        { data: { headers: { errorType: 'Error' }, body: { message: 'blah' } } }
+      stellarRequest.inflightRequests[job.data.headers.id](
+        { data: { headers: { type: 'response', errorType: 'Error' }, body: { message: 'blah' } } }
       );
 
       result
@@ -98,8 +105,8 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[`${qName}:${job.jobId}`](
-        { data: { headers: { errorType: 'StellarError' }, body: { message: 'blah', errors: { x: ['shit'] } } } }
+      stellarRequest.inflightRequests[job.data.headers.id](
+        { data: { headers: { type: 'response', errorType: 'StellarError' }, body: { message: 'blah', errors: { x: ['shit'] } } } }
       );
 
       result
@@ -117,7 +124,7 @@ describe('no-timeout behaviour on mock request response', () => {
   // beforeEach(clearRedis);
 
   // const noTimeoutStellarRequest = new StellarRequest(redisTransport, 'alttest', console);
-  beforeEach(() => mockQueues(stellarRequest, 'testservice:resource:create'));
+  beforeEach(() => mockRequest(stellarRequest, 'testservice:resource:create'));
   beforeEach(() => stellarRequest.requestTimeout = undefined);
   afterEach(() => restoreQueues(stellarRequest));
   afterEach(() => stellarRequest.requestTimeout = 1000);
@@ -129,13 +136,12 @@ describe('no-timeout behaviour on mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[`${qName}:${job.jobId}`]({ data: { body: { text: 'world' } } });
+      stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'},  body: { text: 'world' } } });
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
         .then(() => done());
     });
-
   });
 
   it('send no-timeout request that doesnt respond', (done) => {
@@ -155,8 +161,8 @@ describe('no-timeout behaviour on mock request response', () => {
 
 describe('middlewares', () => {
   // beforeEach(clearRedis);
-  beforeEach(() => mockQueues(stellarRequest));
-  beforeEach(() => mockQueues(stellarHandler, 'testservice:resource:create'));
+  beforeEach(() => mockRequest(stellarRequest));
+  beforeEach(() => mockRequest(stellarHandler, 'testservice:resource:create'));
   afterEach(() => restoreQueues(stellarRequest));
   afterEach(() => restoreQueues(stellarHandler));
 
@@ -245,6 +251,60 @@ describe('middlewares', () => {
     });
   });
 
+  it('reject error from handler mw ', (done) => {
+    stellarHandler.use('.*', (jobData, next) => {
+      return Promise.reject(new Error('boo hoo'));
+    });
+
+    stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
+      fail('shouldnt be called');
+      // expect(request.body.text).toEqual('hi');
+      return { text: 'world' };
+    });
+
+    Promise.delay(1000).then(() => {
+      const qName = 'myQueue';
+      const queue = stellarHandler.transport.queues[qName];
+      const job = _.last(queue);
+
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers).not.toHaveProperty('respondTo');
+      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers.errorType).toEqual('Error'); // eslint-disable-line
+      expect(job.data.body).toEqual({ message: 'boo hoo' });
+      done();
+    });
+  });
+
+  it('throw error from handler mw ', (done) => {
+    stellarHandler.use('.*', (jobData, next) => {
+      throw new Error('boo hoo');
+    });
+
+    stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
+      fail('shouldnt be called');
+      // expect(request.body.text).toEqual('hi');
+      return { text: 'world' };
+    });
+
+    Promise.delay(1000).then(() => {
+      const qName = 'myQueue';
+      const queue = stellarHandler.transport.queues[qName];
+      const job = _.last(queue);
+
+      expect(queue).toHaveLength(1);
+      expect(job.jobId).toEqual(1);
+      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers).not.toHaveProperty('respondTo');
+      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers.errorType).toEqual('Error'); // eslint-disable-line
+      expect(job.data.body).toEqual({ message: 'boo hoo' });
+      done();
+    });
+  });
+
   it('use handler mw in error state', (done) => {
     let mwRequest;
     let mwError;
@@ -295,7 +355,7 @@ describe('middlewares', () => {
 
 describe('mock handler', () => {
   // beforeEach(clearRedis);
-  beforeEach(() => mockQueues(stellarHandler, 'testservice:resource:create'));
+  beforeEach(() => mockRequest(stellarHandler, 'testservice:resource:create'));
   afterEach(() => restoreQueues(stellarHandler));
 
   it('if a result is returned and a respondTo is set, send a response with the result', (done) => {
@@ -371,7 +431,7 @@ describe('mock pubsub', () => {
   const channel = 'testpubsub:channel';
 
   // beforeEach(clearRedis);
-  beforeEach(() => mockQueues(defaultPubSub, channel));
+  beforeEach(() => mockPublish(defaultPubSub, channel));
   afterEach(() => restoreQueues(defaultPubSub));
 
   it('fake subscribe handler', (done) => {

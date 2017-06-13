@@ -1,9 +1,7 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-import assign from 'lodash/assign';
 import lowerCase from 'lodash/lowerCase';
-import pick from 'lodash/pick';
 
 import Promise from 'bluebird';
 
@@ -65,25 +63,7 @@ though it processes the ${serviceInbox} queue`);
 
     return this._addHandler(url, (job) => {
       const startTime = Date.now();
-
-      const prepareResponse = (val) => {
-        const convertError = e => pick(e, ['errors', 'message']);
-        const requestId = `${StellarCore.getServiceInbox(job.data.headers.queueName)}:${job.jobId}`;
-
-        this.log.info(`@StellarHandler marshalling response for ${requestId}`);
-        const headers = assign(this._getHeaders(), {
-          type: 'response',
-          requestId,
-        });
-        let body = val;
-
-        if (val instanceof Error) {
-          assign(headers, { errorType: val.constructor.name });
-          body = convertError(val);
-        }
-
-        return { headers, body };
-      };
+      const jobData = job.data;
 
       const logComplete = (result, e) => {
         const executionTime = Date.now() - startTime;
@@ -98,24 +78,20 @@ though it processes the ${serviceInbox} queue`);
         return result;
       };
 
-      const sendResponse = (jobData, response, e) =>
+      const sendResponse = (response, e) =>
         this._enqueue(jobData.headers.respondTo, response)
           .then(() => logComplete(response, e));
 
-      const allMiddlewares = [].concat(this.handlerChain, {
-        fn: jobData => Promise
-          .try(() => handler(jobData))
-          .then(result => prepareResponse(result))
-          .catch((error) => {
-            const response = prepareResponse(error);
-            return Promise.reject([error, response]);
-          }),
-      });
+      const allMiddlewares = [].concat(this.handlerChain, { fn: jd => Promise.try(() => handler(jd)) });
 
       return this
-        ._executeMiddlewares(allMiddlewares, job.data)
-        .then(response => sendResponse(job.data, response))
-        .catch(([e, response]) => sendResponse(job.data, response, e));
+        ._executeMiddlewares(allMiddlewares, jobData)
+        .then(response => sendResponse(response))
+        .catch({ length: 2 }, ([e, response]) => sendResponse(response, e))
+        .catch((e) => {
+          this.log.error(`@StellarHandler ${jobData.headers.id}: Unexpected error`, e);
+          throw e;
+        });
     });
   }
 }
