@@ -358,6 +358,148 @@ describe('mock handler', () => {
   beforeEach(() => mockRequest(stellarHandler, 'testservice:resource:create'));
   afterEach(() => restoreQueues(stellarHandler));
 
+  it('_handleLoader 1 element array contains handler no middleware should send a response with the result',
+     (done) => {
+        stellarHandler._handleLoader('testservice:resource', 'create', [(headers, body) => {
+            expect(body.text).toEqual('hi');
+            return { text: 'world' };
+        }]);
+
+        Promise.delay(200).then(() => {
+            const qName = 'myQueue';
+            const queue = stellarHandler.transport.queues[qName];
+            const job = _.last(queue);
+
+            expect(queue).toHaveLength(1);
+            expect(job.jobId).toEqual(1);
+            expect(job.queue).toEqual({ name: qName });
+            expect(job.data.headers).not.toHaveProperty('respondTo');
+            expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+            expect(job.data.body).toEqual({ text: 'world' });
+            done();
+        });
+    });
+
+  it('_handleLoader 2 elements array contains handler and middleware should send a response with the result and call middleware',
+     (done) => {
+
+        let middlewareRun = false;
+        stellarHandler._handleLoader('testservice:resource', 'create', [(headers, body) => {
+            expect(body.text).toEqual('hi');
+            return { text: 'world' };
+        },(request, next) => {
+            middlewareRun = true;
+            return next();
+        }]);
+
+        Promise.delay(200).then(() => {
+            const qName = 'myQueue';
+            const queue = stellarHandler.transport.queues[qName];
+            const job = _.last(queue);
+
+            expect(queue).toHaveLength(1);
+            expect(job.jobId).toEqual(1);
+            expect(job.queue).toEqual({ name: qName });
+            expect(job.data.headers).not.toHaveProperty('respondTo');
+            expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+            expect(job.data.body).toEqual({ text: 'world' });
+            expect(middlewareRun).toEqual(true);
+            done();
+        });
+    });
+
+  it('_handleLoader 3 elements array contains handler and 2 middlewares should send a response with the result and call both middlewares',
+     (done) => {
+
+        let middleware1Run = false;
+        let middleware2Run = false;
+        stellarHandler._handleLoader('testservice:resource', 'create', [(headers, body) => {
+            expect(body.text).toEqual('hi');
+            return { text: 'world' };
+        },(request, next) => {
+            middleware1Run = true;
+            return next();
+        }, (request, next) => {
+            middleware2Run = true;
+            return next();
+        }]);
+
+        Promise.delay(200).then(() => {
+            const qName = 'myQueue';
+            const queue = stellarHandler.transport.queues[qName];
+            const job = _.last(queue);
+
+            expect(queue).toHaveLength(1);
+            expect(job.jobId).toEqual(1);
+            expect(job.queue).toEqual({ name: qName });
+            expect(job.data.headers).not.toHaveProperty('respondTo');
+            expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+            expect(job.data.body).toEqual({ text: 'world' });
+            expect(middleware1Run).toEqual(true);
+            expect(middleware2Run).toEqual(true);
+            done();
+        });
+    });
+
+  it('_handleLoader undefined should do nothing', (done) => {
+        stellarHandler._handleLoader('testservice:resource', 'create', undefined)
+        Promise.delay(200).then(() => {
+            const qName = 'myQueue';
+            const queue = stellarHandler.transport.queues[qName];
+            const job = _.last(queue);
+
+            expect(queue).toEqual(undefined);
+            expect(job).toEqual(undefined);
+            done();
+        });
+    });
+
+  it('_handleLoader with handler function should send a response with the result', (done) => {
+        stellarHandler._handleLoader('testservice:resource', 'create', (headers, body) => {
+            expect(body.text).toEqual('hi');
+            return { text: 'world' };
+        });
+
+        Promise.delay(200).then(() => {
+            const qName = 'myQueue';
+            const queue = stellarHandler.transport.queues[qName];
+            const job = _.last(queue);
+
+            expect(queue).toHaveLength(1);
+            expect(job.jobId).toEqual(1);
+            expect(job.queue).toEqual({ name: qName });
+            expect(job.data.headers).not.toHaveProperty('respondTo');
+            expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+            expect(job.data.body).toEqual({ text: 'world' });
+            done();
+        });
+    });
+
+  it('load one create handler should send a response with the result', (done) => {
+        stellarHandler.load('testservice:resource', {
+          create: (headers, body) => {
+              expect(body.text).toEqual('hi');
+              return { text: 'world' };
+          }
+        });
+
+        Promise.delay(200).then(() => {
+            const qName = 'myQueue';
+            const queue = stellarHandler.transport.queues[qName];
+            const job = _.last(queue);
+
+            expect(queue).toHaveLength(1);
+            expect(job.jobId).toEqual(1);
+            expect(job.queue).toEqual({ name: qName });
+            expect(job.data.headers).not.toHaveProperty('respondTo');
+            expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+            expect(job.data.body).toEqual({ text: 'world' });
+            done();
+        });
+    });
+
+
+
   it('if a result is returned and a respondTo is set, send a response with the result', (done) => {
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
       expect(request.body.text).toEqual('hi');
