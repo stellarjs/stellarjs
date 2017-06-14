@@ -160,7 +160,7 @@ class StellarCore {
     return this.transport
       .enqueue(queueName, obj)
       .catch((e) => {
-        this.log.error(`@StellarCore.enqueue error`, e);
+        this.log.error(e, `@StellarCore.enqueue error`);
         throw e;
       });
   }

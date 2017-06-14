@@ -111,7 +111,7 @@ though it processes the ${serviceInbox} queue`);
         } else if (e instanceof StellarError) {
           this.log.warn(`${url} stellarErrors ${JSON.stringify(e.messageKeys())} (${executionTime}ms)`);
         } else {
-          this.log.error(`${url} Error (${executionTime}ms)`, e);
+          this.log.error(e, `${url} Error (${executionTime}ms)`);
         }
 
         return result;
@@ -128,7 +128,7 @@ though it processes the ${serviceInbox} queue`);
         .then(response => sendResponse(response))
         .catch({ length: 2 }, ([e, response]) => sendResponse(response, e))
         .catch((e) => {
-          this.log.error(`@StellarHandler ${jobData.headers.id}: Unexpected error`, e);
+          this.log.error(e, `@StellarHandler ${jobData.headers.id}: Unexpected error`);
           throw e;
         });
     });
