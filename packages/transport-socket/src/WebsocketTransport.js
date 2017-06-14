@@ -80,7 +80,7 @@ class WebsocketTransport {
       try {
         callback(command);
       } catch (e) {
-        this.log.warn('invalid message sent to stellar websocket transport', e);
+        this.log.warn(e, 'invalid message sent to stellar websocket transport');
       }
     });
     return Promise.resolve();
