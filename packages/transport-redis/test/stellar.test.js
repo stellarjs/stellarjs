@@ -105,7 +105,7 @@ describe('full integration req/response', () => {
   });
 
 
-  it('test request response error', (done) => {
+  it('test request response stellar error', (done) => {
     stellarHandler.get('testservice:resource2', ({ body }) => {
       const errors = new StellarError();
       errors.addPropertyError('x', 'poop');
@@ -115,7 +115,7 @@ describe('full integration req/response', () => {
 
     stellarRequest
       .get('testservice:resource2', { text: 'hello' })
-      .then(() => done(new Error('fail')))
+      .then(() => fail('fail'))
       .catch(StellarError, (e) => {
         expect(e.errors).toEqual({ x: ['poop', 'pee'] });
         done();
@@ -140,7 +140,7 @@ describe('full integration pub/sub per inbox', () => {
     const stellar = new StellarPubSub(redisTransport, 'test0', console);
     stellar.subscribe('test:channel', () => {
       console.log('message received');
-      done(new Error('should not receive a message'));
+      fail('should not receive a message');
     }).then((stopper) => {
       setTimeout(() => stopper().then(() => stellar.publish('test:channel', { text: 'hello world' })), 500);
       setTimeout(done, 1000);
@@ -152,7 +152,7 @@ describe('full integration pub/sub per inbox', () => {
     stellar
       .subscribe('test:channel', () => {
         console.log('1. message received');
-        done(new Error('should not receive a message'));
+        fail('should not receive a message');
       })
       .then(stopper => setTimeout(() => stopper()))
       .then(() => stellar.subscribe('test:channel', () => {

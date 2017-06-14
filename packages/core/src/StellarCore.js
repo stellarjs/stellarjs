@@ -4,7 +4,6 @@
 import assign from 'lodash/assign';
 import first from 'lodash/first';
 import get from 'lodash/get';
-import isArray from 'lodash/isArray';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
 import stringify from 'safe-json-stringify';
@@ -107,14 +106,14 @@ class StellarCore {
       });
   }
 
-  _handlerResult(jobData, options, result) {
+  _handlerResult(jobData, result) {
     return get(result, 'headers.type') === 'response' || jobData.headers.type !== 'request'
       ? result
       : this._prepareResponse(jobData, result);
   }
 
-  _handlerRejection(jobData, options, error) {
-    if (isArray(error) || jobData.headers.type !== 'request') {
+  _handlerRejection(jobData, error) {
+    if (Array.isArray(error) || jobData.headers.type !== 'request') {
       return Promise.reject(error);
     }
     return this._prepareResponse(jobData, error).then(response => Promise.reject([error, response]));
@@ -139,8 +138,8 @@ class StellarCore {
         match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
         return Promise
           .try(() => handlers[i].fn(jobData, next, options))
-          .then(result => this._handlerResult(jobData, options, result))
-          .catch(error => this._handlerRejection(jobData, options, error));
+          .then(result => this._handlerResult(jobData, result))
+          .catch(error => this._handlerRejection(jobData, error));
       }
 
       return next();
