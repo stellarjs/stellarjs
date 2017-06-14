@@ -18,8 +18,8 @@ const PUBLISH_ACTIONS = {
 //     setTimeout(kongEverySecond, 10000);
 // }
 
-handler.get('stellarBridge:ping', () => ({ text: `pong` }));
+handler.get('sampleService:ping', () => ({ text: `pong` }));
 
-handler.handleRequest('stellarBridge:king:subscribe', () => ({ text: `kong` }));
+handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
 
 // setTimeout(kongEverySecond, 2000);

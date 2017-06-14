@@ -165,7 +165,7 @@ const socketWrapper = {
         try {
           jam = JSON.parse(m);
         } catch (e) {
-          log.error('@StellarEngineIO: message ignored', m);
+          log.error(e, `@StellarEngineIO: message ignored ${m}`);
           return;
         }
 
@@ -199,7 +199,7 @@ const socketWrapper = {
       });
 
       socketAttempt.on('error', (e) => {
-        log.error(`Socket error`, e);
+        log.error(e, `Socket error`);
         this.trigger('error');
         if (this.state === 'connecting') {
           reject('Connect failed');

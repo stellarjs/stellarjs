@@ -18,15 +18,6 @@ const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
   return new StellarPubSub(transport, 'test', console, 1000);
 };
 
-const restoreQueues = (obj) => {
-  stellarHandler.handlerChain = [];
-  stellarRequest.handlerChain = [];
-
-  if (obj instanceof StellarHandler) {
-    StellarHandler.isProcessing = new Set();
-  }
-};
-
 describe('mock request response', () => {
   it('send request', (done) => {
     const stellarRequest = getStellarRequest();

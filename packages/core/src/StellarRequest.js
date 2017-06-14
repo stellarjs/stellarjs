@@ -128,7 +128,7 @@ export default class StellarRequest extends StellarCore {
         if (Array.isArray(e)) { // array is the expected format
           throw e[0];
         } else {
-          this.log.error(`@StellarRequest: Unexpected error`, e);
+          this.log.error(e, `@StellarRequest: Unexpected error`);
           throw e;
         }
       });
