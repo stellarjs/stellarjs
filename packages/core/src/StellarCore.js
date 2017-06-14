@@ -4,6 +4,7 @@
 import assign from 'lodash/assign';
 import first from 'lodash/first';
 import get from 'lodash/get';
+import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
 import stringify from 'safe-json-stringify';
@@ -107,13 +108,14 @@ class StellarCore {
   }
 
   _handlerResult(jobData, result) {
-    return get(result, 'headers.type') === 'response' || jobData.headers.type !== 'request'
-      ? result
-      : this._prepareResponse(jobData, result);
+    if (get(result, 'headers.type') === 'response' || !includes(['request', 'reactive'], jobData.headers.type)) {
+      return result;
+    }
+    return this._prepareResponse(jobData, result);
   }
 
   _handlerRejection(jobData, error) {
-    if (Array.isArray(error) || jobData.headers.type !== 'request') {
+    if (Array.isArray(error) || !includes(['request', 'reactive'], jobData.headers.type)) {
       return Promise.reject(error);
     }
     return this._prepareResponse(jobData, error).then(response => Promise.reject([error, response]));
@@ -149,7 +151,7 @@ class StellarCore {
   }
 
   _enqueue(queueName, obj) {
-    this.log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj, this.log)}`);
+    this.log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj)}`);
     return this.transport
       .enqueue(queueName, obj)
       .catch((e) => {

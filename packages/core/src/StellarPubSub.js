@@ -6,7 +6,7 @@ import forEach from 'lodash/forEach';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
 
-import uuid from 'uuid';
+import uuid from 'uuid/v4';
 
 import StellarCore from './StellarCore';
 
@@ -50,7 +50,7 @@ export default class StellarPubSub extends StellarCore {
   }
 
   registerSubscription(channel, messageHandler) {
-    const subscription = uuid.v4();
+    const subscription = uuid();
     this._addHandler(channel, subscription, messageHandler);
 
     return this.sourceSemaphore
