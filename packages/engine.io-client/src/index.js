@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import eio from 'engine.io-client';
+import eio from 'engine.io-client/engine.io';
 import { stellarRequest, configureStellar } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 
