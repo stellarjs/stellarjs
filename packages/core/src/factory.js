@@ -13,7 +13,7 @@ import StellarRequest from './StellarRequest';
 
 const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 30000;
 
-let _log = null;
+let _log = console;
 function configureStellarLog(stellarLog) {
   if (stellarLog) {
     _log = stellarLog;
