@@ -28,7 +28,7 @@ describe('call server', () => {
         tokenType: 'API',
         eioConfig: { upgrade: false },
       }))
-      .then(() => stellarSocket.stellar.get('sampleService:ping'))
+      .then((stellar) => stellar.get('sampleService:ping'))
       .then((result) => {
         console.info(JSON.stringify(result));
         expect(result.text).toBe('pong');
