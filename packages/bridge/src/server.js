@@ -21,7 +21,6 @@ const server = engine.listen(port, { transports: ['websocket', 'polling'] }, () 
 
 const originalHandler = server.handleRequest.bind(server);
 server.handleRequest = function handleRequest(req, res) {
-  log.info(`handleRequest:${req.method}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -109,8 +108,8 @@ function sendResponse(client, command, jobDataResp) {
 
   log.info(`@StellarBridge: bridging response: ${JSON.stringify(jobDataResp.headers)}`);
 
-  const inbox = StellarCore.getServiceInbox(command.data.headers.queueName);
-  const requestId = command.data.headers.id || `${inbox}:${command.jobId}`;
+  const prefix = StellarCore.getIdPrefix(command.data.headers.queueName);
+  const requestId = command.data.headers.id || `${prefix}:${command.jobId}`;
   const headers = _.defaults({ requestId, source: stellarSource() }, jobDataResp.headers);
 
   const queueName = StellarCore.getNodeInbox(command.data.headers.source);
@@ -121,16 +120,13 @@ function sendResponse(client, command, jobDataResp) {
 
 function bridgeReactive(client, requestHeaders) {
   return (subscriptionData, channel) => {
-    const body = subscriptionData.body;
     log.info(`@StellarBridge: bridging subscription: ${JSON.stringify(subscriptionData)}`);
-    const headers = _.defaults(
-      { channel, source: stellarSource() },
-      subscriptionData.headers
-    );
-    return client.enqueue(
-      `stlr:n:${requestHeaders.source}:subscriptionInbox`, // hard coded from StellarPubSub pattern
-      { headers, body }
-    );
+
+    const body = subscriptionData.body;
+    const headers = _.defaults({ channel, source: stellarSource() }, subscriptionData.headers);
+
+    // queueName hard coded from StellarPubSub pattern
+    return client.enqueue(`stlr:n:${requestHeaders.source}:subscriptionInbox`, { headers, body });
   };
 }
 
@@ -305,10 +301,5 @@ server.on('connection', (socket) => {
     });
 });
 
-// _.assign(newSessionHandlers, {
-//   operation: loadOperation,
-//   user: loadUser,
-//   session: startSession
-// });
-
+// TODO add middlewares, errorsHanlders, instrumentation and newSessionhandlers,
 export { errorHandlers, newSessionHandlers };
