@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/bridge",
-  "version": "0.4.4",
+  "version": "0.4.6",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
@@ -27,7 +27,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/engine.io-client": "^0.4.4",
+    "@stellarjs/engine.io-client": "^0.4.6",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",
@@ -37,9 +37,9 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.4.4",
-    "@stellarjs/transport-redis": "^0.4.4",
-    "@stellarjs/transport-socket": "^0.4.4",
+    "@stellarjs/core": "^0.4.6",
+    "@stellarjs/transport-redis": "^0.4.6",
+    "@stellarjs/transport-socket": "^0.4.6",
     "bluebird": "3.4.7",
     "engine.io": "^3.1.0",
     "lodash": "^4.17.4",

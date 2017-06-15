@@ -86,16 +86,19 @@ export default class StellarRequest extends StellarCore {
     const allMiddlewares = [].concat(this.handlerChain, {
       fn: request => this._enqueue(StellarCore.getServiceInbox(queueName), request)
         // TODO need to response handling to after _executeMiddlewares
-          .then(() => new Promise((resolve, reject) => {
+          .then(job => new Promise((resolve, reject) => {
             let requestTimer;
             if (this.requestTimeout && !options.requestOnly) {
               requestTimer = setTimeout(() => {
                 if (!this.inflightRequests[headers.id]) {
+                  this.log.error(`@StellarRequest ${headers.id}: timeout for missing inflightRequest ${this.requestTimeout}ms`);
                   return;
                 }
 
                 this.log.warn(`@StellarRequest ${headers.id}: timeout after ${this.requestTimeout}ms`);
-                reject(new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`));
+                delete this.inflightRequests[headers.id];
+                const error = new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`);
+                this._prepareResponse(job.data, error).then(response => reject([error, response]));
               }, this.requestTimeout);
             }
 
@@ -121,10 +124,13 @@ export default class StellarRequest extends StellarCore {
       .then(id => assign(headers, { respondTo: this.responseInbox, id, queueName }))
       .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
       .then(jobData => (options.responseType === 'jobData' ? jobData : jobData.body))
-      .catch({ length: 2 }, ([error]) => error)
       .catch((e) => {
-        this.log.error(`@StellarRequest: Unexpected error`, e);
-        return e;
+        if (Array.isArray(e)) { // array is the expected format
+          throw e[0];
+        } else {
+          this.log.error(e, `@StellarRequest: Unexpected error`);
+          throw e;
+        }
       });
   }
 }

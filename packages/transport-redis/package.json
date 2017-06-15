@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-redis",
-  "version": "0.4.4",
+  "version": "0.4.6",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
@@ -48,7 +48,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.4.4",
+    "@stellarjs/core": "^0.4.6",
     "bluebird": "3.4.7",
     "bull": "https://github.com/sloops77/bull/archive/a5135def39ae0957a682c21df362b1f67dc93c3a.tar.gz",
     "ioredis": "^2.4.0",
