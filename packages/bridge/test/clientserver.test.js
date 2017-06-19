@@ -3,7 +3,6 @@
  */
 import Promise from 'bluebird';
 import child_process from 'child_process';
-import stellarSocket from '@stellarjs/engine.io-client';
 
 let proc;
 beforeAll(() => {
@@ -18,17 +17,21 @@ afterAll(() => {
 
 describe('call server', () => {
   it('should work', (done) => {
+    let stellarSocket;
     Promise
-      .delay(4000)
-      .then(() => stellarSocket.connect('localhost:8091', {
-        tryToReconnect: false,
-        secure: false,
-        userId: '123',
-        token: '123',
-        tokenType: 'API',
-        eioConfig: { upgrade: false },
-      }))
-      .then((stellar) => stellar.get('sampleService:ping'))
+      .delay(3000)
+      .then(() => {
+        stellarSocket = require('@stellarjs/engine.io-client').default;
+        stellarSocket.connect('localhost:8091', {
+          tryToReconnect: false,
+          secure: false,
+          userId: '123',
+          token: '123',
+          tokenType: 'API',
+          eioConfig: { upgrade: false },
+        });
+        return stellarSocket.stellar.get('sampleService:ping')
+      })
       .then((result) => {
         console.info(JSON.stringify(result));
         expect(result.text).toBe('pong');
