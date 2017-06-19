@@ -43,7 +43,7 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
 }
 
 function stellarSocketFactory(eio) {
-  configureStellar({ log, transportFactory }).tap(() => log.info('@StellarClient initialized'));
+  configureStellar({ log, transportFactory }).then(() => log.info('@StellarClient initialized'));
 
   return {
     socket: null,
