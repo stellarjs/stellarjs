@@ -112,7 +112,7 @@ function sendResponse(client, command, jobDataResp) {
   const requestId = command.data.headers.id || `${prefix}:${command.jobId}`;
   const headers = _.defaults({ requestId, source: stellarSource() }, jobDataResp.headers);
 
-  const queueName = StellarCore.getNodeInbox(command.data.headers.source);
+  const queueName = command.data.headers.respondTo;
   const obj = { headers, body: jobDataResp.body };
   log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj, log)}`);
   return client.enqueue(queueName, obj);

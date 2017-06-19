@@ -43,11 +43,14 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
 }
 
 function stellarSocketFactory(eio) {
-  const socketWrapper = {
+  configureStellar({ log, transportFactory }).tap(() => log.info('@StellarClient initialized'));
+
+  return {
     socket: null,
     handlers: {},
     state: 'disconnected',
     userId: null,
+    stellar: stellarRequest(),
     _reconnect(url, options) {
       log.info(`@StellarEngineIO: Reconnecting`);
       // eslint-disable-next-line no-use-before-define
@@ -69,6 +72,7 @@ function stellarSocketFactory(eio) {
     },
     connect(url, options) {
       log.info(`@StellarEngineIO.connect`);
+
       tryToReconnect = options.tryToReconnect !== false;
       if (options.sendPings) {
         this.on('open', () => {
@@ -199,7 +203,9 @@ function stellarSocketFactory(eio) {
             this.trigger('close');
             this.state = 'disconnected';
             this.socket = null;
-            this._reconnect(url, { userId, token, secure });
+            if (tryToReconnect) {
+              this._reconnect(url, { userId, token, secure });
+            }
           }
         });
 
@@ -226,15 +232,7 @@ function stellarSocketFactory(eio) {
         this.socket.close();
       }
     },
-  }
-
-
-  configureStellar({ log, transportFactory }).then(() => {
-    socketWrapper.stellar = stellarRequest();
-    log.info('@StellarClient initialized');
-  });
-
-  return socketWrapper;
+  };
 };
 
 export default stellarSocketFactory;
