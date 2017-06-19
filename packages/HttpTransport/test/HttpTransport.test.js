@@ -2,6 +2,7 @@ import Promise from 'bluebird';
 import express from 'express';
 import bodyParser from 'body-parser';
 import request from 'request';
+import get from 'lodash/get';
 
 import HttpTransport from '../src/HttpTransport';
 
@@ -53,7 +54,8 @@ describe('HttpTransport tests', () => {
       .delay(500)
       .then(function () {
         sendMockRequest((error, response, body) => {
-          expect(body.test).toBe('test');
+          const commandBody = get(body, 'body');
+          expect(commandBody.test).toBe('test');
           done();
         });
       });

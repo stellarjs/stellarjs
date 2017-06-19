@@ -1,10 +1,15 @@
-/**
- * Created by arolave on 06/10/2016.
- */
 import get from 'lodash/get';
 import last from 'lodash/last';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
+
+function getRequestId(command) {
+  return get(command, 'headers.id');
+}
+
+function getQueueName(command) {
+  return get(command, 'headers.queueName');
+}
 
 class HttpTransport {
   constructor({server, log, sendingOnly}) {
@@ -17,16 +22,15 @@ class HttpTransport {
     this.listenOnServer();
   }
 
-  addRequestListener() {
-
-  }
-
   listenOnServer() {
     console.log(HttpTransport.ENQUEUE_URI)
-    this.server.post(HttpTransport.ENQUEUE_URI, function (req, res) {
-      const command = get(req, 'body.command');
-      res.send(200);
-    })
+    this.server.post(HttpTransport.ENQUEUE_URI, (req, res) => {
+      const command = get(req, 'body.data');
+      this.requestHandler.once(getRequestId(command), (command) => {
+        res.send(command);
+      });
+      this.messageHandler.emit(getQueueName(command), command);
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -34,32 +38,16 @@ class HttpTransport {
     return Promise.resolve(`${Date.now() - HttpTransport.START_2016}:${Math.floor(Math.random() * 10000)}`);
   }
 
-  enqueue(queueName, obj) {
-    // const requestId = obj.data.headers.requestId;
-    // return this.socket.then((s) => {
-    //   const command = {
-    //     queue: { name: queueName }, // TODO remove
-    //     jobId: last(obj.headers.id.split(':')),
-    //     data: obj,
-    //   };
-    //   const str = JSON.stringify(command);
-    //
-    //   s.send(str);
-    //   return command;
-    // });
+  enqueue(queueName, command) {
+    this.requestHandler.emit(getRequestId(command), command);
+    return Promise.resolve();
   }
 
   process(queueName, callback) {
-    // listeners.push();
-    // this.messageHandler.on(queueName, (command) => {
-    //   const requestId = get(command, 'data.headers.id');
-    //   try {
-    //     callback(command);
-    //   } catch (e) {
-    //     this.log.warn('invalid message sent to stellar websocket transport');
-    //   }
-    // });
-    // return Promise.resolve();
+    this.messageHandler.on(queueName, (command) => {
+      callback(command);
+    });
+    return Promise.resolve();
   }
 }
 
