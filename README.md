@@ -8,3 +8,9 @@ StellarJS uses lerna (independent versioning) to coordinate the build, test and 
 > lerna bootstrap
 > lerna run test
 ```
+
+Currently bootstrap will not work on first install. 
+If you experience issues with bootstrap run:
+```
+> yarn
+```
