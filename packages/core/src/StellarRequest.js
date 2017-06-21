@@ -83,8 +83,9 @@ export default class StellarRequest extends StellarCore {
   }
 
   _doQueueRequest(queueName, body = {}, headers = {}, options = {}) {
+    const inbox = StellarCore.getServiceInbox(queueName);
     const allMiddlewares = [].concat(this.handlerChain, {
-      fn: request => this._enqueue(StellarCore.getServiceInbox(queueName), request)
+      fn: request => this._enqueue(inbox, request)
         // TODO need to response handling to after _executeMiddlewares
           .then(job => new Promise((resolve, reject) => {
             let requestTimer;
@@ -120,7 +121,7 @@ export default class StellarRequest extends StellarCore {
     });
 
     return this.sourceSemaphore
-      .then(() => this.getNextId(queueName))
+      .then(() => this.getNextId(inbox))
       .then(id => assign(headers, { respondTo: this.responseInbox, id, queueName }))
       .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
       .then(jobData => (options.responseType === 'jobData' ? jobData : jobData.body))

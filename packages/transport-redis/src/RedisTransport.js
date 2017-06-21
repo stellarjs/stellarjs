@@ -5,8 +5,6 @@ import Queue from 'bull';
 import assign from 'lodash/assign';
 import difference from 'lodash/difference';
 import forEach from 'lodash/forEach';
-import get from 'lodash/get';
-import last from 'lodash/last';
 import keys from 'lodash/keys';
 import map from 'lodash/map';
 import size from 'lodash/size';
@@ -78,10 +76,7 @@ class RedisTransport {
   }
 
   enqueue(queueName, obj) {
-    const id = get(obj, 'headers.id');
-    const options = id ? { jobId: parseInt(last(id.split(':')), 10) } : {};
-    assign(options, { removeOnComplete: true, timeout: JOB_TIMEOUT });
-    return this._getEnqueuer(queueName).add(obj, options);
+    return this._getEnqueuer(queueName).add(obj, { removeOnComplete: true, timeout: JOB_TIMEOUT });
   }
 
   process(queueName, callback) {

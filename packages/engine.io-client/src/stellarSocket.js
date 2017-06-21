@@ -233,7 +233,7 @@ function stellarSocketFactory(eio) {
       }
     },
   };
-};
+}
 
 export default stellarSocketFactory;
 

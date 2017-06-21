@@ -10,6 +10,7 @@ import uuid from 'uuid/v4';
 
 import StellarCore from './StellarCore';
 
+// TODO make service & source tracing information
 export default class StellarPubSub extends StellarCore {
   constructor(transport, source, log, service) {
     super(transport, source, log);
@@ -25,15 +26,15 @@ export default class StellarPubSub extends StellarCore {
   }
 
   publish(channel, body, options = {}) {
-    const headers = assign(this._getHeaders(options), { type: 'publish', service: this.service, channel });
     const allMiddlewares = [].concat(this.handlerChain, {
-      fn: message => this.transport.getSubscribers(channel)
-        .each(queueName => this.getNextId(channel).then((id) => {
-          assign(message.headers, { id });
-          return this._enqueue(queueName, message);
+      fn: ({ headers }) => this.transport.getSubscribers(channel)
+        .each(queueName => this.getNextId(queueName).then((id) => {
+          const finalHeaders = assign({ id }, headers);
+          return this._enqueue(queueName, { headers: finalHeaders, body });
         })),
     });
 
+    const headers = assign(this._getHeaders(options), { type: 'publish', service: this.service, channel });
     return this._executeMiddlewares(allMiddlewares, { headers, body });
   }
 

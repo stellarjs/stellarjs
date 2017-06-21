@@ -14,7 +14,7 @@ const getStellarHandler = (queueName, body = { text: 'hi' }) => {
   return new StellarHandler(transport, 'test', console, 1000);
 };
 const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
-  const transport = new MockTransport({ headers: { channel, respondTo: 'myQueue', type: 'publish' }, body });
+  const transport = new MockTransport({ headers: { channel, type: 'publish' }, body });
   return new StellarPubSub(transport, 'test', console, 1000);
 };
 
@@ -29,8 +29,7 @@ describe('mock request response', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.data.headers.id).toEqual('testservice:1');
+      expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
       expect(job.data.headers.queueName).toEqual('testservice:resource:create');
       expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
       expect(job.data.headers.source).toEqual(stellarRequest.source);
@@ -47,7 +46,7 @@ describe('mock request response', () => {
     result.then(() => {
       fail('should send a StellarError 1');
     }).catch(StellarError, (e) => {
-      expect(e.message).toEqual('Timeout error: No response to job testservice:1 in 1000ms');
+      expect(e.message).toEqual('Timeout error: No response to job stlr:s:testservice:inbox:1 in 1000ms');
       done();
     });
   });
@@ -59,7 +58,7 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      expect(job.data.headers.id).toEqual(`testservice:${job.jobId}`);
+      expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
       stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'}, body: { text: 'world' } } });
 
       result
@@ -75,7 +74,7 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      expect(job.data.headers.id).toEqual(`testservice:${job.jobId}`);
+      expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
       stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'}, body: [{ text: 'world' }] } });
 
       result
@@ -176,7 +175,7 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
+      expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
       expect(job.data.headers.queueName).toEqual('testservice:resource:get');
       expect(job.data.headers.userId).toEqual(1);
       expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
@@ -211,7 +210,7 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
+      expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
       expect(job.data.headers.queueName).toEqual('testservice:resource:get');
       expect(middlewareRun).toEqual({
                                          ".*:create": false,
@@ -273,8 +272,7 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.headers.errorType).toEqual('Error'); // eslint-disable-line
@@ -301,8 +299,7 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.headers.errorType).toEqual('Error'); // eslint-disable-line
@@ -377,8 +374,7 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.body).toEqual({ text: 'world' });
@@ -400,8 +396,7 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.body).toEqual([{ text: 'world' }]);
@@ -424,8 +419,7 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.headers.errorType).toEqual('Error');
@@ -450,8 +444,7 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.headers.errorType).toEqual('StellarError');
@@ -478,8 +471,7 @@ describe('handler loaders', () => {
          const job = _.last(queue);
 
          expect(queue).toHaveLength(1);
-         expect(job.jobId).toEqual(1);
-         expect(job.queue).toEqual({ name: qName });
+         expect(job.data.headers.id).toEqual('myQueue:2');
          expect(job.data.headers).not.toHaveProperty('respondTo');
          expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
          expect(job.data.body).toEqual({ text: 'world' });
@@ -507,8 +499,7 @@ describe('handler loaders', () => {
          const job = _.last(queue);
 
          expect(queue).toHaveLength(1);
-         expect(job.jobId).toEqual(1);
-         expect(job.queue).toEqual({ name: qName });
+         expect(job.data.headers.id).toEqual('myQueue:2');
          expect(job.data.headers).not.toHaveProperty('respondTo');
          expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
          expect(job.data.body).toEqual({ text: 'world' });
@@ -541,8 +532,7 @@ describe('handler loaders', () => {
          const job = _.last(queue);
 
          expect(queue).toHaveLength(1);
-         expect(job.jobId).toEqual(1);
-         expect(job.queue).toEqual({ name: qName });
+         expect(job.data.headers.id).toEqual('myQueue:2');
          expect(job.data.headers).not.toHaveProperty('respondTo');
          expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
          expect(job.data.body).toEqual({ text: 'world' });
@@ -581,8 +571,7 @@ describe('handler loaders', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.body).toEqual({ text: 'world' });
@@ -606,8 +595,7 @@ describe('handler loaders', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.jobId).toEqual(1);
-      expect(job.queue).toEqual({ name: qName });
+      expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
       expect(job.data.body).toEqual({ text: 'world' });
@@ -628,7 +616,7 @@ describe('mock pubsub', () => {
     });
     
     setTimeout(
-      () => defaultPubSub.transport.triggerJob(defaultPubSub.transport.job),
+      () => defaultPubSub.transport.triggerJob(defaultPubSub.transport.job, defaultPubSub.subscriptionInbox),
       5
     );
   });
@@ -644,19 +632,19 @@ describe('mock pubsub', () => {
     const defaultPubSub = getDefaultPubSub(channel);
 
     defaultPubSub.transport.registerSubscriber(channel, 'POO')
+      .then(() => defaultPubSub.publish(channel, { text: 'hi' }))
       .then(() => {
-        defaultPubSub
-          .publish(channel, { text: 'hi' })
-          .then(() => {
-            expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(1);
-            expect(_.head(_.keys(defaultPubSub.transport.queues))).toEqual('POO');
-            done();
-          });
+        expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(1);
+        expect(_.head(_.keys(defaultPubSub.transport.queues))).toEqual('POO');
+        const job = _.head(defaultPubSub.transport.queues['POO']);
+        expect(job.data.headers.id).toEqual(`POO:1`);
+        done();
       });
   });
 
   it('send fake publish - should send N', (done) => {
     const defaultPubSub = getDefaultPubSub(channel);
+    const allIds = [];
 
     Promise
       .all(_.range(10)
@@ -664,7 +652,14 @@ describe('mock pubsub', () => {
       .then(() => defaultPubSub.publish(channel, { text: 'hi' }))
       .then(() => {
         expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(10);
-        done();
-      });
+        return _.keys(defaultPubSub.transport.queues);
+      })
+      .each((key) => {
+        const job = _.head(defaultPubSub.transport.queues[key]);
+        expect(job.data.headers.id).toMatch(new RegExp(`^${key}`));
+        expect(allIds).not.toContain(job.data.headers.id);
+        allIds.push(job.data.headers.id);
+      })
+      .then(() => done());
   });
 });

@@ -3,13 +3,13 @@
  */
 import Promise from 'bluebird';
 import _ from 'lodash';
+import StellarCore from '../src/StellarCore';
 
 class MockTransport {
   constructor(data = {}, autoProcess = false) {
     this.queues = {};
     this.subscribers = {};
     this.jobCounter = 1;
-    this.processData = {};
     this.autoProcess = autoProcess;
     this.job = { data };
   }
@@ -44,7 +44,7 @@ class MockTransport {
   enqueue(queueName, data) {
     console.info(`@MockTransport.enqueue queueName=${queueName} callback ${JSON.stringify(data)}`);
     return new Promise((resolve) => {
-      this.queues[queueName] = [{ data, jobId: parseInt(_.last(data.headers.id.split(':'))), queue: { name: queueName } }];
+      this.queues[queueName] = [{ data }];
       resolve(_.last(this.queues[queueName]));
     });
   }
@@ -61,9 +61,17 @@ class MockTransport {
     return new Promise.resolve();
   }
 
+  getNextId(inbox) {
+    return this.generateId(inbox).then(id => `${inbox}:${id}`);
+  }
+
   triggerJob(job) {
-    console.info(`triggerJob ${JSON.stringify(job)}`);
-    this.callback(job || this.job);
+    this.getNextId(StellarCore.getNodeInbox('testservice'))
+      .then((id) => {
+        _.set(job, 'data.headers.id', id);
+        console.info(`triggerJob ${JSON.stringify(job)}`);
+        this.callback(job);
+      });
   }
 }
 
