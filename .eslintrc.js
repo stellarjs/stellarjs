@@ -18,6 +18,9 @@ module.exports = {
             imports: "always-multiline",
             exports: "always-multiline"
         }],
+        'import/named': 'error',
+        'import/default': 'error',
+        'import/namespace': 'error',
     },
     "parserOptions": {
         "ecmaVersion": 6,

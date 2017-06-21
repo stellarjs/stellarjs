@@ -32,11 +32,6 @@ class StellarCore {
     return first(queueName.split(':'));
   }
 
-  static getIdPrefix(queueName) {
-    const parts = queueName.split(':');
-    return parts[1] === 'n' ? `${parts[1]}:${parts[2]}` : parts[0];
-  }
-
   static getServiceInbox(queueName) {
     return `stlr:s:${this.getServiceName(queueName)}:inbox`;
   }
@@ -59,9 +54,8 @@ class StellarCore {
     }
   }
 
-  getNextId(queueName) {
-    const prefix = StellarCore.getIdPrefix(queueName);
-    return this.transport.generateId(prefix).then(id => `${prefix}:${id}`);
+  getNextId(inbox) {
+    return this.transport.generateId(inbox).then(id => `${inbox}:${id}`);
   }
 
   /**

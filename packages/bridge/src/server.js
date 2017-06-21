@@ -4,7 +4,6 @@ import _ from 'lodash';
 import stringify from 'safe-json-stringify';
 
 import {
-  StellarCore,
   stellarRequest as stellarRequestFactory,
   stellarSource,
   configureStellar } from '@stellarjs/core';
@@ -108,13 +107,13 @@ function sendResponse(client, command, jobDataResp) {
 
   log.info(`@StellarBridge: bridging response: ${JSON.stringify(jobDataResp.headers)}`);
 
-  const prefix = StellarCore.getIdPrefix(command.data.headers.queueName);
-  const requestId = command.data.headers.id || `${prefix}:${command.jobId}`;
-  const headers = _.defaults({ requestId, source: stellarSource() }, jobDataResp.headers);
-
+  // TODO drop || `${prefix}:${command.jobId}` after july2017
+  const requestId = command.data.headers.id || `${command.data.headers.respondTo}:${command.jobId}`;
   const queueName = command.data.headers.respondTo;
+
+  const headers = _.defaults({ requestId, queueName, source: stellarSource() }, jobDataResp.headers);
   const obj = { headers, body: jobDataResp.body };
-  log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj, log)}`);
+  log.info(`@StellarBridge.enqueue ${queueName}: ${stringify(obj, log)}`);
   return client.enqueue(queueName, obj);
 }
 
