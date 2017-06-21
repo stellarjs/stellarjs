@@ -10,7 +10,6 @@ class MockTransport {
     this.queues = {};
     this.subscribers = {};
     this.jobCounter = 1;
-    this.processData = {};
     this.autoProcess = autoProcess;
     this.job = { data };
   }
