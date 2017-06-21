@@ -46,11 +46,17 @@ function startSession(socket) {
     sessionId: socket.id,
     ip: _.get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
-    registerStopper: (channel, stopper) => _.assign(this.reactiveStoppers, { [channel]: () => {
-      log.info(`@StellarBridge: Session ${this.sessionId}: stopped subscription ${channel}`);
-      stopper();
-      delete this.reactiveStoppers[channel];
-    } }),
+    registerStopper(channel, stopper) {
+      _.assign(this.reactiveStoppers,
+        {
+          [channel]() {
+            log.info(`@StellarBridge: Session ${this.sessionId}: stopped subscription ${channel}`);
+            stopper();
+            delete this.reactiveStoppers[channel];
+          },
+        }
+      );
+    },
     offlineFns: [() => {
       log.info(`@StellarBridge: Session ${this.sessionId} ended session`);
       delete this[socket.id];
@@ -113,7 +119,7 @@ function sendResponse(client, command, jobDataResp) {
 
   const headers = _.defaults({ requestId, queueName, source: stellarSource() }, jobDataResp.headers);
   const obj = { headers, body: jobDataResp.body };
-  log.info(`@StellarBridge.enqueue ${queueName}: ${stringify(obj, log)}`);
+  log.info(`@StellarBridge.enqueue ${queueName}: ${stringify(obj)}`);
   return client.enqueue(queueName, obj);
 }
 
@@ -121,11 +127,12 @@ function bridgeReactive(client, requestHeaders) {
   return (subscriptionData, channel) => {
     log.info(`@StellarBridge: bridging subscription: ${JSON.stringify(subscriptionData)}`);
 
-    const body = subscriptionData.body;
-    const headers = _.defaults({ channel, source: stellarSource() }, subscriptionData.headers);
+    const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
+    const headers = _.defaults({ channel, queueName, source: stellarSource() }, subscriptionData.headers);
+    const obj = { headers, body: subscriptionData.body };
 
-    // queueName hard coded from StellarPubSub pattern
-    return client.enqueue(`stlr:n:${requestHeaders.source}:subscriptionInbox`, { headers, body });
+    log.info(`@StellarBridge.enqueue ${queueName}: ${stringify(obj)}`);
+    return client.enqueue(queueName, obj);
   };
 }
 

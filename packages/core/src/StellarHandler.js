@@ -107,11 +107,14 @@ though it processes the ${serviceInbox} queue`);
       const logComplete = (result, e) => {
         const executionTime = Date.now() - startTime;
         if (!e) {
-          this.log.info(`${url} processed in ${executionTime}ms`);
+          this.log.info(`@StellarHandler(${jobData.headers.id}) processed in ${executionTime}ms`);
         } else if (e instanceof StellarError) {
-          this.log.warn(`${url} stellarErrors ${JSON.stringify(e.messageKeys())} (${executionTime}ms)`);
+          // eslint-disable-next-line max-len
+          this.log.warn(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ StellarErrors: e.messageKeys(), requestHeaders: jobData.headers })} (${executionTime}ms)`);
         } else {
-          this.log.error(e, `${url} Error (${executionTime}ms)`);
+          // eslint-disable-next-line max-len
+          this.log.error(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ Error: e.message, requestHeaders: jobData.headers })} (${executionTime}ms)`);
+          this.log.error(e);
         }
 
         return result;
