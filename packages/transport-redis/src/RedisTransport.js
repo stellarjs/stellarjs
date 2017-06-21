@@ -84,6 +84,7 @@ class RedisTransport {
   }
 
   flush() {
+    this._doCleanResources(-DEFAULT_INTERVAL * 2);
     forEach(keys(this.queues), (k) => {
       this.queues[k].close();
       delete this.queues[k];
@@ -105,8 +106,16 @@ class RedisTransport {
   }
 
   _cleanResources() {
+    this._doCleanResources(MINUTE_1);
+  }
+
+  _doCleanResources(expiryWithin) {
     const startTime = Date.now();
-    this.log.info(`@RedisTransport.cleanResources: started`);
+    const score = startTime - expiryWithin;
+
+    this.log.info(`@RedisTransport.cleanResources: started for resources expiring ${
+      expiryWithin >= 0 ? 'before last' : 'in next'} ${Math.abs(expiryWithin) / MINUTE_1} minutes`);
+
     return new Promise((resolve) => {
       const stream = this.redis.defaultConnection.scanStream(
         { match: RedisTransport._resourceKey('*'), count: 1000 });
@@ -114,7 +123,6 @@ class RedisTransport {
 
       stream.on('data', (resourceKeys) => {
         this.log.info(`@RedisTransport.cleanResources: keys=${resourceKeys}`);
-        const score = Date.now() - MINUTE_1;
         numCleaned += size(resourceKeys);
 
         Promise

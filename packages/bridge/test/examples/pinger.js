@@ -5,7 +5,7 @@ import '../../src/server';
 import { stellarAppPubSub, stellarHandler } from '@stellarjs/core'
 
 const handler = stellarHandler();
-const publish = stellarAppPubSub();
+const publisher = stellarAppPubSub();
 
 const PUBLISH_ACTIONS = {
     CREATED: 'CREATED',
@@ -13,13 +13,13 @@ const PUBLISH_ACTIONS = {
     REMOVED: 'REMOVED',
 };
 
-// function kongEverySecond() {
-//     publish('stellarBridge:kong:stream', { text: `kong` }, { action: PUBLISH_ACTIONS.UPDATED });
-//     setTimeout(kongEverySecond, 10000);
-// }
+function kongEveryHalfSecond() {
+  publisher.publish('stellarBridge:kong:stream', { text: `kong` }, { action: PUBLISH_ACTIONS.UPDATED });
+  setTimeout(kongEveryHalfSecond, 500);
+}
 
 handler.get('sampleService:ping', () => ({ text: `pong` }));
 
 handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
 
-// setTimeout(kongEverySecond, 2000);
+setTimeout(kongEveryHalfSecond, 500);
