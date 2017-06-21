@@ -258,7 +258,7 @@ describe('middlewares', () => {
     const stellarHandler = getStellarHandler('testservice:resource:create');
 
     stellarHandler.use('.*', (jobData, next) => {
-      return Promise.reject(new Error('boo hoo'));
+      return Promise.reject(new StellarError('boo hoo'));
     });
 
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
@@ -275,8 +275,8 @@ describe('middlewares', () => {
       expect(job.data.headers.id).toEqual('myQueue:2');
       expect(job.data.headers).not.toHaveProperty('respondTo');
       expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-      expect(job.data.headers.errorType).toEqual('Error'); // eslint-disable-line
-      expect(job.data.body).toEqual({ message: 'boo hoo' });
+      expect(job.data.headers.errorType).toEqual('StellarError'); // eslint-disable-line
+      expect(job.data.body).toEqual({"errors": {"general": ["boo hoo"]},  message: 'boo hoo' });
       done();
     });
   });
