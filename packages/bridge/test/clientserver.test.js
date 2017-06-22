@@ -4,9 +4,9 @@
 import Promise from 'bluebird';
 import child_process from 'child_process';
 import RedisClient from '@stellarjs/transport-redis/lib-es6/config-redisclient';
+import { StellarError } from '@stellarjs/core';
 
 let redisClient;
-
 const clearRedis = () => {
   redisClient = new RedisClient(console);
   if (redisClient.defaultConnection.options.db === 7) {
@@ -21,7 +21,11 @@ let proc;
 beforeAll((done) => {
   clearRedis()
     .then(() => proc = child_process.fork(`${__dirname}/examples/index`))
-    .then(() => done());
+    .delay(3000)
+    .then(() => {
+      console.info('beforeAll done');
+      done()
+    });
 });
 
 afterAll(() => {
@@ -29,61 +33,91 @@ afterAll(() => {
   redisClient.defaultConnection.quit();
 });
 
-// jest.setTimeout(10000); // for jest 21
-
 describe('call server', () => {
-  it('request response should work', (done) => {
-    let stellarSocket;
-    Promise
-      .delay(3000)
-      .then(() => {
-        stellarSocket = require('@stellarjs/engine.io-client').default;
-        stellarSocket.connect('localhost:8091', {
-          tryToReconnect: false,
-          secure: false,
-          userId: '123',
-          token: '123',
-          tokenType: 'API',
-          eioConfig: { upgrade: false },
-        });
-        return stellarSocket.stellar.get('sampleService:ping')
+  it('on auth error dont reconnect', () => {
+    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    stellarSocket
+      .connect('localhost:8091', {
+        secure: false,
+        userId: '3',
+        token: '123',
+        tokenType: 'API',
+        eioConfig: { upgrade: false },
       })
+      .then(() => {
+        fail('error');
+      })
+      .catch((e) => {
+        expect(e).toBeInstanceOf(StellarError);
+        done();
+      });
+  });
+
+  it('on other error reconnect automatically', (done) => {
+    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    stellarSocket
+      .connect('localhost:8091', {
+        secure: false,
+        userId: '4',
+        token: '123',
+        tokenType: 'API',
+        eioConfig: { upgrade: false },
+      })
+      .then(() => {
+        fail('error');
+      })
+      .catch((e) => {
+        expect(e).toBeInstanceOf(Error);
+        done();
+      });
+  });
+
+  it('request response should work', (done) => {
+    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    stellarSocket.connect('localhost:8091', {
+      secure: false,
+      userId: '123',
+      token: '123',
+      tokenType: 'API',
+      eioConfig: { upgrade: false },
+    });
+    return stellarSocket.stellar
+      .get('sampleService:ping')
       .then((result) => {
         console.info(JSON.stringify(result));
         expect(result.text).toBe('pong');
         stellarSocket.close();
       })
-      .then(() => done());
+      .then(() => {
+        console.info('blah');
+        done();
+      })
+      .catch((e) => {console.error(e)});
   });
 
   it('should getReactive calls', (done) => {
-    let stellarSocket;
     let reactiveResolve;
     let stopper;
     const reactivePromise = new Promise((resolve) => {reactiveResolve = resolve});
-    Promise
-      .delay(3000)
-      .then(() => {
-        stellarSocket = require('@stellarjs/engine.io-client').default;
-        stellarSocket.connect('localhost:8091', {
-          tryToReconnect: false,
-          secure: false,
-          userId: '123',
-          token: '123',
-          tokenType: 'API',
-          eioConfig: { upgrade: false },
-        });
-        const retval = stellarSocket.stellar.getReactive(
-          'sampleService:king',
-          'stellarBridge:kong:stream',
-          { text: 'king' },
-          (reactiveMessage) => {
-            console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
-            reactiveResolve(reactiveMessage)
-        });
-        stopper = retval.onStop;
-        return retval.results;
-      })
+    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    stellarSocket.connect('localhost:8091', {
+      secure: false,
+      userId: '123',
+      token: '123',
+      tokenType: 'API',
+      eioConfig: { upgrade: false },
+    });
+    const retval = stellarSocket.stellar.getReactive(
+      'sampleService:king',
+      'stellarBridge:kong:stream',
+      { text: 'king' },
+      (reactiveMessage) => {
+        console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
+        reactiveResolve(reactiveMessage)
+    });
+    stopper = retval.onStop;
+    retval
+      .results
       .then((result) => {
         console.info('result received');
         console.info(JSON.stringify(result));

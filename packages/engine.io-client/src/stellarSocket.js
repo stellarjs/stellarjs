@@ -2,7 +2,7 @@
  * Created by arolave on 15/06/2017.
  */
 import Promise from 'bluebird';
-import { stellarRequest, configureStellar } from '@stellarjs/core';
+import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 
 const MAX_RETRIES = 300;
@@ -74,58 +74,21 @@ function stellarSocketFactory(eio) {
       log.info(`@StellarEngineIO.connect`);
 
       tryToReconnect = options.tryToReconnect !== false;
-      if (options.sendPings) {
-        this.on('open', () => {
-          setTimeout(
-            () => {
-              log.info('@StellarEngineIO: sending reactive king');
-              const reactiveRequest = this.stellar.getReactive(
-                'stellarBridge:king', 'stellarBridge:kong:stream', { text: 'king' }, (result) => {
-                  log.info(`@StellarEngineIO.getReactive: received stream: ${JSON.stringify(result)}`);
-                  // unsubscribe test
-                  // reactiveRequest.onStop.then(f => f());
-                  // setTimeout(() => {
-                  //     const reactiveRequest2 = this.stellar.getReactive(
-                  //         'stellarBridge:king', 'stellarBridge:kong:stream', { text: 'king' },
-                  //         (r2) => {
-                  //             log.info(
-                  //                 `@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(r2)}`);
-                  //         });
-                  //     reactiveRequest2.results.then(r2 => log.info(
-                  //         `@StellarEngineIO.getReactive2: received response ${JSON.stringify(r2.text)}`),
-                  //     );
-                  // }, 1000);
-                });
-
-              reactiveRequest.results.then(result => log.info(
-                `@StellarEngineIO.getReactive: received response ${JSON.stringify(result.text)}`
-              ));
-
-              setTimeout(() => {
-                log.info(`@StellarEngineIO.getReactive: stopper`);
-                reactiveRequest.onStop.then(stopper => stopper());
-              }, 12000);
-
-
-              log.info('@StellarEngineIO: sending ping');
-              this.stellar
-                .get('stellarBridge:ping', { text: 'ping' })
-                .then(result => log.info(`@StellarEngineIO: received response ${result.text}`));
-            },
-            3000
-          );
-        });
-      }
 
       this.options = options;
       return this
         ._closeIfNeeded()
         .then(() => this._doConnect(url, options))
+        .then((result) => {
+          log.info(`@StellarEngineIO connection success`);
+          return result;
+        })
         .catch((e) => {
+          log.info(`@StellarEngineIO connection failed`);
           if (tryToReconnect) {
             return this._reconnect(url, options);
           }
-          return e;
+          throw e;
         });
     },
     _closeIfNeeded() {
@@ -179,14 +142,16 @@ function stellarSocketFactory(eio) {
           }
 
           if (jam.messageType === 'error') {
-            log.error(`@StellarEngineIO: ${jam.message}`);
+            log.error(`@StellarEngineIO Error: ${jam.message}`);
+            tryToReconnect = false;
+            socketAttempt.close();
+            const ctor = jam.errorType === 'StellarError' ? StellarError : Error;
+            reject(new ctor('Authentication Error')); // eslint-disable-line new-cap
           } else if (jam.messageType === 'connected') {
-            log.info(`@StellarEngineIO: ${jam.message}`);
             this.state = 'connected';
             this.stellar.transport.setSocket(socketAttempt);
             this.socket = socketAttempt;
             this.userId = userId;
-            log.info(`@StellarEngineIO: Connected ${this.socket.id} ${this.userId}`);
             this.trigger('open');
             resolve(this.stellar);
           }
