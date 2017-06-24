@@ -115,8 +115,8 @@ describe('full integration req/response', () => {
 
     stellarRequest
       .get('testservice:resource2', { text: 'hello' })
-      .then(() => fail('fail'))
       .catch(StellarError, (e) => {
+        console.info('StellarError caught');
         expect(e.errors).toEqual({ x: ['poop', 'pee'] });
         done();
       });

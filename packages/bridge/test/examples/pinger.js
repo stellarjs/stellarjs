@@ -40,6 +40,9 @@ function kongEveryHalfSecond() {
 
 const handler = stellarHandler();
 handler.get('sampleService:ping', () => ({ text: `pong` }));
+handler.get('sampleService:pingError', () => {
+  throw new Error('pongError')
+});
 handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
 
 setTimeout(kongEveryHalfSecond, 500);

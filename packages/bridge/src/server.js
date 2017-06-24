@@ -26,28 +26,30 @@ function connectToMicroservices(log, middlewares) {
 
 const sessions = {};
 function startSession(log, socket) {
-  sessions[socket.id] = {
+  const session = {
     sessionId: socket.id,
     ip: _.get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
     registerStopper(channel, stopper) {
-      _.assign(this.reactiveStoppers,
+      _.assign(session.reactiveStoppers,
         {
           [channel]() {
-            log.info(`@StellarBridge: Session ${this.sessionId}: stopped subscription ${channel}`);
+            log.info(`@StellarBridge: Session ${session.sessionId}: stopped subscription ${channel}`);
             stopper();
-            delete this.reactiveStoppers[channel];
+            delete session.reactiveStoppers[channel];
           },
         }
       );
     },
     offlineFns: [() => {
-      log.info(`@StellarBridge: Session ${this.sessionId} ended session`);
-      delete this[socket.id];
+      log.info(`@StellarBridge: Session ${session.sessionId} ended session`);
+      delete session[socket.id];
     }],
   };
 
-  return sessions[socket.id];
+  sessions[socket.id] = session;
+
+  return session;
 }
 
 function assignClientToSession({ log, socket, session }) {
@@ -127,7 +129,7 @@ function handleMessage(log, session, command) {
         ._doQueueRequest(requestHeaders.queueName,
                          command.data.body,
                          _.defaults({ source: stellarSource() }, requestHeaders),
-                         { session, responseType: 'jobData' })
+                         { session, responseType: 'raw' })
         .then(response => sendResponse(log, session.client, command, response));
     }
     case 'stopReactive': {
@@ -139,7 +141,7 @@ function handleMessage(log, session, command) {
       return Promise.resolve(false);
     }
     case 'reactive': {
-      const options = { session, responseType: 'jobData' };
+      const options = { session, responseType: 'raw' };
       const reactiveRequest = {
         results: stellarRequest._doQueueRequest(requestHeaders.queueName,
                                                  command.data.body,
@@ -149,7 +151,6 @@ function handleMessage(log, session, command) {
                                                  bridgeReactive(log, session.client, requestHeaders),
                                                  options),
       };
-
 
       reactiveRequest.onStop.then(stopper => session.registerStopper(requestHeaders.channel, stopper));
 
