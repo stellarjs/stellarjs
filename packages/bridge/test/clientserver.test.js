@@ -21,7 +21,7 @@ let proc;
 beforeAll((done) => {
   clearRedis()
     .then(() => proc = child_process.fork(`${__dirname}/examples/index`))
-    .delay(3000)
+    .delay(3500)
     .then(() => {
       console.info('beforeAll done');
       done()
@@ -134,5 +134,23 @@ describe('call server', () => {
         stellarSocket.close()
       })
       .then(() => done());
+  });
+  
+  it('request response should work when errors are thrown', (done) => {
+    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    stellarSocket.connect('localhost:8091', {
+      secure: false,
+      userId: '123',
+      token: '123',
+      tokenType: 'API',
+      eioConfig: { upgrade: false },
+    });
+    return stellarSocket.stellar
+      .get('sampleService:pingError')
+      .catch((e) => {
+        expect(e.message).toBe('pongError');
+        stellarSocket.close();
+        done()
+      });
   });
 });

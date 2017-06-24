@@ -3,7 +3,7 @@
  */
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
-import get from 'lodash/get';
+import includes from 'lodash/includes';
 import isEmpty from 'lodash/isEmpty';
 
 import uuid from 'uuid/v4';
@@ -75,12 +75,12 @@ export default class StellarPubSub extends StellarCore {
     }
   }
 
-  subscribe(channel, messageHandler, options) {
+  subscribe(channel, messageHandler, options = {}) {
         // TODO add separate middleware chain for subscriptions
     return this
             .registerSubscription(channel, (job) => {
                 // this.log.info(`messageHandler ${job.jobId}`);
-              const message = get(options, 'responseType') === 'jobData' ? job.data : job.data.body;
+              const message = includes(['raw', 'jobData'], options.responseType) ? job.data : job.data.body;
               return messageHandler(message, channel);
             })
             .then((unsubscribe) => {

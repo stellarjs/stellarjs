@@ -4,6 +4,7 @@
 import assign from 'lodash/assign';
 import defaults from 'lodash/defaults';
 import get from 'lodash/get';
+import includes from 'lodash/includes';
 import lowerCase from 'lodash/lowerCase';
 
 import Promise from 'bluebird';
@@ -71,7 +72,7 @@ export default class StellarRequest extends StellarCore {
                                     (command, ch) => reactiveHandler(command.body,
                                                                      get(command, 'headers.action'),
                                                                      ch),
-                                    defaults({ responseType: 'jobData' }, options)),
+                                    defaults({ responseType: 'raw' }, options)),
     };
   }
 
@@ -109,12 +110,14 @@ export default class StellarRequest extends StellarCore {
               }
 
               delete this.inflightRequests[headers.id];
-              if (get(responseJob, 'data.headers.errorType') === 'StellarError') {
-                reject([new StellarError(responseJob.data.body), responseJob.data]);
-              } else if (get(responseJob, 'data.headers.errorType')) {
-                reject([new Error(responseJob.data.body.message), responseJob.data]);
+
+              const responseData = responseJob.data;
+              if (get(responseData, 'headers.errorType') === 'StellarError') {
+                reject([new StellarError(responseData.body), responseData]);
+              } else if (get(responseData, 'headers.errorType')) {
+                reject([new Error(get(responseData, 'body.message')), responseData]);
               } else {
-                resolve(responseJob.data);
+                resolve(responseData);
               }
             };
           })),
@@ -124,13 +127,15 @@ export default class StellarRequest extends StellarCore {
       .then(() => this.getNextId(inbox))
       .then(id => assign(headers, { respondTo: this.responseInbox, id, queueName }))
       .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
-      .then(jobData => (options.responseType === 'jobData' ? jobData : jobData.body))
+      .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
-        if (Array.isArray(e)) { // array is the expected format
-          throw e[0];
-        } else {
+        if (!Array.isArray(e)) { // array is the expected format
           this.log.error(e, `@StellarRequest: Unexpected error`);
           throw e;
+        } else if (options.responseType === 'raw') {
+          return e[1];
+        } else {
+          throw e[0];
         }
       });
   }

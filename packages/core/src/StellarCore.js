@@ -134,7 +134,7 @@ class StellarCore {
         return Promise.reject(new Error('Final Handler should not call next'));
       }
 
-      // this.log.info(`@StellarCore.executeMiddlewares: run ${i} ${stringify(jobData, this.log)}`);
+      // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
       if (handlers[i].pattern === undefined ||
         match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
         return Promise
