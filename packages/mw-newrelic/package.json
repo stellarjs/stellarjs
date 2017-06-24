@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/mw-newrelic",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
@@ -28,7 +28,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.5.1",
+    "@stellarjs/core": "^0.5.2",
     "bluebird": "3.4.6",
     "lodash": "4.15.0",
     "newrelic": "^1.36.0"
