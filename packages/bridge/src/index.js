@@ -23,7 +23,7 @@ function boot(config = {}) {
     originalHandler(req, res);
   };
 
-  bridgeInit(assign(config, { server }));
+  attach(assign(config, { server }));
   return server;
 }
 
