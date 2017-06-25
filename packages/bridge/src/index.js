@@ -4,7 +4,7 @@
 import engine from 'engine.io';
 import assign from 'lodash/assign';
 
-import attach from './bridge';
+import attachToServer from './bridge';
 
 function boot(config = {}) {
   const log = config.log || console;
@@ -23,8 +23,8 @@ function boot(config = {}) {
     originalHandler(req, res);
   };
 
-  attach(assign(config, { server }));
+  attachToServer(assign(config, { server }));
   return server;
 }
 
-export default { boot, attach };
+export { boot, attachToServer };

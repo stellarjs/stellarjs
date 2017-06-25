@@ -4,7 +4,7 @@
 import { stellarAppPubSub, stellarHandler, StellarError } from '@stellarjs/core'
 import url from 'url';
 
-import boot from '../../src/bootstrap';
+import { boot } from '../../src';
 
 boot({
   newSessionHandlers: [
