@@ -1,7 +1,7 @@
 {
   "name": "@stellarjs/bridge",
   "version": "0.5.3",
-  "main": "lib-es6/bootstrap.js",
+  "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
   ],
