@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/engine.io-client",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
   "src": [
@@ -30,8 +30,8 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.5.2",
-    "@stellarjs/transport-socket": "^0.5.2",
+    "@stellarjs/core": "^0.5.3",
+    "@stellarjs/transport-socket": "^0.5.3",
     "bluebird": "3.4.6",
     "engine.io-client": "^3.1.0"
   }

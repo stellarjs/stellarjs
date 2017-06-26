@@ -6,6 +6,8 @@ import forEach from 'lodash/forEach';
 import includes from 'lodash/includes';
 import isEmpty from 'lodash/isEmpty';
 
+import Promise from 'bluebird';
+
 import uuid from 'uuid/v4';
 
 import StellarCore from './StellarCore';

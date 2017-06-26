@@ -7,6 +7,8 @@ import get from 'lodash/get';
 import size from 'lodash/size';
 import assign from 'lodash/assign';
 
+import Promise from 'bluebird';
+
 import StellarHandler from './StellarHandler';
 import StellarPubSub from './StellarPubSub';
 import StellarRequest from './StellarRequest';
