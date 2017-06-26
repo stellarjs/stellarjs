@@ -2,8 +2,12 @@
  * Created by arolave on 21/06/2017.
  */
 import engine from 'engine.io';
+import assign from 'lodash/assign';
 
-function boot({ log = console } = {}) {
+import attachToServer from './bridge';
+
+function boot(config = {}) {
+  const log = config.log || console;
   const port = process.env.PORT || 8091;
   log.info(`Start initializing server on port ${port}`);
   const server = engine.listen(port, { transports: ['websocket', 'polling'] }, () => {
@@ -18,7 +22,9 @@ function boot({ log = console } = {}) {
 
     originalHandler(req, res);
   };
+
+  attachToServer(assign(config, { server }));
   return server;
 }
 
-export default boot;
+export { boot, attachToServer };
