@@ -41,6 +41,7 @@
     }
   },
   "devDependencies": {
+    "@stellarjs/mocks": "^0.5.2",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",

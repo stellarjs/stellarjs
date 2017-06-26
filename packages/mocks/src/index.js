@@ -3,7 +3,6 @@
  */
 import Promise from 'bluebird';
 import _ from 'lodash';
-import StellarCore from '../src/StellarCore';
 
 class MockTransport {
   constructor(data = {}, autoProcess = false) {
@@ -14,8 +13,10 @@ class MockTransport {
     this.job = { data };
   }
 
-  generateId(queueName) {
-    return Promise.resolve(this.jobCounter++);
+  generateId() {
+    const promise = Promise.resolve(this.jobCounter);
+    this.jobCounter = this.jobCounter + 1;
+    return promise;
   }
 
   getSubscribers(channel) {
@@ -31,7 +32,7 @@ class MockTransport {
     }
 
     return Promise.resolve(this.subscribers[channel].add(queueName))
-      .then(() => () => this._deregisterSubscriber(channel, queueName));
+            .then(() => () => this._deregisterSubscriber(channel, queueName));
   }
 
   _deregisterSubscriber(channel, queueName) {
@@ -55,10 +56,10 @@ class MockTransport {
 
     if (this.autoProcess) {
       setTimeout(() => {
-        this.triggerJob(this.job)
+        this.triggerJob(this.job);
       });
     }
-    return new Promise.resolve();
+    return Promise.resolve();
   }
 
   getNextId(inbox) {
@@ -66,16 +67,16 @@ class MockTransport {
   }
 
   triggerJob(job) {
-    this.getNextId(StellarCore.getNodeInbox('testservice'))
-      .then((id) => {
-        _.set(job, 'data.headers.id', id);
-        console.info(`triggerJob ${JSON.stringify(job)}`);
-        this.callback(job);
-      });
+    this.getNextId(`stlr:n:testservice:inbox`)
+            .then((id) => {
+              _.set(job, 'data.headers.id', id);
+              console.info(`triggerJob ${JSON.stringify(job)}`);
+              this.callback(job);
+            });
   }
 }
 
-function mockTransportFactory(log) {
+function mockTransportFactory() {
   return new MockTransport();
 }
 

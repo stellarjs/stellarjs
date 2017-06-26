@@ -1,11 +1,12 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
+import { MockTransport } from '@stellarjs/mocks';
+
 import StellarCore from '../src/StellarCore';
 import StellarPubSub from '../src/StellarPubSub';
 import StellarRequest from '../src/StellarRequest';
 import StellarHandler from '../src/StellarHandler';
 import { StellarError } from '../src/StellarError';
-import { MockTransport } from './mocks';
 
 const getStellarRequest = () => new StellarRequest(new MockTransport(), 'test', console, 1000);
 const getStellarHandler = (queueName, body = { text: 'hi' }) => {
