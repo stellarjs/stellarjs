@@ -2,8 +2,8 @@
  * Created by arolave on 29/05/2017.
  */
 import Promise from 'bluebird';
+import { mockTransportFactory } from '@stellarjs/mocks';
 import { configureStellar, stellarRequest, stellarSource, resetCache, setSourceGenerators } from '../src/factory';
-import { mockTransportFactory } from './mocks';
 import { default as uuid } from '../src/source-generators/uuid';
 import { default as amazonEc2 } from '../src/source-generators/amazonEc2';
 import { default as browser } from '../src/source-generators/browser';

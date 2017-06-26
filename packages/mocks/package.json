@@ -1,17 +1,16 @@
 {
-  "name": "@stellarjs/core",
+  "name": "@stellarjs/mocks",
   "version": "0.5.2",
   "main": "lib-es6/index.js",
-  "browser": "lib/index.browser.js",
   "src": [
     "src/**/*"
   ],
+  "private": true,
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
-    "compile": "yarn run compile:es6 && yarn run compile:umd",
+    "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
-    "compile:umd": "webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
@@ -19,31 +18,10 @@
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
-    "access": "public"
-  },
-  "repository": "stellarjs/stellar",
-  "keywords": [
-    "microservices",
-    "es6",
-    "stellar",
-    "stellarjs"
-  ],
-  "author": "Andres Olave",
-  "contributors": [],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/sloops77/stellarjs/issues"
-  },
-  "jest": {
-    "verbose": true,
-    "transform": {
-      "^.+\\.jsx?$": "babel-jest"
-    }
+    "access": "private"
   },
   "devDependencies": {
-    "@stellarjs/mocks": "^0.5.2",
     "babel-cli": "^6.24.1",
-    "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
@@ -52,8 +30,6 @@
   },
   "dependencies": {
     "bluebird": "3.4.6",
-    "lodash": "4.15.0",
-    "safe-json-stringify": "^1.0.4",
-    "uuid": "^3.0.1"
+    "lodash": "4.15.0"
   }
 }
