@@ -38,6 +38,20 @@ describe('metrics', () => {
         });
   });
 
+  it('calls metrics middleware by multiple patterns', () => {
+    const stellar = createStellar();
+    stellar.handler.get(resource1, () => {});
+    stellar.handler.get(resource2, () => {});
+
+    runMetrics(stellar.handler, service, `${resource1}:get`, `${resource2}:get`);
+
+    return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
+        .then(() => {
+          expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
+          expect(getMetrics()[`${resource2}:get`].requests).toBe(1);
+        });
+  });
+
   it('calls metrics middleware manually', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
@@ -86,6 +100,32 @@ describe('metrics', () => {
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
           expect(getMetrics()[`${resource2}:get`].requests).toBe(1);
+        });
+  });
+
+  it('doesn\'t set metrics on ignored endpoint', () => {
+    const stellar = createStellar();
+    stellar.handler.get(resource1, () => {});
+
+    runMetrics(stellar.handler, service, `${resource2}:get`);
+
+    return stellar.request.get(resource1)
+        .then(() => {
+          expect(getMetrics()[`${resource1}:get`]).not.toBeDefined();
+        });
+  });
+
+  it('doesn\'t set metrics on ignored endpoint but set it on not ignored endpoint', () => {
+    const stellar = createStellar();
+    stellar.handler.get(resource1, () => {});
+    stellar.handler.get(resource2, () => {});
+
+    runMetrics(stellar.handler, service, `${resource1}:get`);
+
+    return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
+        .then(() => {
+          expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
+          expect(getMetrics()[`${resource2}:get`]).not.toBeDefined();
         });
   });
 
