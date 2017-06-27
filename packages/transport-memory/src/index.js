@@ -6,6 +6,7 @@ import Promise from 'bluebird';
 class MemoryTransport {
   constructor() {
     this.queues = {};
+    this.subscribers = {};
   }
 
   setQueue(name, callback) {
@@ -22,6 +23,30 @@ class MemoryTransport {
     this.setQueue(queueName);
 
     return Promise.resolve(this.queues[queueName].currentId++); //eslint-disable-line
+  }
+
+  getSubscribers(channel) {
+    if (this.subscribers[channel] == null) {
+      this.subscribers[channel] = new Set();
+    }
+
+    return Promise.resolve(this.subscribers[channel].values());
+  }
+
+  registerSubscriber(channel, queueName) {
+    if (this.subscribers[channel] == null) {
+      this.subscribers[channel] = new Set();
+    }
+
+    return Promise.resolve(this.subscribers[channel].add(queueName))
+        .then(() => () => this._deregisterSubscriber(channel, queueName));
+  }
+
+  _deregisterSubscriber(channel, queueName) {
+    if (this.subscribers[channel] == null) {
+      this.subscribers[channel] = new Set();
+    }
+    return Promise.resolve(this.subscribers[channel].delete(queueName));
   }
 
   enqueue(queueName, data) {

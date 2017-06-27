@@ -1,6 +1,8 @@
 import forEach from 'lodash/forEach';
 
 let metrics = {};
+const PUBLISH_INTERVAL = process.env.METRICS_PUBLISH_INTERVAL || 100;
+let pubSubIntervalId;
 
 function addMetricsURL(url) {
   if (!metrics[url]) {
@@ -22,6 +24,10 @@ function addFailedRequest(url) {
 
 export function resetMetrics() {
   metrics = {};
+
+  if (pubSubIntervalId) {
+    clearInterval(pubSubIntervalId);
+  }
 }
 
 export function getMetrics() {
@@ -39,10 +45,20 @@ export function middleware(req, next) {
       });
 }
 
-export default function (stellarHandler, microServiceName, ...urlPatterns) {
+export default function ({ handler, pubSub }, microServiceName, ...urlPatterns) {
+  resetMetrics();
+
+  const startTime = Date.now();
+
   forEach(urlPatterns, (pattern) => {
-    stellarHandler.use(pattern, middleware);
+    handler.use(pattern, middleware);
   });
 
-  stellarHandler.get(`${microServiceName}:metrics`, () => ({ metrics: getMetrics() }));
+  handler.get(`${microServiceName}:metrics`, () => ({ startTime, metrics: getMetrics() }));
+
+  if (pubSub) {
+    pubSubIntervalId = setInterval(() => {
+      pubSub.publish(`channel:${microServiceName}:metrics`, { startTime, metrics: getMetrics() });
+    }, PUBLISH_INTERVAL);
+  }
 }

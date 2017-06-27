@@ -1,23 +1,25 @@
 /**
  * Created by ozsayag on 26/06/2017.
  */
-import { StellarRequest, StellarHandler } from '@stellarjs/core';
+import { StellarRequest, StellarHandler, StellarPubSub } from '@stellarjs/core';
 import { MemoryTransport } from '@stellarjs/transport-memory';
 import Promise from 'bluebird';
 
 
 import runMetrics, { resetMetrics, middleware, getMetrics } from '../src';
 
+const service = 'test';
+
 function createStellar() {
   const memoryTransport = new MemoryTransport();
-  const request = new StellarRequest(memoryTransport, 'test', console, 1000);
-  const handler = new StellarHandler(memoryTransport, 'test', console, 1000);
+  const request = new StellarRequest(memoryTransport, service, console, 1000);
+  const handler = new StellarHandler(memoryTransport, service, console, 1000);
+  const pubSub = new StellarPubSub(memoryTransport, service, console, 1000);
 
-  return { handler, request };
+  return { handler, request, pubSub };
 }
 
 describe('metrics', () => {
-  const service = 'test';
   const resource1 = `${service}:resource`;
   const resource2 = `${service}:resource2`;
 
@@ -30,7 +32,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return stellar.request.get(resource1)
         .then(() => {
@@ -43,7 +45,7 @@ describe('metrics', () => {
     stellar.handler.get(resource1, () => {});
     stellar.handler.get(resource2, () => {});
 
-    runMetrics(stellar.handler, service, `${resource1}:get`, `${resource2}:get`);
+    runMetrics({ handler: stellar.handler }, service, `${resource1}:get`, `${resource2}:get`);
 
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
         .then(() => {
@@ -56,7 +58,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service);
+    runMetrics({ handler: stellar.handler }, service);
     stellar.handler.use('.*', middleware);
 
     return stellar.request.get(resource1)
@@ -69,7 +71,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return stellar.request.get(resource1)
         .then(() => {
@@ -81,7 +83,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource1)])
         .then(() => {
@@ -94,7 +96,7 @@ describe('metrics', () => {
     stellar.handler.get(resource1, () => {});
     stellar.handler.get(resource2, () => {});
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
         .then(() => {
@@ -107,7 +109,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service, `${resource2}:get`);
+    runMetrics({ handler: stellar.handler }, service, `${resource2}:get`);
 
     return stellar.request.get(resource1)
         .then(() => {
@@ -120,7 +122,7 @@ describe('metrics', () => {
     stellar.handler.get(resource1, () => {});
     stellar.handler.get(resource2, () => {});
 
-    runMetrics(stellar.handler, service, `${resource1}:get`);
+    runMetrics({ handler: stellar.handler }, service, `${resource1}:get`);
 
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
         .then(() => {
@@ -133,7 +135,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return stellar.request.get(resource1)
         .then(() => {
@@ -150,7 +152,7 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return stellar.request.get(resource1)
         .then(() => stellar.request.get(`${service}:metrics`))
@@ -163,12 +165,28 @@ describe('metrics', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => { throw new Error(); });
 
-    runMetrics(stellar.handler, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, '.*');
 
     return stellar.request.get(resource1)
         .catch(() => {
           expect(getMetrics()[`${resource1}:get`].failedRequests).toBe(1);
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
         });
+  });
+
+  xit('gets metrics from the subscription', (done) => {
+    // TODO needs to figure out timers faking
+    const stellar = createStellar();
+    stellar.handler.get(resource1, () => {});
+
+    jest.useFakeTimers();
+    runMetrics({ handler: stellar.handler, pubSub: stellar.pubSub }, service, '.*');
+
+    stellar.pubSub.subscribe(`channel:${service}:metrics`, () => {
+      done();
+    })
+    .then(() => {
+      jest.runOnlyPendingTimers();
+    });
   });
 });
