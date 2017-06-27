@@ -1,7 +1,8 @@
 import forEach from 'lodash/forEach';
 
 let metrics = {};
-const PUBLISH_INTERVAL = process.env.METRICS_PUBLISH_INTERVAL || 100;
+const ONE_MINUTE = 60 * 1000;
+const PUBLISH_INTERVAL = process.env.METRICS_PUBLISH_INTERVAL || ONE_MINUTE;
 let pubSubIntervalId;
 
 function addMetricsURL(url) {

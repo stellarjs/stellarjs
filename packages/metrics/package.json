@@ -26,6 +26,7 @@
     }
   },
   "devDependencies": {
+    "@stellarjs/core": "^0.5.2",
     "@stellarjs/transport-memory": "^0.5.2",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
@@ -37,7 +38,6 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.5.2",
     "lodash": "4.15.0"
   }
 }
