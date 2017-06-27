@@ -148,7 +148,7 @@ describe('metrics', () => {
         });
   });
 
-  it('gets metrics from the endpoint', () => {
+  it('gets metrics from the metrics endpoint', () => {
     const stellar = createStellar();
     stellar.handler.get(resource1, () => {});
 
@@ -156,7 +156,8 @@ describe('metrics', () => {
 
     return stellar.request.get(resource1)
         .then(() => stellar.request.get(`${service}:metrics`))
-        .then(({ metrics }) => {
+        .then(({ metrics, node }) => {
+          console.log(node);
           expect(metrics[`${resource1}:get`].requests).toBe(1);
         });
   });

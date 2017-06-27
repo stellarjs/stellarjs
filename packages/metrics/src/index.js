@@ -46,19 +46,23 @@ export function middleware(req, next) {
 }
 
 export default function ({ handler, pubSub }, microServiceName, ...urlPatterns) {
-  resetMetrics();
-
   const startTime = Date.now();
+
+  function prepareMetrics() {
+    return { node: handler.source, startTime, metrics: getMetrics() };
+  }
+
+  resetMetrics();
 
   forEach(urlPatterns, (pattern) => {
     handler.use(pattern, middleware);
   });
 
-  handler.get(`${microServiceName}:metrics`, () => ({ startTime, metrics: getMetrics() }));
+  handler.get(`${microServiceName}:metrics`, () => prepareMetrics());
 
   if (pubSub) {
     pubSubIntervalId = setInterval(() => {
-      pubSub.publish(`channel:${microServiceName}:metrics`, { startTime, metrics: getMetrics() });
+      pubSub.publish(`channel:${microServiceName}:metrics`, prepareMetrics());
     }, PUBLISH_INTERVAL);
   }
 }
