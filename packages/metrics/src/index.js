@@ -2,7 +2,7 @@ import forEach from 'lodash/forEach';
 
 let metrics = {};
 const ONE_MINUTE = 60 * 1000;
-const PUBLISH_INTERVAL = process.env.METRICS_PUBLISH_INTERVAL || ONE_MINUTE;
+const PUBLISH_INTERVAL = process.env.STELLAR_METRICS_PUBLISH_INTERVAL || ONE_MINUTE;
 let pubSubIntervalId;
 
 function addMetricsURL(url) {
@@ -46,7 +46,12 @@ export function middleware(req, next) {
       });
 }
 
-export default function ({ handler, pubSub }, microServiceName, ...urlPatterns) {
+export default function ({ handler, pubSub }, microServiceName, publishInterval, ...urlPatterns) {
+  if (typeof publishInterval === 'string') {
+    urlPatterns.unshift(publishInterval);
+    publishInterval = PUBLISH_INTERVAL; // eslint-disable-line no-param-reassign
+  }
+
   const startTime = Date.now();
 
   function prepareMetrics() {
@@ -64,6 +69,6 @@ export default function ({ handler, pubSub }, microServiceName, ...urlPatterns) 
   if (pubSub) {
     pubSubIntervalId = setInterval(() => {
       pubSub.publish(`channel:${microServiceName}:metrics`, prepareMetrics());
-    }, PUBLISH_INTERVAL);
+    }, publishInterval);
   }
 }

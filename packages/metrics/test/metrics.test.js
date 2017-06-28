@@ -5,7 +5,6 @@ import { StellarRequest, StellarHandler, StellarPubSub } from '@stellarjs/core';
 import { MemoryTransport } from '@stellarjs/transport-memory';
 import Promise from 'bluebird';
 
-
 import runMetrics, { resetMetrics, middleware, getMetrics } from '../src';
 
 const service = 'test';
@@ -175,19 +174,13 @@ describe('metrics', () => {
         });
   });
 
-  xit('gets metrics from the subscription', (done) => {
-    // TODO needs to figure out timers faking
+  it('gets metrics from the subscription', (done) => {
     const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
 
-    jest.useFakeTimers();
-    runMetrics({ handler: stellar.handler, pubSub: stellar.pubSub }, service, '.*');
+    runMetrics({ handler: stellar.handler, pubSub: stellar.pubSub }, service, 100, '.*');
 
     stellar.pubSub.subscribe(`channel:${service}:metrics`, () => {
       done();
-    })
-    .then(() => {
-      jest.runOnlyPendingTimers();
     });
   });
 });
