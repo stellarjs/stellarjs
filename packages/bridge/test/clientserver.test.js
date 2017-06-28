@@ -5,6 +5,7 @@ import Promise from 'bluebird';
 import child_process from 'child_process';
 import RedisClient from '@stellarjs/transport-redis/lib-es6/config-redisclient';
 import { StellarError } from '@stellarjs/core';
+import _ from 'lodash';
 
 let redisClient;
 const clearRedis = () => {
@@ -47,8 +48,7 @@ describe('call server', () => {
       .then(() => {
         fail('error');
       })
-      .catch((e) => {
-        expect(e).toBeInstanceOf(StellarError);
+      .catch(StellarError, (e) => {
         done();
       });
   });
@@ -66,8 +66,9 @@ describe('call server', () => {
       .then(() => {
         fail('error');
       })
-      .catch((e) => {
+      .catch(Error, (e) => {
         expect(e).toBeInstanceOf(Error);
+        expect(e.message).toEqual('Authentication Error');
         done();
       });
   });
@@ -91,8 +92,7 @@ describe('call server', () => {
       .then(() => {
         console.info('blah');
         done();
-      })
-      .catch((e) => {console.error(e)});
+      });
   });
 
   it('should getReactive calls', (done) => {
@@ -136,6 +136,58 @@ describe('call server', () => {
       .then(() => done());
   });
   
+  it('should disallow multiple getReactive calls', (done) => {
+    let reactiveResolve;
+    const reactivePromise = new Promise((resolve) => {reactiveResolve = resolve});
+
+    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    stellarSocket.connect('localhost:8091', {
+      secure: false,
+      userId: '123',
+      token: '123',
+      tokenType: 'API',
+      eioConfig: { upgrade: false },
+    });
+    const retval1 = stellarSocket.stellar.getReactive(
+      'sampleService:king',
+      'stellarBridge:kong:stream',
+      { text: 'king' },
+      (reactiveMessage) => {
+        console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
+        reactiveResolve(reactiveMessage)
+      });
+
+    const retval2 = stellarSocket.stellar.getReactive(
+      'sampleService:king',
+      'stellarBridge:kong:stream',
+      { text: 'king' },
+      (reactiveMessage) => {
+        console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
+        reactiveResolve(reactiveMessage)
+      });
+
+    retval1
+      .results
+      .then((result) => {
+        console.info('result 1 received');
+        console.info(JSON.stringify(result));
+        expect(result.text).toEqual('kong');
+        return retval2.results
+      })
+      .catch((result) => {
+        console.info('result 2 received');
+        console.info(JSON.stringify(result));
+        expect(_.first(result.message.split(':'))).toMatch('Multiple subscriptions to same channel (stellarBridge');
+        return retval1.onStop;
+      })
+      .then((doStop1) => {
+        console.info('Calling stop 1');
+        doStop1();
+        return retval2.onStop
+      })
+      .then(() => done());
+  });
+  
   it('request response should work when errors are thrown', (done) => {
     let stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket.connect('localhost:8091', {
@@ -147,7 +199,7 @@ describe('call server', () => {
     });
     return stellarSocket.stellar
       .get('sampleService:pingError')
-      .catch((e) => {
+      .catch(Error, (e) => {
         expect(e.message).toBe('pongError');
         stellarSocket.close();
         done()
