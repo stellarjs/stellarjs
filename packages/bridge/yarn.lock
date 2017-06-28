@@ -2,29 +2,29 @@
 # yarn lockfile v1
 
 
-"@stellarjs/core@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.5.1.tgz#2967279bae903fa798d6d307bd84d4016a3b4deb"
+"@stellarjs/core@^0.5.4":
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.5.4.tgz#e839853a24acc930d126c76068bbf3ad5a4327d0"
   dependencies:
     bluebird "3.4.6"
     lodash "4.15.0"
     safe-json-stringify "^1.0.4"
     uuid "^3.0.1"
 
-"@stellarjs/engine.io-client@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@stellarjs/engine.io-client/-/engine.io-client-0.5.1.tgz#c65d0df0954744b2519f91fec8b7b634b86e73e8"
+"@stellarjs/engine.io-client@^0.5.5":
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/@stellarjs/engine.io-client/-/engine.io-client-0.5.5.tgz#a584fc3818abdb3e89f972daa77c6588609c5f74"
   dependencies:
-    "@stellarjs/core" "^0.5.1"
-    "@stellarjs/transport-socket" "^0.5.1"
+    "@stellarjs/core" "^0.5.4"
+    "@stellarjs/transport-socket" "^0.5.4"
     bluebird "3.4.6"
     engine.io-client "^3.1.0"
 
-"@stellarjs/transport-redis@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@stellarjs/transport-redis/-/transport-redis-0.5.1.tgz#69fea1088ee27ea8ca74bb4e8d993c7657789d87"
+"@stellarjs/transport-redis@^0.5.4":
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/@stellarjs/transport-redis/-/transport-redis-0.5.4.tgz#e2ba3ad230f786367285f9b9318afc0531a9369b"
   dependencies:
-    "@stellarjs/core" "^0.5.1"
+    "@stellarjs/core" "^0.5.4"
     bluebird "3.4.7"
     bull "https://github.com/sloops77/bull/archive/a5135def39ae0957a682c21df362b1f67dc93c3a.tar.gz"
     ioredis "^2.4.0"
@@ -32,11 +32,11 @@
     redis-exclusive-task "^0.1.0"
     uuid "^3.0.1"
 
-"@stellarjs/transport-socket@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@stellarjs/transport-socket/-/transport-socket-0.5.1.tgz#965320c37840d273f046c7d92d9a2a1fd8bb0424"
+"@stellarjs/transport-socket@^0.5.4":
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/@stellarjs/transport-socket/-/transport-socket-0.5.4.tgz#c2240ef557c5b5807c42b6e430f084964135eed3"
   dependencies:
-    "@stellarjs/core" "^0.5.1"
+    "@stellarjs/core" "^0.5.4"
     bluebird "3.4.6"
     lodash "4.15.0"
 
@@ -805,7 +805,7 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-engine.io-client@^3.1.0:
+engine.io-client@3.1.1, engine.io-client@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/engine.io-client/-/engine.io-client-3.1.1.tgz#415a9852badb14fa008fa3ef1e31608db6761325"
   dependencies:
