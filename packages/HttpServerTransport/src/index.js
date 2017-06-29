@@ -8,6 +8,6 @@ function transportFactory({ log, server, sendingOnly = false }) {
   }
   return instance;
 }
-transportFactory.type = `http`;
+transportFactory.type = `httpServer`;
 
 export { transportFactory as default, HttpTransport };
