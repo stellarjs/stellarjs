@@ -3,11 +3,10 @@ import http from 'http';
 import request from 'request';
 import get from 'lodash/get';
 
-import HttpTransport from '../src/HttpTransport';
+import HttpServerTransport from '../src/HttpServerTransport';
 
 const log = console;
 
-let app;
 let httpTransport;
 
 function getNewId() {
@@ -32,7 +31,7 @@ const port = 9992;
 
 function sendMockRequest(cb) {
   request.post({
-      url: `http://localhost:${port}${HttpTransport.ENQUEUE_URI}`,
+      url: `http://localhost:${port}${HttpServerTransport.ENQUEUE_URI}`,
       body: createMockCommand(),
       json: true
     },
@@ -42,11 +41,11 @@ function sendMockRequest(cb) {
 
 beforeAll(() => {
   const server = http.createServer();
-  httpTransport = new HttpTransport({log, server: server});
+  httpTransport = new HttpServerTransport({log, server: server});
   server.listen(port);
 });
 
-describe('HttpTransport test simple requests', () => {
+describe('HttpServerTransport test simple requests', () => {
   beforeEach(() => {
     httpTransport.process('testing-http-transport', (command) => {
       command.headers.requestId = command.headers.id;

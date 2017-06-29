@@ -12,7 +12,7 @@ function getQueueName(command) {
   return get(command, 'headers.queueName');
 }
 
-class HttpTransport {
+class HttpServerTransport {
   constructor({server, log, sendingOnly}) {
     this.log = log;
     this.sendingOnly = sendingOnly;
@@ -29,7 +29,7 @@ class HttpTransport {
 
     server.on('request', app);
 
-    app.post(HttpTransport.ENQUEUE_URI, (req, res) => {
+    app.post(HttpServerTransport.ENQUEUE_URI, (req, res) => {
       const command = get(req, 'body.data');
       this.requestHandler.once(get(command, 'headers.id'), (command) => {
         res.send(command);
@@ -51,8 +51,8 @@ class HttpTransport {
   }
 }
 
-HttpTransport.START_2016 = new Date(2016, 1, 1).getTime();
-HttpTransport.ENQUEUE_URI = '/stellar/enqueue';
+HttpServerTransport.START_2016 = new Date(2016, 1, 1).getTime();
+HttpServerTransport.ENQUEUE_URI = '/stellar/enqueue';
 
-export default HttpTransport;
+export default HttpServerTransport;
 
