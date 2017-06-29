@@ -1,10 +1,11 @@
 import HttpClientTransport from './HttpClientTransport';
+import request from 'request';
 
 let instance;
-function transportFactory({ log, hostUrl, sendingOnly = false }) {
+function transportFactory({ log, hostUrl, sendingOnly = false, port }) {
   log.info(`${process.pid}: @HttpTransportFactory returning instance`);
   if (!instance) {
-    instance = new HttpClientTransport({hostUrl, log, sendingOnly});
+    instance = new HttpClientTransport({hostUrl, log, sendingOnly, port});
   }
   return instance;
 }

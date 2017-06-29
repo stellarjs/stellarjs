@@ -1,29 +1,32 @@
 import get from 'lodash/get';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
-import express from 'express';
-import bodyParser from 'body-parser';
-
-function getRequestId(command) {
-  return get(command, 'headers.requestId');
-}
-
-function getQueueName(command) {
-  return get(command, 'headers.queueName');
-}
 
 class HttpClientTransport {
-  constructor({hostUrl, log, sendingOnly}) {
+  constructor({hostUrl, log, sendingOnly, port}) {
     this.log = log;
     this.sendingOnly = sendingOnly;
     this.messageHandler = new EventEmitter();
-    this.requestHandler = new EventEmitter();
-    this.hostUrl = hostUrl;
+    this.hostUrl = hostUrl + ':' + port + HttpClientTransport.ENQUEUE_URI ;
   }
 
   enqueue(queueName, command) {
-    this.requestHandler.emit(getRequestId(command), command);
-    return Promise.resolve();
+    this.post(command, (resCommand) => {
+      this.messageHandler.emit(queueName, resCommand);
+    });
+  }
+
+  post(data, cb) {
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = () => {//Call a function when the state changes.
+      if(xhr.readyState === XMLHttpRequest.DONE) {
+        cb(JSON.parse(get(xhr, 'response')));
+      }
+    }
+    xhr.open("POST", this.hostUrl, true);
+    xhr.overrideMimeType("application/json");
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify(data));
   }
 
   process(queueName, callback) {
@@ -36,6 +39,10 @@ class HttpClientTransport {
 
 HttpClientTransport.START_2016 = new Date(2016, 1, 1).getTime();
 HttpClientTransport.ENQUEUE_URI = '/stellar/enqueue';
+
+HttpClientTransport.post = function (data, cb) {
+
+};
 
 export default HttpClientTransport;
 
