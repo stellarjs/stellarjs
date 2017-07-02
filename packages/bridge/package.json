@@ -42,7 +42,7 @@
     "@stellarjs/transport-redis": "^0.5.4",
     "@stellarjs/transport-socket": "^0.5.4",
     "bluebird": "3.4.7",
-    "engine.io": "2.0.2",
+    "engine.io": "^3.1.0",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4"
   }
