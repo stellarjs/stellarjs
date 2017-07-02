@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@stellarjs/core": "^0.5.4",
-    "bluebird": "3.4.6",
-    "lodash": "4.15.0"
+    "bluebird": "3.4.7",
+    "lodash": "^4.17.4"
   }
 }
