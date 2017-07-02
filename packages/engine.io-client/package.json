@@ -35,6 +35,6 @@
   "dependencies": {
     "@stellarjs/core": "^0.5.4",
     "@stellarjs/transport-socket": "^0.5.4",
-    "bluebird": "3.4.6"
+    "bluebird": "3.4.7"
   }
 }
