@@ -21,6 +21,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "peerDependencies": {
+    "engine.io-client": "2-3"
+  },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
@@ -32,7 +35,6 @@
   "dependencies": {
     "@stellarjs/core": "^0.5.4",
     "@stellarjs/transport-socket": "^0.5.4",
-    "bluebird": "3.4.6",
-    "engine.io-client": "^3.1.0"
+    "bluebird": "3.4.7"
   }
 }

@@ -138,13 +138,18 @@ describe('full integration pub/sub per inbox', () => {
 
   it('test unsubscribe', (done) => {
     const stellar = new StellarPubSub(redisTransport, 'test0', console);
+    let stopper;
     stellar.subscribe('test:channel', () => {
       console.log('message received');
       fail('should not receive a message');
-    }).then((stopper) => {
-      setTimeout(() => stopper().then(() => stellar.publish('test:channel', { text: 'hello world' })), 500);
-      setTimeout(done, 1000);
-    });
+    }).then((_stopper) => {
+      stopper = _stopper;
+    }).delay(500)
+      .then(() => stopper())
+      .delay(100)
+      .then(() => stellar.publish('test:channel', { text: 'hello world' }))
+      .delay(100)
+      .then(() => done())
   });
 
   it('test resubscribe', (done) => {
