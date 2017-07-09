@@ -3,7 +3,7 @@
  */
 import Promise from 'bluebird';
 import qs from 'qs';
-import _ from 'lodash';
+import assign from 'lodash';
 import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 
@@ -120,8 +120,8 @@ function stellarSocketFactory(eio) {
       log.info(`@StellarEngineIO._doConnect: ${userId}, ${token}`);
       return new Promise((resolve, reject) => {
         this.state = 'connecting';
-        const urlParams = _.assign({}, params,
-            { 'x-auth-user': userId, 'x-auth-token': token, 'x-auth-token-type': tokenType });
+        const urlParams =
+            assign({ 'x-auth-user': userId, 'x-auth-token': token, 'x-auth-token-type': tokenType }, params);
         let socketAttempt = null;
         try {
           socketAttempt = new eio.Socket(
