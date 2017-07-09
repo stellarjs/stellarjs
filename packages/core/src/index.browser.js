@@ -10,9 +10,13 @@ function setBluebirdScheduler(fn) {
   Promise.setScheduler(fn);
 }
 
+function setBluebirdConfig(values) {
+  Promise.config(values);
+}
+
 setSourceGenerators('browser', { browser });
 
-export { setBluebirdScheduler };
+export { setBluebirdScheduler, setBluebirdConfig };
 export { logger } from './logger';
 export { StellarError } from './StellarError';
 export { default as StellarCore } from './StellarCore';
