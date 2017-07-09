@@ -146,7 +146,6 @@ function handleMessage(log, session, command) {
       if (session.reactiveStoppers[requestHeaders.channel]) {
         const message = `Multiple subscriptions to same channel (${requestHeaders.channel
           }) not supported. First subscription sent ${_.first(session.reactiveStoppers[requestHeaders.channel])}`;
-        
         return stellarRequest
           ._prepareResponse(command.data, new StellarError(message))
           .then((errorResponse) => {

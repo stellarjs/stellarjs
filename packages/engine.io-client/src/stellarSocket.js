@@ -114,7 +114,7 @@ function stellarSocketFactory(eio) {
         }
       });
     },
-    _doConnect(url, { userId, token, secure, tokenType, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
+    _doConnect(url, { userId, token, secure, tokenType, eioConfig = { upgrade: true, rememberUpgrade: true } }, params) {
       log.info(`@StellarEngineIO._doConnect: ${userId}, ${token}`);
       return new Promise((resolve, reject) => {
         this.state = 'connecting';
@@ -124,7 +124,8 @@ function stellarSocketFactory(eio) {
           socketAttempt = new eio.Socket(
             // eslint-disable-next-line max-len
             `${secure ? 'wss' : 'ws'}://${url}?x-auth-user=${encodeURIComponent(
-              userId)}&x-auth-token=${encodeURIComponent(token)}&x-auth-token-type=${encodeURIComponent(tokenType)}`,
+              userId)}&x-auth-token=${encodeURIComponent(token)}&x-auth-token-type=${encodeURIComponent(tokenType)
+            }&params=${encodeURIComponent(JSON.stringify(params))}`,
             eioConfig
           );
         } catch (e) {
