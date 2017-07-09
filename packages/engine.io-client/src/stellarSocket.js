@@ -2,6 +2,8 @@
  * Created by arolave on 15/06/2017.
  */
 import Promise from 'bluebird';
+import qs from 'qs';
+import _ from 'lodash';
 import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 
@@ -114,18 +116,17 @@ function stellarSocketFactory(eio) {
         }
       });
     },
-    _doConnect(url, { userId, token, secure, tokenType, eioConfig = { upgrade: true, rememberUpgrade: true } }, params) {
+    _doConnect(url, { userId, token, secure, tokenType, params, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
       log.info(`@StellarEngineIO._doConnect: ${userId}, ${token}`);
       return new Promise((resolve, reject) => {
         this.state = 'connecting';
-
+        const urlParams = _.assign({}, params,
+            { 'x-auth-user': userId, 'x-auth-token': token, 'x-auth-token-type': tokenType });
         let socketAttempt = null;
         try {
           socketAttempt = new eio.Socket(
             // eslint-disable-next-line max-len
-            `${secure ? 'wss' : 'ws'}://${url}?x-auth-user=${encodeURIComponent(
-              userId)}&x-auth-token=${encodeURIComponent(token)}&x-auth-token-type=${encodeURIComponent(tokenType)
-            }&params=${encodeURIComponent(JSON.stringify(params))}`,
+            `${secure ? 'wss' : 'ws'}://${url}?${qs.stringify(urlParams)}`,
             eioConfig
           );
         } catch (e) {
