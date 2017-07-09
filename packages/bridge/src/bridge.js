@@ -146,7 +146,7 @@ function handleMessage(log, session, command) {
       if (session.reactiveStoppers[requestHeaders.channel]) {
         const message = `Multiple subscriptions to same channel (${requestHeaders.channel
           }) not supported. First subscription sent ${_.first(session.reactiveStoppers[requestHeaders.channel])}`;
-        
+
         return stellarRequest
           ._prepareResponse(command.data, new StellarError(message))
           .then((errorResponse) => {
@@ -176,23 +176,6 @@ function handleMessage(log, session, command) {
 
       return reactiveRequest.results.then(response => sendResponse(log, session, command, response));
     }
-    // TODO customize
-    // case 'impersonate': {
-    //   log.info(`@StellarBridge.impersonateUser(${command.data.body.targetUserId})`);
-    //   // TODO convert to middleware stellarRequest.use('accounts:impersonate', () =>
-    //   return isUserPermitted(session.operation._id, session.user, PERMISSIONS.IMPERSONATE)
-    //     .then((isPermitted) => {
-    //       log.info(isPermitted);
-    //       if (!isPermitted) {
-    //         // TODO throw new Error(`Invalid impersonation request`);
-    //         log.error(
-    //           `@StellarBridge.impersonateUser(${command.data.body.targetUserId}) Invalid impersonation request`);
-    //         return session;
-    //       }
-    //
-    //       return session.impersonateUserId(command.data.body.targetUserId);
-    //     });
-    // }
     default: {
       throw new Error(`Invalid stellar bridge message: ${JSON.stringify(command)}`);
     }
