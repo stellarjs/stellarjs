@@ -134,7 +134,7 @@ though it processes the ${serviceInbox} queue`);
           if (e.__stellarResponse != null) {
             return sendResponse(e.__stellarResponse, e);
           }
-          
+
           this.log.error(e, `@StellarHandler ${jobData.headers.id}: Unexpected error`);
           throw e;
         });

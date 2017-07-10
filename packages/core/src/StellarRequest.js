@@ -117,11 +117,11 @@ export default class StellarRequest extends StellarCore {
               if (get(responseData, 'headers.errorType') === 'StellarError') {
                 const error = new StellarError(responseData.body);
                 error.__stellarResponse = responseData;
-                reject(error)
+                reject(error);
               } else if (get(responseData, 'headers.errorType')) {
                 const error = new Error(get(responseData, 'body.message'));
                 error.__stellarResponse = responseData;
-                reject(error)
+                reject(error);
               } else {
                 resolve(responseData);
               }
