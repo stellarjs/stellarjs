@@ -203,6 +203,7 @@ describe('call server', () => {
         expect(e.message).toBe('pongError');
         stellarSocket.close();
         done()
-      });
+      })
+      .catch(x => {log.error(x, 'bummer')});
   });
 });
