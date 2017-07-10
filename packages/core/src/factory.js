@@ -47,7 +47,6 @@ function getSourceGenerator(value) {
 
 function configureTransport(transport, transportFactory, options) {
   _transport = transport || transportFactory(options);
-  _log.info(`setting transport ${_transport}`);
   return _transport;
 }
 
@@ -68,11 +67,13 @@ function configureStellar({ log, transport, transportFactory, source, sourceGene
   }
 }
 
-function _getInstance(name, builder) {
-  if (!StellarServer.instances[name]) {
-    StellarServer.instances[name] = builder.apply();
+function _getInstance(name, overrideSource, builder) {
+  const key = overrideSource ? `${name}-${overrideSource}` : name;
+  if (!StellarServer.instances[key]) {
+    _log.info(`${name} creation key=${key}`);
+    StellarServer.instances[key] = builder.apply();
   }
-  return StellarServer.instances[name];
+  return StellarServer.instances[key];
 }
 
 function resetCache() {
@@ -85,32 +86,34 @@ function resetCache() {
 }
 
 function stellarAppPubSub() {
-  return _getInstance('stellarAppPubSub', () => new StellarPubSub(_transport, _source, _log, _app));
+  return _getInstance('stellarAppPubSub', _source, () => new StellarPubSub(_transport, _source, _log, _app));
 }
 
-function stellarNodePubSub() {
-  return _getInstance('stellarNodePubSub', () => new StellarPubSub(_transport, _source, _log));
+function stellarNodePubSub(options = {}) {
+  const source = options.sourceOverride || _source;
+  return _getInstance('stellarNodePubSub', options.sourceOverride, () => new StellarPubSub(_transport, source, _log));
 }
 
-function stellarRequest() {
-  _log.info(`stellarRequest creation source=${_source}`);
-  return _getInstance('stellarRequest',
-                      () => new StellarRequest(_transport, _source, _log, requestTimeout, stellarNodePubSub()));
+function stellarRequest(options = {}) {
+  const source = options.sourceOverride || _source;
+
+  return _getInstance('stellarRequest', options.sourceOverride,
+                      () => new StellarRequest(_transport, source, _log, requestTimeout, stellarNodePubSub(options)));
 }
 
 function stellarHandler() {
-  return _getInstance('stellarHandler', () => new StellarHandler(_transport, _source, _log, _app));
+  return _getInstance('stellarHandler', _source, () => new StellarHandler(_transport, _source, _log, _app));
 }
 
 function stellarPublish() {
-  return _getInstance('stellarPublish', () => {
+  return _getInstance('stellarPublish', _source, () => {
     const pubsub = stellarAppPubSub();
     return pubsub.publish.bind(pubsub);
   });
 }
 
 function stellarSubscribe() {
-  return _getInstance('stellarSubscribe', () => {
+  return _getInstance('stellarSubscribe', _source, () => {
     const pubsub = stellarAppPubSub();
     return pubsub.subscribe.bind(pubsub);
   });
