@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/engine.io-client",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
   "src": [
@@ -30,11 +30,14 @@
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
     "jest": "^20.0.4",
-    "rimraf": "^2.6.1"
+    "rimraf": "^2.6.1",
+    "webpack": "2.5.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.6.0",
-    "@stellarjs/transport-socket": "^0.6.0",
-    "bluebird": "3.4.7"
+    "@stellarjs/core": "^0.6.1",
+    "@stellarjs/transport-socket": "^0.6.1",
+    "bluebird": "3.4.7",
+    "lodash": "^4.17.4",
+    "qs": "^6.5.0"
   }
 }

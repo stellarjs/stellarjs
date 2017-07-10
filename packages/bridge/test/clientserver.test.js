@@ -12,20 +12,21 @@ const clearRedis = () => {
   redisClient = new RedisClient(console);
   if (redisClient.defaultConnection.options.db === 7) {
     console.info('Flush redis');
-    return redisClient.defaultConnection.flushdb()
-  } else {
-    throw new Error("Redis not in test mode");
+    return redisClient.defaultConnection.flushdb();
   }
+  throw new Error('Redis not in test mode');
 };
 
 let proc;
 beforeAll((done) => {
   clearRedis()
-    .then(() => proc = child_process.fork(`${__dirname}/examples/index`))
+    .then(() => {
+      proc = child_process.fork(`${__dirname}/examples/index`);
+    })
     .delay(3500)
     .then(() => {
       console.info('beforeAll done');
-      done()
+      done();
     });
 });
 
@@ -36,7 +37,7 @@ afterAll(() => {
 
 describe('call server', () => {
   it('on auth error dont reconnect', () => {
-    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket
       .connect('localhost:8091', {
         secure: false,
@@ -54,7 +55,7 @@ describe('call server', () => {
   });
 
   it('on other error reconnect automatically', (done) => {
-    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket
       .connect('localhost:8091', {
         secure: false,
@@ -74,13 +75,16 @@ describe('call server', () => {
   });
 
   it('request response should work', (done) => {
-    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket.connect('localhost:8091', {
       secure: false,
       userId: '123',
       token: '123',
       tokenType: 'API',
       eioConfig: { upgrade: false },
+      params: {
+        extraParam: 1,
+      },
     });
     return stellarSocket.stellar
       .get('sampleService:ping')
@@ -98,7 +102,7 @@ describe('call server', () => {
   it('should getReactive calls', (done) => {
     let reactiveResolve;
     let stopper;
-    const reactivePromise = new Promise((resolve) => {reactiveResolve = resolve});
+    const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
     const stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket.connect('localhost:8091', {
       secure: false,
@@ -113,8 +117,8 @@ describe('call server', () => {
       { text: 'king' },
       (reactiveMessage) => {
         console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
-        reactiveResolve(reactiveMessage)
-    });
+        reactiveResolve(reactiveMessage);
+      });
     stopper = retval.onStop;
     retval
       .results
@@ -126,19 +130,19 @@ describe('call server', () => {
       })
       .then((reactiveMessage) => {
         console.info('reactiveMessage received');
-        expect(reactiveMessage).toEqual({text: 'kong'});
+        expect(reactiveMessage).toEqual({ text: 'kong' });
         return stopper;
       })
       .then((doStop) => {
         doStop();
-        stellarSocket.close()
+        stellarSocket.close();
       })
       .then(() => done());
   });
-  
+
   it('should disallow multiple getReactive calls', (done) => {
     let reactiveResolve;
-    const reactivePromise = new Promise((resolve) => {reactiveResolve = resolve});
+    const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
 
     const stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket.connect('localhost:8091', {
@@ -154,7 +158,7 @@ describe('call server', () => {
       { text: 'king' },
       (reactiveMessage) => {
         console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
-        reactiveResolve(reactiveMessage)
+        reactiveResolve(reactiveMessage);
       });
 
     const retval2 = stellarSocket.stellar.getReactive(
@@ -163,7 +167,7 @@ describe('call server', () => {
       { text: 'king' },
       (reactiveMessage) => {
         console.info(`@StellarEngineIO.getReactive2: received stream: ${JSON.stringify(reactiveMessage)}`);
-        reactiveResolve(reactiveMessage)
+        reactiveResolve(reactiveMessage);
       });
 
     retval1
@@ -172,7 +176,7 @@ describe('call server', () => {
         console.info('result 1 received');
         console.info(JSON.stringify(result));
         expect(result.text).toEqual('kong');
-        return retval2.results
+        return retval2.results;
       })
       .catch((result) => {
         console.info('result 2 received');
@@ -183,13 +187,13 @@ describe('call server', () => {
       .then((doStop1) => {
         console.info('Calling stop 1');
         doStop1();
-        return retval2.onStop
+        return retval2.onStop;
       })
       .then(() => done());
   });
-  
+
   it('request response should work when errors are thrown', (done) => {
-    let stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').default;
     stellarSocket.connect('localhost:8091', {
       secure: false,
       userId: '123',
@@ -202,7 +206,7 @@ describe('call server', () => {
       .catch(Error, (e) => {
         expect(e.message).toBe('pongError');
         stellarSocket.close();
-        done()
+        done();
       });
   });
 });

@@ -8,6 +8,7 @@ import isArray from 'lodash/isArray';
 import isFunction from 'lodash/isFunction';
 import isPlainObject from 'lodash/isPlainObject';
 import lowerCase from 'lodash/lowerCase';
+import omit from 'lodash/omit';
 
 import Promise from 'bluebird';
 
@@ -114,7 +115,7 @@ though it processes the ${serviceInbox} queue`);
         } else {
           // eslint-disable-next-line max-len
           this.log.error(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ Error: e.message, requestHeaders: jobData.headers })} (${executionTime}ms)`);
-          this.log.error(e);
+          this.log.error(omit(e, '__stellarResponse'));
         }
 
         return result;
@@ -129,8 +130,11 @@ though it processes the ${serviceInbox} queue`);
       return this
         ._executeMiddlewares(allMiddlewares, jobData)
         .then(response => sendResponse(response))
-        .catch({ length: 2 }, ([e, response]) => sendResponse(response, e))
         .catch((e) => {
+          if (e.__stellarResponse != null) {
+            return sendResponse(e.__stellarResponse, e);
+          }
+          
           this.log.error(e, `@StellarHandler ${jobData.headers.id}: Unexpected error`);
           throw e;
         });
