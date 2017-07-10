@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/engine.io-client",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
   "src": [
@@ -34,8 +34,8 @@
     "webpack": "2.5.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.6.1",
-    "@stellarjs/transport-socket": "^0.6.1",
+    "@stellarjs/core": "^0.6.2",
+    "@stellarjs/transport-socket": "^0.6.2",
     "bluebird": "3.4.7",
     "lodash": "^4.17.4",
     "qs": "^6.5.0"
