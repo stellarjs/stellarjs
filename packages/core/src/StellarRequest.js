@@ -39,7 +39,6 @@ export default class StellarRequest extends StellarCore {
   startResponseHandler() {
     this.responseInbox = StellarCore.getNodeInbox(this.source);
     this._process(this.responseInbox, (job) => {
-      this.log.info(`@StellarRequest: response received for ${get(job, 'data.headers.requestId')}`);
       this.inflightRequests[job.data.headers.requestId](job);
     }).catch((e) => {
       throw e;
