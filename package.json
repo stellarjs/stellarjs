@@ -10,7 +10,7 @@
     "start": "lerna exec -- yarn start",
     "link": "lerna exec -- yarn link",
     "clean": "lerna run clean",
-    "clean:modules": "lerna clean",
+    "clean:modules": "rm -rf node_modules && lerna clean",
     "compile": "lerna run compile",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",

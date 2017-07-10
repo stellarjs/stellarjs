@@ -123,11 +123,7 @@ function stellarSocketFactory(eio) {
         const urlParams = assign({ 'x-auth-user': userId, 'x-auth-token': token, 'x-auth-token-type': tokenType }, params);
         let socketAttempt = null;
         try {
-          socketAttempt = new eio.Socket(
-            // eslint-disable-next-line max-len
-            `${secure ? 'wss' : 'ws'}://${url}?${qs.stringify(urlParams)}`,
-            eioConfig
-          );
+          socketAttempt = new eio.Socket(`${secure ? 'wss' : 'ws'}://${url}?${qs.stringify(urlParams)}`, eioConfig);
         } catch (e) {
           log.info(`@StellarEngineIO error`, e);
           reject('Connect failed');
