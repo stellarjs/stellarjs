@@ -114,10 +114,14 @@ class StellarCore {
   }
 
   _handlerRejection(jobData, error) {
-    if (Array.isArray(error) || !includes(['request', 'reactive'], jobData.headers.type)) {
+    if (error.__stellarResponse != null || !includes(['request', 'reactive'], jobData.headers.type)) {
       return Promise.reject(error);
     }
-    return this._prepareResponse(jobData, error).then(response => Promise.reject([error, response]));
+    
+    return this._prepareResponse(jobData, error).then((response) => {
+      error.__stellarResponse = response;
+      return Promise.reject(error)
+    });
   }
 
   _executeMiddlewares(handlers, jobData, options = {}) { // eslint-disable-line class-methods-use-this

@@ -15,10 +15,10 @@ export default function (req, next) {
                   newrelic.endTransaction();
                   resolve(result);
                 })
-                .catch(([err, response]) => {
-                  newrelic.noticeError(err);
+                .catch((err) => {
+                  newrelic.noticeError(_.omit(err, '__stellarResponse'));
                   newrelic.endTransaction();
-                  reject([err, response]);
+                  reject(err);
                 });
     })();
   });
