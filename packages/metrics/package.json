@@ -1,0 +1,43 @@
+{
+  "name": "@stellarjs/metrics",
+  "version": "0.5.2",
+  "main": "lib-es6/index.js",
+  "src": [
+    "src/**/*"
+  ],
+  "scripts": {
+    "ci": "yarn run lint && yarn run test-coverage",
+    "clean": "rimraf lib lib-es6",
+    "compile": "yarn run compile:es6",
+    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublish": "yarn run compile",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
+  "devDependencies": {
+    "@stellarjs/core": "^0.5.2",
+    "@stellarjs/transport-memory": "^0.5.2",
+    "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "bluebird": "3.4.7",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.3.0",
+    "jest": "^20.0.4",
+    "rimraf": "^2.6.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
