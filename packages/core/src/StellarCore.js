@@ -117,10 +117,10 @@ class StellarCore {
     if (error.__stellarResponse != null || !includes(['request', 'reactive'], jobData.headers.type)) {
       return Promise.reject(error);
     }
-    
+
     return this._prepareResponse(jobData, error).then((response) => {
-      error.__stellarResponse = response;
-      return Promise.reject(error)
+      assign(error, { __stellarResponse: response });
+      return Promise.reject(error);
     });
   }
 
