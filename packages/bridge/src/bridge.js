@@ -15,9 +15,7 @@ function connectToMicroservices(log, middlewares) {
   return configureStellar({ log, transportFactory: redisTransportFactory })
     .then(() => {
       const sourceOverride = `bridge-${stellarSource()}`;
-      log.info(`source = ${sourceOverride}`);
       stellarRequest = stellarRequestFactory({ sourceOverride });
-      log.info(`new request factory ${stellarRequest}`);
 
       _.forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
       // TODO customize
