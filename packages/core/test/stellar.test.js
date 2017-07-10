@@ -315,9 +315,9 @@ describe('middlewares', () => {
     let mwError;
     stellarHandler.use('.*', (jobData, next) => {
       mwRequest = _.clone(jobData);
-      return next().catch(([error, response]) => {
-        mwError = response.body;
-        return Promise.reject([error, response]);
+      return next().catch((error) => {
+        mwError = error.__stellarResponse.body;
+        return Promise.reject(error);
       });
     });
 
@@ -340,9 +340,9 @@ describe('middlewares', () => {
     let mwError;
     stellarHandler.use('.*', (jobData, next) => {
       mwRequest = _.clone(jobData);
-      return next().catch(([error, response]) => {
-        mwError = response.body;
-        return Promise.reject([error, response]);
+      return next().catch((error) => {
+        mwError = error.__stellarResponse.body;
+        return Promise.reject(error);
       });
     });
 

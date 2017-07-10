@@ -99,7 +99,10 @@ export default class StellarRequest extends StellarCore {
                 this.log.warn(`@StellarRequest ${headers.id}: timeout after ${this.requestTimeout}ms`);
                 delete this.inflightRequests[headers.id];
                 const error = new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`);
-                this._prepareResponse(job.data, error).then(response => reject([error, response]));
+                this._prepareResponse(job.data, error).then((response) => {
+                  error.__stellarResponse = response;
+                  return reject(error);
+                });
               }, this.requestTimeout);
             }
 
@@ -112,9 +115,13 @@ export default class StellarRequest extends StellarCore {
 
               const responseData = responseJob.data;
               if (get(responseData, 'headers.errorType') === 'StellarError') {
-                reject([new StellarError(responseData.body), responseData]);
+                const error = new StellarError(responseData.body);
+                error.__stellarResponse = responseData;
+                reject(error)
               } else if (get(responseData, 'headers.errorType')) {
-                reject([new Error(get(responseData, 'body.message')), responseData]);
+                const error = new Error(get(responseData, 'body.message'));
+                error.__stellarResponse = responseData;
+                reject(error)
               } else {
                 resolve(responseData);
               }
@@ -128,14 +135,13 @@ export default class StellarRequest extends StellarCore {
       .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
       .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
-        if (!Array.isArray(e)) { // array is the expected format
+        if (e.__stellarResponse == null) {
           this.log.error(e, `@StellarRequest: Unexpected error`);
-          throw e;
         } else if (options.responseType === 'raw') {
-          return e[1];
-        } else {
-          throw e[0];
+          return e.__stellarResponse;
         }
+
+        throw e;
       });
   }
 }
