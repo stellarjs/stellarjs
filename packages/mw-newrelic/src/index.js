@@ -1,6 +1,7 @@
 import newrelic from 'newrelic';
 import Promise from 'bluebird';
 import get from 'lodash/get';
+import omit from 'lodash/omit';
 
 export default function (req, next) {
   if (get(req, 'headers.queueName') == null) {
@@ -16,7 +17,7 @@ export default function (req, next) {
                   resolve(result);
                 })
                 .catch((err) => {
-                  newrelic.noticeError(_.omit(err, '__stellarResponse'));
+                  newrelic.noticeError(omit(err, '__stellarResponse'));
                   newrelic.endTransaction();
                   reject(err);
                 });
