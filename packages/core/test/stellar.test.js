@@ -9,7 +9,7 @@ import { MockTransport } from './mocks';
 
 const getStellarRequest = () => new StellarRequest(new MockTransport(), 'test', console, 1000);
 const getStellarHandler = (queueName, body = { text: 'hi' }) => {
-  const transport = new MockTransport({ headers: { queueName, respondTo: 'myQueue', type:'request' }, body  }, true);
+  const transport = new MockTransport({ headers: { queueName, respondTo: 'myQueue', type:'request' }, body  }, { autoProcess: true });
   StellarHandler.isProcessing = new Set();
   return new StellarHandler(transport, 'test', console, 1000);
 };
