@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-socket",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
   "src": [
@@ -43,7 +43,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.6.2",
+    "@stellarjs/core": "^0.7.0",
     "bluebird": "3.4.7",
     "lodash": "^4.17.4"
   }
