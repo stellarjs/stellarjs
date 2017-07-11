@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-memory",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
