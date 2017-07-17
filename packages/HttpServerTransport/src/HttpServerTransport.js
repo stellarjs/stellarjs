@@ -30,11 +30,11 @@ class HttpServerTransport {
     server.on('request', app);
 
     app.post(HttpServerTransport.ENQUEUE_URI, (req, res) => {
-      const command = get(req, 'body.data');
-      this.requestHandler.once(get(command, 'headers.id'), (command) => {
-        res.send(command);
+      const reqCommand = get(req, 'body.data');
+      this.requestHandler.once(get(reqCommand, 'headers.id'), (resCommand) => {
+        res.send(resCommand);
       });
-      this.messageHandler.emit(getQueueName(command), command);
+      this.messageHandler.emit(getQueueName(reqCommand), reqCommand);
     });
   }
 

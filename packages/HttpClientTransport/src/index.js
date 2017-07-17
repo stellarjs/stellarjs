@@ -1,5 +1,4 @@
 import HttpClientTransport from './HttpClientTransport';
-import request from 'request';
 
 let instance;
 function transportFactory({ log, hostUrl, sendingOnly = false, port }) {
