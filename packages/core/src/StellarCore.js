@@ -4,7 +4,7 @@
 import assign from 'lodash/assign';
 import first from 'lodash/first';
 import get from 'lodash/get';
-import isArray from 'lodash/isArray';
+import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
 import stringify from 'safe-json-stringify';
@@ -54,9 +54,8 @@ class StellarCore {
     }
   }
 
-  getNextId(queueName) {
-    const prefix = StellarCore.getServiceName(queueName);
-    return this.transport.generateId(prefix).then(id => `${prefix}:${id}`);
+  getNextId(inbox) {
+    return this.transport.generateId(inbox).then(id => `${inbox}:${id}`);
   }
 
   /**
@@ -107,17 +106,22 @@ class StellarCore {
       });
   }
 
-  _handlerResult(jobData, options, result) {
-    return get(result, 'headers.type') === 'response' || jobData.headers.type !== 'request'
-      ? result
-      : this._prepareResponse(jobData, result);
+  _handlerResult(jobData, result) {
+    if (get(result, 'headers.type') === 'response' || !includes(['request', 'reactive'], jobData.headers.type)) {
+      return result;
+    }
+    return this._prepareResponse(jobData, result);
   }
 
-  _handlerRejection(jobData, options, error) {
-    if (isArray(error) || jobData.headers.type !== 'request') {
+  _handlerRejection(jobData, error) {
+    if (error.__stellarResponse != null || !includes(['request', 'reactive'], jobData.headers.type)) {
       return Promise.reject(error);
     }
-    return this._prepareResponse(jobData, error).then(response => Promise.reject([error, response]));
+
+    return this._prepareResponse(jobData, error).then((response) => {
+      assign(error, { __stellarResponse: response });
+      return Promise.reject(error);
+    });
   }
 
   _executeMiddlewares(handlers, jobData, options = {}) { // eslint-disable-line class-methods-use-this
@@ -134,13 +138,13 @@ class StellarCore {
         return Promise.reject(new Error('Final Handler should not call next'));
       }
 
-      // this.log.info(`@StellarCore.executeMiddlewares: run ${i} ${stringify(jobData, this.log)}`);
+      // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
       if (handlers[i].pattern === undefined ||
         match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
         return Promise
           .try(() => handlers[i].fn(jobData, next, options))
-          .then(result => this._handlerResult(jobData, options, result))
-          .catch(error => this._handlerRejection(jobData, options, error));
+          .then(result => this._handlerResult(jobData, result))
+          .catch(error => this._handlerRejection(jobData, error));
       }
 
       return next();
@@ -150,17 +154,17 @@ class StellarCore {
   }
 
   _enqueue(queueName, obj) {
-    this.log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj, this.log)}`);
+    this.log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj)}`);
     return this.transport
       .enqueue(queueName, obj)
       .catch((e) => {
-        this.log.error(`@StellarCore.enqueue error`, e);
+        this.log.error(e, `@StellarCore.enqueue error`);
         throw e;
       });
   }
 
-  _process(queueName, callback) {
-    return this.transport.process(queueName, (job) => {
+  _process(inbox, callback) {
+    return this.transport.process(inbox, (job) => {
       this.log.info(`@StellarCore.process ${job.data.headers.id}: ${stringify(job.data)}`);
       return callback(job);
     });

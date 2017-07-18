@@ -8,6 +8,7 @@ import isArray from 'lodash/isArray';
 import isFunction from 'lodash/isFunction';
 import isPlainObject from 'lodash/isPlainObject';
 import lowerCase from 'lodash/lowerCase';
+import omit from 'lodash/omit';
 
 import Promise from 'bluebird';
 
@@ -107,11 +108,14 @@ though it processes the ${serviceInbox} queue`);
       const logComplete = (result, e) => {
         const executionTime = Date.now() - startTime;
         if (!e) {
-          this.log.info(`${url} processed in ${executionTime}ms`);
+          this.log.info(`@StellarHandler(${jobData.headers.id}) processed in ${executionTime}ms`);
         } else if (e instanceof StellarError) {
-          this.log.warn(`${url} stellarErrors ${JSON.stringify(e.messageKeys())} (${executionTime}ms)`);
+          // eslint-disable-next-line max-len
+          this.log.warn(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ StellarErrors: e.messageKeys(), requestHeaders: jobData.headers })} (${executionTime}ms)`);
         } else {
-          this.log.error(`${url} Error (${executionTime}ms)`, e);
+          // eslint-disable-next-line max-len
+          this.log.error(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ Error: e.message, requestHeaders: jobData.headers })} (${executionTime}ms)`);
+          this.log.error(omit(e, '__stellarResponse'));
         }
 
         return result;
@@ -126,9 +130,12 @@ though it processes the ${serviceInbox} queue`);
       return this
         ._executeMiddlewares(allMiddlewares, jobData)
         .then(response => sendResponse(response))
-        .catch({ length: 2 }, ([e, response]) => sendResponse(response, e))
         .catch((e) => {
-          this.log.error(`@StellarHandler ${jobData.headers.id}: Unexpected error`, e);
+          if (e.__stellarResponse != null) {
+            return sendResponse(e.__stellarResponse, e);
+          }
+
+          this.log.error(e, `@StellarHandler ${jobData.headers.id}: Unexpected error`);
           throw e;
         });
     });

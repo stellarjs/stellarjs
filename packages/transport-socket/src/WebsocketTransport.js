@@ -2,7 +2,6 @@
  * Created by arolave on 06/10/2016.
  */
 import get from 'lodash/get';
-import last from 'lodash/last';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 
@@ -26,10 +25,10 @@ class WebsocketTransport {
 
     if (!this.sendingOnly) {
       socket.on('message', (str) => {
-                // log.info(`@Stellar.Websocket message received: ${str}`);
+        // this.log.info(`@Stellar.Websocket message received: ${str}`);
         const command = JSON.parse(str);
-        if (get(command, 'queue.name')) {
-          this.messageHandler.emit(command.queue.name, command);
+        if (get(command, 'data.headers.queueName')) {
+          this.messageHandler.emit(command.data.headers.queueName, command);
         }
       });
     }
@@ -61,26 +60,22 @@ class WebsocketTransport {
     return Promise.resolve(`${Date.now() - WebsocketTransport.START_2016}:${Math.floor(Math.random() * 10000)}`);
   }
 
-  enqueue(queueName, obj) {
+  enqueue(queueName, data) {
+    // queueName ignored on a socket enqueue as there is only one queue
     return this.socket.then((s) => {
-      const command = {
-        queue: { name: queueName }, // TODO remove
-        jobId: last(obj.headers.id.split(':')),
-        data: obj,
-      };
-      const str = JSON.stringify(command);
-
-      s.send(str);
+      const command = { data };
+      s.send(JSON.stringify(command));
       return command;
     });
   }
 
   process(queueName, callback) {
+    this.log.info(`@WebsocketTransport: Registering inbox: ${queueName}`);
     this.messageHandler.on(queueName, (command) => {
       try {
         callback(command);
       } catch (e) {
-        this.log.warn('invalid message sent to stellar websocket transport');
+        this.log.warn(e, 'invalid message sent to stellar websocket transport');
       }
     });
     return Promise.resolve();

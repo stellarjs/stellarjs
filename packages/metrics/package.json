@@ -1,17 +1,15 @@
 {
-  "name": "@stellarjs/engine.io-client",
-  "version": "0.7.0",
+  "name": "@stellarjs/metrics",
+  "version": "0.6.0",
   "main": "lib-es6/index.js",
-  "browser": "lib/index.browser.js",
   "src": [
     "src/**/*"
   ],
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
-    "compile": "yarn run compile:es6 && yarn run compile:umd",
+    "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
-    "compile:umd": "webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
@@ -21,23 +19,25 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "engine.io-client": "2-3"
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   },
   "devDependencies": {
+    "@stellarjs/core": "^0.5.2",
+    "@stellarjs/transport-memory": "^0.6.0",
     "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "bluebird": "3.4.7",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
     "jest": "^20.0.4",
-    "rimraf": "^2.6.1",
-    "webpack": "2.5.1"
+    "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.7.0",
-    "@stellarjs/transport-socket": "^0.7.0",
-    "bluebird": "3.4.7",
-    "lodash": "^4.17.4",
-    "qs": "^6.5.0"
+    "lodash": "^4.17.4"
   }
 }

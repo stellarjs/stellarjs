@@ -2,7 +2,7 @@
  * Created by arolave on 29/05/2017.
  */
 import http from 'http';
-import uuid from 'uuid';
+import uuid from 'uuid/v4';
 import Promise from 'bluebird';
 import { getFromInstanceId } from './common';
 
@@ -11,7 +11,7 @@ export default function run(log) {
     http.get({ host: 'http://169.254.169.254', path: '/latest/meta-data/instance-id', timeout: 1000 }, (res) => {
       if (res.statusCode !== 200) {
         log.info(`@StellarCore: Running standard`);
-        resolve(getFromInstanceId(uuid.v4()));
+        resolve(getFromInstanceId(uuid()));
       }
 
       res.setEncoding('utf8');
@@ -27,7 +27,7 @@ export default function run(log) {
       });
     }).on('error', () => {
       log.info(`@StellarCore: Running standard`);
-      resolve(getFromInstanceId(uuid.v4()));
+      resolve(getFromInstanceId(uuid()));
     });
   });
 }
