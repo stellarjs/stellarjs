@@ -42,12 +42,10 @@
     "eslint-plugin-import": "^2.3.0",
     "jest": "^20.0.4",
     "request": "^2.81.0",
-    "rimraf": "^2.6.1",
-    "request": "^2.81.0"
+    "rimraf": "^2.6.1"
   },
   "dependencies": {
     "express": "^4.15.3",
-    "@stellarjs/core": "^0.4.4",
     "bluebird": "3.4.6",
     "lodash": "4.15.0"
   }

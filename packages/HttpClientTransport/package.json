@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "axios": "^0.16.2",
-    "@stellarjs/core": "^0.4.4",
     "bluebird": "3.4.6",
     "lodash": "4.15.0"
   }
