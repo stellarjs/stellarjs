@@ -27,7 +27,7 @@ function createMockCommand() {
   }
 }
 
-const port = 9992;
+const port = 9993;
 
 function sendMockRequest(cb) {
   request.post({
