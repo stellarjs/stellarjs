@@ -28,7 +28,6 @@ function createMockCommand() {
 
 const port = 9992;
 let app;
-let server;
 
 function setUpMockServer(cb) {
   app = express();
@@ -38,7 +37,7 @@ function setUpMockServer(cb) {
   app.post(`${HttpClientTransport.ENQUEUE_URI}`, function (req, res) {
     cb(req, res);
   });
-  server = app.listen(port);
+  app.listen(port);
 }
 
 beforeAll((done) => {
