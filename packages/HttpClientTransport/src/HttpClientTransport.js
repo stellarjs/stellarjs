@@ -34,7 +34,6 @@ class HttpClientTransport {
     xhr.open("POST", this.hostUrl, true);
     xhr.overrideMimeType("application/json");
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xhr.setRequestHeader("Connection", "close");
     xhr.send(JSON.stringify(data));
   }
 
