@@ -8,8 +8,6 @@ import HttpClientTransport from '../src/HttpClientTransport';
 
 const log = console;
 
-let httpTransport;
-
 function getNewId() {
   return String(Date.now());
 }
@@ -30,6 +28,7 @@ function createMockCommand() {
 
 const port = 9992;
 let app;
+let server;
 
 function setUpMockServer(cb) {
   app = express();
@@ -39,11 +38,10 @@ function setUpMockServer(cb) {
   app.post(`${HttpClientTransport.ENQUEUE_URI}`, function (req, res) {
     cb(req, res);
   });
-  app.listen(port);
+  server = app.listen(port);
 }
 
 beforeAll((done) => {
-  httpTransport = new HttpClientTransport({log, hostUrl: `http://localhost`, port: port});
   setUpMockServer((req, res) => {
     const command = get(req, 'body.data');
     set(command, 'headers.requestId', get(command, 'headers.id'));
@@ -56,9 +54,17 @@ beforeAll((done) => {
     .then(done);
 });
 
+afterAll((done) => {
+  Promise
+    .delay(200)
+    .then(() => {
+      process.exit(0);
+    });
+});
 
 describe('HttpClientTransport test simple requests', () => {
   it('send request and receive response', (done) => {
+    const httpTransport = new HttpClientTransport({log, hostUrl: `http://localhost`, port: port});
     const reqCommand = createMockCommand();
     httpTransport.process('testing-http-transport', (command) => {
       expect(get(command, 'headers.requestId')).toBe(get(reqCommand, 'headers.id'));

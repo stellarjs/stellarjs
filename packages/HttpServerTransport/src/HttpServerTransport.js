@@ -8,10 +8,6 @@ function getRequestId(command) {
   return get(command, 'headers.requestId');
 }
 
-function getQueueName(command) {
-  return get(command, 'headers.queueName');
-}
-
 class HttpServerTransport {
   constructor({server, log, sendingOnly}) {
     this.log = log;
@@ -20,6 +16,12 @@ class HttpServerTransport {
     this.requestHandler = new EventEmitter();
 
     this.listenOnServer(server);
+
+    this.currentId = 0;
+  }
+
+  generateId() {
+    return Promise.resolve(this.currentId++); //eslint-disable-line
   }
 
   listenOnServer(server) {
@@ -30,22 +32,26 @@ class HttpServerTransport {
     server.on('request', app);
 
     app.post(HttpServerTransport.ENQUEUE_URI, (req, res) => {
-      const reqCommand = get(req, 'body.data');
+      const reqCommand = get(req, 'body');
       this.requestHandler.once(get(reqCommand, 'headers.id'), (resCommand) => {
         res.send(resCommand);
       });
-      this.messageHandler.emit(getQueueName(reqCommand), reqCommand);
+      this.messageHandler.emit('msg', reqCommand);
     });
   }
 
   enqueue(queueName, command) {
     this.requestHandler.emit(getRequestId(command), command);
-    return Promise.resolve();
+    return Promise.resolve(command);
   }
 
   process(queueName, callback) {
-    this.messageHandler.on(queueName, (command) => {
-      callback(command);
+    this.messageHandler.on('msg', (command) => {
+      try {
+        callback(command);
+      } catch (e) {
+        this.log.warn(e, 'invalid message sent to stellar websocket transport');
+      }
     });
     return Promise.resolve();
   }

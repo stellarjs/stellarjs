@@ -8,12 +8,19 @@ class HttpClientTransport {
     this.sendingOnly = sendingOnly;
     this.messageHandler = new EventEmitter();
     this.hostUrl = hostUrl + ':' + port + HttpClientTransport.ENQUEUE_URI ;
+    this.currentId = 0;
+  }
+
+  generateId() {
+    return Promise.resolve(this.currentId++); //eslint-disable-line
   }
 
   enqueue(queueName, command) {
     this.post(command, (resCommand) => {
-      this.messageHandler.emit(queueName, resCommand);
+      this.messageHandler.emit('msg', resCommand);
     });
+
+    return Promise.resolve(command);
   }
 
   post(data, cb) {
@@ -22,15 +29,17 @@ class HttpClientTransport {
       if(xhr.readyState === XMLHttpRequest.DONE) {
         cb(JSON.parse(get(xhr, 'response')));
       }
-    }
+    };
+
     xhr.open("POST", this.hostUrl, true);
     xhr.overrideMimeType("application/json");
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.setRequestHeader("Connection", "close");
     xhr.send(JSON.stringify(data));
   }
 
   process(queueName, callback) {
-    this.messageHandler.on(queueName, (command) => {
+    this.messageHandler.on('msg', (command) => {
       callback(command);
     });
     return Promise.resolve();

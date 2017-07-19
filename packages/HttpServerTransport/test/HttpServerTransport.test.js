@@ -3,7 +3,10 @@ import http from 'http';
 import request from 'request';
 import get from 'lodash/get';
 
+import {StellarHandler, StellarRequest} from '@stellarjs/core';
+
 import HttpServerTransport from '../src/HttpServerTransport';
+import HttpClientTransport from '@stellarjs/HttpClientTransport';
 
 const log = console;
 
@@ -14,16 +17,14 @@ function getNewId() {
 }
 function createMockCommand() {
   return {
-    data: {
-      headers: {
-        queueName: 'testing-http-transport',
-        type :'request',
-        id: getNewId(),
-      },
-      body: {
-        test: 'test'
-      }
+    headers: {
+      queueName: 'testing-http-transport',
+      type :'request',
+      id: getNewId(),
     },
+    body: {
+      test: 'test'
+    }
   }
 }
 
@@ -39,10 +40,15 @@ function sendMockRequest(cb) {
   );
 }
 
-beforeAll(() => {
-  const server = http.createServer();
+let server;
+beforeEach(() => {
+  server = http.createServer();
   httpTransport = new HttpServerTransport({log, server: server});
   server.listen(port);
+});
+
+afterEach(() => {
+  server.close();
 });
 
 describe('HttpServerTransport test simple requests', () => {
@@ -63,5 +69,25 @@ describe('HttpServerTransport test simple requests', () => {
           done();
         });
       });
+  });
+});
+
+describe('E2E', () => {
+  it('Send message from client to server', (done) => {
+    const stellarHandler = new StellarHandler(httpTransport, 'test', console, 1000);
+
+    stellarHandler.get('test:resource', () => {
+      return 10;
+    });
+
+    const httpClientTransport = HttpClientTransport({log: console, hostUrl: `http://localhost`, port});
+    const stellarRequest = new StellarRequest(httpClientTransport, 'test', console, 1000);
+
+    stellarRequest.get('test:resource')
+      .then((res) => {
+        expect(res).toBe(10);
+        done();
+      });
+
   });
 });
