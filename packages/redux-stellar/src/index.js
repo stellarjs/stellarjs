@@ -2,11 +2,10 @@
  * Created by moshekabalo on 5/30/17.
  */
 import uuid from 'uuid';
-import _ from 'lodash';
+import { unset, isFunction } from 'lodash';
 
 export default function (stellarSocket, mwOptions = { transformChannel: undefined }) {
     const stellar = stellarSocket.stellar;
-
     const stoppersMap = {};
 
     return (ref) => {
@@ -23,7 +22,7 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
                 if (stopper) {
                     stopper();
                 }
-                _.unset(stoppersMap, payload);
+                unset(stoppersMap, payload);
                 return next({ type, payload });
             }
 
@@ -45,7 +44,7 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
                     }
                 };
 
-                const finalChannel = _.isFunction(mwOptions.transformChannel)
+                const finalChannel = isFunction(mwOptions.transformChannel)
                   ? mwOptions.transformChannel(channel, getState())
                   : channel;
 

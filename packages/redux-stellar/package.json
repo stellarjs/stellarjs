@@ -20,6 +20,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/engine.io-client": "^0.7.0",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -31,5 +32,8 @@
     "@stellarjs/core": "^0.7.0",
     "lodash": "^4.17.4",
     "uuid": "^3.1.0"
+  },
+  "peerDependencies": {
+    "@stellarjs/engine.io-client": "^0.7.0"
   }
 }
