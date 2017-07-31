@@ -3,6 +3,7 @@
  */
 import uuid from 'uuid';
 import _ from 'lodash';
+import getActionType from './getActionType';
 
 export default function (stellarSocket, mwOptions = { transformChannel: undefined }) {
     const stellar = stellarSocket.stellar;
@@ -12,7 +13,8 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
     return (ref) => {
         const { dispatch, getState } = ref;
         return next => (action) => {
-            const { type, payload, resource, method, path, channel, reactiveHandler, options } = action;
+            const { payload, resource, method, path, channel, reactiveHandler, options } = action;
+            const type = getActionType(action);
 
             if (!resource && !method) {
                 return next(action);
