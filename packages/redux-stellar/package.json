@@ -5,6 +5,12 @@
   "src": [
     "src/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
@@ -22,6 +28,7 @@
   "devDependencies": {
     "@stellarjs/engine.io-client": "^0.7.0",
     "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
