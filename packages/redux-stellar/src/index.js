@@ -4,10 +4,12 @@
 import uuid from 'uuid';
 import { unset, isFunction } from 'lodash';
 
+
 import getActionType from './getActionType';
 
 export default function (stellarSocket, mwOptions = { transformChannel: undefined }) {
     const stellar = stellarSocket.stellar;
+
     const stoppersMap = {};
 
     return (ref) => {
