@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { Cookie } from 'tough-cookie';
 import XHR, { Request } from 'engine.io-client/lib/transports/polling-xhr';
 
-if (process.versions.node) {
+if (_.get(process, 'versions.node')) {
   const onLoad = Request.prototype.onLoad;
   const request = XHR.prototype.request;
 
