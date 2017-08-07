@@ -1,32 +1,37 @@
-import _ from 'lodash';
+import { get, chain } from 'lodash';
 import { Cookie } from 'tough-cookie';
 import XHR, { Request } from 'engine.io-client/lib/transports/polling-xhr';
 
-if (_.get(process, 'versions.node')) {
-  const onLoad = Request.prototype.onLoad;
-  const request = XHR.prototype.request;
+if (get(process, 'versions.node')) {
+  const _onLoad = Request.prototype.onLoad;
+  const _request = XHR.prototype.request;
 
-  XHR.prototype.request = function (opts) {
-    const req = request.call(this, opts);
+  XHR.prototype.request = function request(opts) {
+    const req = _request.call(this, opts);
 
+    // for accessing the transport (which stores the http headers) later
     req.transport = this;
 
     return req;
   };
 
-  Request.prototype.onLoad = function () {
+  Request.prototype.onLoad = function onLoad() {
     const content = this.xhr.getResponseHeader('Set-Cookie');
 
     if (content) {
-      const cookies = _.map(content, c => Cookie.parse(c));
-      const cookiesString = _.map(cookies, c => c.cookieString());
-      const cookieHeader = _.join(_.reverse(cookiesString), '; ');
+      const cookieHeader = chain(content)
+          .map(c => Cookie.parse(c))
+          .map(c => c.cookieString())
+          .reverse()
+          .join('; ')
+          .value();
+
       if (!this.transport.extraHeaders) {
         this.transport.extraHeaders = {
           Cookie: cookieHeader,
         };
       }
     }
-    onLoad.call(this);
+    _onLoad.call(this);
   };
 }
