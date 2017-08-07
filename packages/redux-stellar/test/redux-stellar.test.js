@@ -10,7 +10,7 @@ describe('redux-stellar', () => {
         jest.resetAllMocks();
     });
 
-    it('should pass the intercepted action to next', (done) => {
+    it('should pass the intercepted action to next', () => {
         expect(middleware).toBeDefined();
         const action = mockAction({});
         middleware(mockRef)(mockNext)(action);
@@ -24,36 +24,32 @@ describe('redux-stellar', () => {
 
         expect(mockNext)
           .toHaveBeenLastCalledWith( { type: action.type, payload: expectedPayload });
-        done();
     });
 
-    it('should pass the intercepted action to next while unsubscribe while !method && !resource', (done) => {
+    it('should pass the intercepted action to next while unsubscribe while !method && !resource', () => {
         expect(middleware).toBeDefined();
         const action = mockAction({ resource: null, method: null });
         middleware(mockRef)(mockNext)(action);
 
         expect(mockNext)
           .toHaveBeenLastCalledWith(action);
-        done();
     });
 
-    it('should pass the intercepted action to next while unsubscribe', (done) => {
+    it('should pass the intercepted action to next while unsubscribe', () => {
         expect(middleware).toBeDefined();
         const action = mockAction({ method: 'unsubscribe' });
         middleware(mockRef)(mockNext)(action);
 
         expect(mockNext)
           .toHaveBeenLastCalledWith( { type: action.type, payload: action.payload });
-        done();
     });
 
-    it('should pass the intercepted action to next while subscribe', (done) => {
+    it('should pass the intercepted action to next while subscribe', () => {
         expect(middleware).toBeDefined();
         const action = mockAction({ method: 'subscribe', payload: () => {} });
 
         middleware(mockRef)(mockNext)(action);
         expect(mockNext)
           .toHaveBeenLastCalledWith( { type: action.type, payload: Promise.prototype });
-        done();
     });
 });

@@ -2,8 +2,8 @@
  * Created by moshekabalo on 5/30/17.
  */
 import uuid from 'uuid';
-import { unset, isFunction } from 'lodash';
-
+import unset from 'lodash/unset';
+import isFunction from 'lodash/isFunction';
 
 import getActionType from './getActionType';
 
