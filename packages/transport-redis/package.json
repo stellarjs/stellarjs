@@ -1,6 +1,7 @@
 {
   "name": "@stellarjs/transport-redis",
   "version": "0.7.0",
+  "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
@@ -34,7 +35,6 @@
   ],
   "author": "Andres Olave",
   "contributors": [],
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/sloops77/stellarjs/issues"
   },
