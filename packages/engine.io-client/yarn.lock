@@ -2,20 +2,20 @@
 # yarn lockfile v1
 
 
-"@stellarjs/core@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.6.0.tgz#7a966ff125d0e57a3280ae95e072d0ec2c420d7d"
+"@stellarjs/core@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.7.0.tgz#221b76d49419a015ea8e9fa6a721b018955bd4e1"
   dependencies:
     bluebird "3.4.7"
     lodash "^4.17.4"
     safe-json-stringify "^1.0.4"
     uuid "^3.0.1"
 
-"@stellarjs/transport-socket@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@stellarjs/transport-socket/-/transport-socket-0.6.0.tgz#983a8bdb9cde570d9facc11c6d563e0598e9480c"
+"@stellarjs/transport-socket@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stellarjs/transport-socket/-/transport-socket-0.7.0.tgz#81c8eea4b320442da53953db6231c87ce674b3d2"
   dependencies:
-    "@stellarjs/core" "^0.6.0"
+    "@stellarjs/core" "^0.7.0"
     bluebird "3.4.7"
     lodash "^4.17.4"
 
