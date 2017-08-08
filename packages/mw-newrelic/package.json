@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/mw-newrelic",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
