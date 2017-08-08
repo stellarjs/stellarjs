@@ -1,6 +1,7 @@
 {
   "name": "@stellarjs/engine.io-client",
-  "version": "0.7.0",
+  "version": "0.7.1",
+  "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
   "src": [
