@@ -8,7 +8,7 @@ export default function (req, next) {
   }
 
   return new Promise((resolve, reject) => {
-    newrelic.createWebTransaction(req.headers.queueName, () => {
+    newrelic.startWebTransaction(req.headers.queueName, () => {
       newrelic.addCustomParameters(req.data);
       return next()
                 .then((result) => {
