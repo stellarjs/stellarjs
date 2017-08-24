@@ -8,17 +8,17 @@ export default function (req, next) {
   return new Promise((resolve, reject) => {
     next()
             .then(response => resolve(response))
-            .catch(([err, response]) => {
+            .catch((err) => {
               const cb = (rollbarErr) => {
                 if (rollbarErr) {
                   logger.error(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
                 }
 
-                reject([err, response]);
+                reject(err);
               };
 
               if (!err || err instanceof StellarError) {
-                return reject([err, response]);
+                return reject(err);
               }
 
               if (err instanceof Error) {
