@@ -4,6 +4,7 @@
 import assign from 'lodash/assign';
 import defaults from 'lodash/defaults';
 import get from 'lodash/get';
+import includes from 'lodash/includes';
 import lowerCase from 'lodash/lowerCase';
 
 import Promise from 'bluebird';
@@ -38,7 +39,6 @@ export default class StellarRequest extends StellarCore {
   startResponseHandler() {
     this.responseInbox = StellarCore.getNodeInbox(this.source);
     this._process(this.responseInbox, (job) => {
-      this.log.info(`@StellarRequest: response received for ${get(job, 'data.headers.requestId')}`);
       this.inflightRequests[job.data.headers.requestId](job);
     }).catch((e) => {
       throw e;
@@ -71,7 +71,7 @@ export default class StellarRequest extends StellarCore {
                                     (command, ch) => reactiveHandler(command.body,
                                                                      get(command, 'headers.action'),
                                                                      ch),
-                                    defaults({ responseType: 'jobData' }, options)),
+                                    defaults({ responseType: 'raw' }, options)),
     };
   }
 
@@ -99,7 +99,10 @@ export default class StellarRequest extends StellarCore {
                 this.log.warn(`@StellarRequest ${headers.id}: timeout after ${this.requestTimeout}ms`);
                 delete this.inflightRequests[headers.id];
                 const error = new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`);
-                this._prepareResponse(job.data, error).then(response => reject([error, response]));
+                this._prepareResponse(job.data, error).then((response) => {
+                  error.__stellarResponse = response;
+                  return reject(error);
+                });
               }, this.requestTimeout);
             }
 
@@ -109,12 +112,18 @@ export default class StellarRequest extends StellarCore {
               }
 
               delete this.inflightRequests[headers.id];
-              if (get(responseJob, 'data.headers.errorType') === 'StellarError') {
-                reject([new StellarError(responseJob.data.body), responseJob.data]);
-              } else if (get(responseJob, 'data.headers.errorType')) {
-                reject([new Error(responseJob.data.body.message), responseJob.data]);
+
+              const responseData = responseJob.data;
+              if (get(responseData, 'headers.errorType') === 'StellarError') {
+                const error = new StellarError(responseData.body);
+                error.__stellarResponse = responseData;
+                reject(error);
+              } else if (get(responseData, 'headers.errorType')) {
+                const error = new Error(get(responseData, 'body.message'));
+                error.__stellarResponse = responseData;
+                reject(error);
               } else {
-                resolve(responseJob.data);
+                resolve(responseData);
               }
             };
           })),
@@ -124,14 +133,15 @@ export default class StellarRequest extends StellarCore {
       .then(() => this.getNextId(inbox))
       .then(id => assign(headers, { respondTo: this.responseInbox, id, queueName }))
       .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
-      .then(jobData => (options.responseType === 'jobData' ? jobData : jobData.body))
+      .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
-        if (Array.isArray(e)) { // array is the expected format
-          throw e[0];
-        } else {
+        if (e.__stellarResponse == null) {
           this.log.error(e, `@StellarRequest: Unexpected error`);
-          throw e;
+        } else if (options.responseType === 'raw') {
+          return e.__stellarResponse;
         }
+
+        throw e;
       });
   }
 }

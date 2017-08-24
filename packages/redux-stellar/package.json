@@ -1,11 +1,17 @@
 {
-  "name": "@stellarjs/mw-newrelic",
-  "version": "0.7.0",
+  "name": "@stellarjs/redux-stellar",
+  "version": "0.7.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
@@ -21,7 +27,9 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/engine.io-client": "^0.7.2",
     "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
@@ -29,8 +37,12 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "bluebird": "3.4.7",
+    "@stellarjs/core": "^0.7.1",
     "lodash": "^4.17.4",
-    "newrelic": "^1.36.0"
+    "uuid": "^3.1.0"
+  },
+  "peerDependencies": {
+    "@stellarjs/engine.io-client": "^0.7.2",
+    "redux-promise-middleware": "^4.3.0"
   }
 }

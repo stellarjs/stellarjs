@@ -2,6 +2,7 @@
  * Created by arolave on 29/05/2017.
  */
 /* global window*/
+import Promise from 'bluebird';
 import { getFromInstanceId } from './common';
 
 // see http://stackoverflow.com/questions/6213227/fastest-way-to-convert-a-number-to-radix-64-in-javascript

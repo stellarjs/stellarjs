@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/mw-newrelic",
+  "name": "@stellarjs/transport-memory",
   "version": "0.7.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -29,8 +29,6 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "bluebird": "3.4.7",
-    "lodash": "^4.17.4",
-    "newrelic": "^1.36.0"
+    "bluebird": "3.4.7"
   }
 }

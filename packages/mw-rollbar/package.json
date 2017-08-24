@@ -1,6 +1,7 @@
 {
   "name": "@stellarjs/mw-rollbar",
-  "version": "0.5.1",
+  "version": "0.7.1",
+  "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
@@ -28,8 +29,8 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.5.1",
-    "bluebird": "3.4.6",
+    "@stellarjs/core": "^0.7.1",
+    "bluebird": "3.4.7",
     "rollbar": "^0.6.6"
   }
 }

@@ -1,11 +1,22 @@
 /**
  * Created by arolave on 10/04/2017.
  */
+import Promise from 'bluebird';
+
 import { setSourceGenerators } from './factory';
 import browser from './source-generators/browser';
 
+function setBluebirdScheduler(fn) {
+  Promise.setScheduler(fn);
+}
+
+function setBluebirdConfig(values) {
+  Promise.config(values);
+}
+
 setSourceGenerators('browser', { browser });
 
+export { setBluebirdScheduler, setBluebirdConfig };
 export { logger } from './logger';
 export { StellarError } from './StellarError';
 export { default as StellarCore } from './StellarCore';

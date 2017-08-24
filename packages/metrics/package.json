@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/mw-newrelic",
+  "name": "@stellarjs/metrics",
   "version": "0.7.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -20,8 +20,18 @@
   "publishConfig": {
     "access": "public"
   },
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
   "devDependencies": {
+    "@stellarjs/core": "^0.5.2",
+    "@stellarjs/transport-memory": "^0.7.0",
     "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "bluebird": "3.4.7",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
@@ -29,8 +39,6 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "bluebird": "3.4.7",
-    "lodash": "^4.17.4",
-    "newrelic": "^1.36.0"
+    "lodash": "^4.17.4"
   }
 }
