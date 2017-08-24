@@ -3,6 +3,11 @@
  */
 import Promise from 'bluebird';
 
+// standardise object to have json data spec
+function standardiseObject(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 class MemoryTransport {
   constructor() {
     this.queues = {};
@@ -52,7 +57,7 @@ class MemoryTransport {
   enqueue(queueName, data) {
     const job = { data };
     setTimeout(() => {
-      this.queues[queueName].callback(job);
+      this.queues[queueName].callback(standardiseObject(job));
     });
 
     return Promise.resolve(job);
