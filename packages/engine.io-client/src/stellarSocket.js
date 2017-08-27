@@ -51,6 +51,7 @@ function stellarSocketFactory(eio) {
     socket: null,
     handlers: {},
     state: 'disconnected',
+    connectedOnce: false,
     userId: null,
     stellar: stellarRequest(),
     _reconnect(url, options) {
@@ -150,6 +151,10 @@ function stellarSocketFactory(eio) {
             this.socket = socketAttempt;
             this.userId = userId;
             this.trigger('open');
+            if (this.connectedOnce) {
+              this.trigger('reconnected');
+            }
+            this.connectedOnce = true;
             resolve(this.stellar);
           }
         });
