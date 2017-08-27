@@ -115,6 +115,9 @@ function stellarSocketFactory(eio) {
           log.warn('unable to close socket');
           resolve(this.state);
         }
+      }).then((state) => {
+        this.connectedOnce = false;
+        return state;
       });
     },
     _doConnect(url, { userId, token, secure, tokenType, params, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
