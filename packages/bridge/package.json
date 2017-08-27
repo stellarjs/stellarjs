@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/bridge",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -28,7 +28,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/engine.io-client": "^0.7.2",
+    "@stellarjs/engine.io-client": "^0.7.3",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "engine.io": "3.1.0",
