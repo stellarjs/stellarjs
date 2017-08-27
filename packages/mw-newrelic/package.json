@@ -29,8 +29,9 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
+    "@stellarjs/core": "^0.5.1",
     "bluebird": "3.4.7",
-    "lodash": "^4.17.4",
-    "newrelic": "^1.36.0"
+    "lodash": "4.17.4",
+    "newrelic": "^2.2.0"
   }
 }
