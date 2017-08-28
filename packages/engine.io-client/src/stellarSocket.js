@@ -73,7 +73,7 @@ function stellarSocketFactory(eio) {
         });
       }
     },
-    connect(url, options) {
+    connect(url, options = {}) {
       log.info(`@StellarEngineIO.connect`);
 
       tryToReconnect = options.tryToReconnect !== false;
@@ -81,6 +81,9 @@ function stellarSocketFactory(eio) {
       this.options = options;
       return this
         ._closeIfNeeded()
+        .then(() => {
+          this.connectedOnce = false;
+        })
         .then(() => this._doConnect(url, options))
         .then((result) => {
           log.info(`@StellarEngineIO connection success`);
