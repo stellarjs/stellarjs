@@ -85,16 +85,12 @@ describe('call server', () => {
       params: {
         extraParam: 1,
       },
-    });
-    return stellarSocket.stellar
-      .get('sampleService:ping')
+    }).then(() => stellarSocket.stellar.get('sampleService:ping'))
       .then((result) => {
-        console.info(JSON.stringify(result));
         expect(result.text).toBe('pong');
         stellarSocket.close();
       })
       .then(() => {
-        console.info('blah');
         done();
       });
   });
