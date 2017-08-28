@@ -1,0 +1,53 @@
+{
+  "name": "@stellarjs/HttpServerTransport",
+  "version": "0.0.1",
+  "main": "lib-es6/index.js",
+  "browser": "lib/index.browser.js",
+  "src": [
+    "src/**/*"
+  ],
+  "scripts": {
+    "ci": "yarn run lint && yarn run test-coverage",
+    "clean": "rimraf lib lib-es6",
+    "compile": "yarn run compile:es6 && yarn run compile:umd",
+    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:umd": "webpack -p",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublish": "yarn run compile",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "stellarjs/stellar",
+  "keywords": [
+    "microservices",
+    "es6",
+    "stellar",
+    "stellarjs"
+  ],
+  "author": "Roee Yudilevitch",
+  "contributors": [],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sloops77/stellarjs/issues"
+  },
+  "devDependencies": {
+    "@stellarjs/HttpClientTransport": "0.0.1",
+    "babel-cli": "^6.24.1",
+    "body-parser": "^1.17.2",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.3.0",
+    "jest": "^20.0.4",
+    "request": "^2.81.0",
+    "rimraf": "^2.6.1"
+  },
+  "dependencies": {
+    "express": "^4.15.3",
+    "bluebird": "3.4.7",
+    "lodash": "^4.17.4"
+  }
+}
