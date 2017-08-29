@@ -26,9 +26,7 @@
       "^.+\\.jsx?$": "babel-jest"
     },
     "collectCoverageFrom": [
-      "src/*.js",
-      "!src/index.js",
-      "!src/index.browser.js"
+      "src/*.js"
     ]
   },
   "devDependencies": {

@@ -7,6 +7,17 @@
   "src": [
     "src/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js",
+      "!src/index.browser.js"
+    ]
+  },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",

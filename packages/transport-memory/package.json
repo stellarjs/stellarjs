@@ -6,6 +6,15 @@
   "src": [
     "src/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js"
+    ]
+  },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
