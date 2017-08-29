@@ -16,18 +16,22 @@ describe('Test NR middleware use cases', () => {
       .then(res => expect(res).toEqual(val));
   });
 
-  it('Should pass request with queue to NR and to the next midddleware ', () => {
+  it('Should pass request with queue to NR and to the next midddleware (success)', () => {
     const req = {};
     set(req, 'headers.queueName', 'queueName')
-    const val1 = 'success';
-    const resolve = () => Promise.resolve(val1);
+    const val = 'success';
+    const resolve = () => Promise.resolve(val);
 
     middleware(req, resolve)
-      .then(res => expect(res).toEqual(val1));
-    
-    const val2 = 'reject';
-    const reject = () => Promise.reject(val2);
+      .then(res => expect(res).toEqual(val));
+  });
+
+  it('Should pass request with queue to NR and to the next midddleware (failure)', () => {
+    const req = {};
+    set(req, 'headers.queueName', 'queueName')
+    const val = 'reject';
+    const reject = () => Promise.reject(val);
     middleware(req, reject)
-      .catch(res => expect(res).toEqual(val2));
+      .catch(res => expect(res).toEqual(val));
   });
 });
