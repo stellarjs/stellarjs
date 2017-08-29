@@ -12,7 +12,7 @@
     "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "test": "jest",
-    "test:coverage": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls.js",
+    "test:coverage": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
