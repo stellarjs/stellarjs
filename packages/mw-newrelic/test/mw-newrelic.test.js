@@ -13,20 +13,21 @@ describe('Test NR middleware use cases', () => {
     const next = () => Promise.resolve(val);
 
     middleware(req, next)
-      .then(res => expect(res).toBe(val));
+      .then(res => expect(res).toEqual(val));
   });
 
   it('Should pass request with queue to NR and to the next midddleware ', () => {
     const req = {};
     set(req, 'headers.queueName', 'queueName')
-    const val = 'success';
-    const resolve = () => Promise.resolve(val);
+    const val1 = 'success';
+    const resolve = () => Promise.resolve(val1);
 
     middleware(req, resolve)
-      .then(res => expect(res).toBe(val));
+      .then(res => expect(res).toEqual(val1));
     
-    const reject = () => Promise.reject(val);
+    const val2 = 'reject';
+    const reject = () => Promise.reject(val2);
     middleware(req, reject)
-      .catch(res => expect(res).toBe(val));
+      .catch(res => expect(res).toEqual(val2));
   });
 });
