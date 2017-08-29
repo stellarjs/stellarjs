@@ -18,7 +18,7 @@ function webpackConfig(context) {
       library: `@stellarjs/${last(context.split('/'))}`,
       libraryTarget: 'umd',
     },
-    externals: [nodeExternals()], // in order to ignore all modules in node_modules folder
+    externals: [nodeExternals({ modulesFromFile: true })], // in order to ignore all modules in node_modules folder
     module: {
       loaders: [
         {
@@ -31,7 +31,7 @@ function webpackConfig(context) {
               presets: [
                 ['es2015', { modules: false }],
               ],
-              plugins: ["transform-object-rest-spread"],
+              plugins: ['transform-object-rest-spread'],
             },
           },
         },

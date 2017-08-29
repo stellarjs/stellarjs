@@ -1,11 +1,17 @@
 {
-  "name": "@stellarjs/mw-rollbar",
-  "version": "0.7.1",
+  "name": "@stellarjs/redux-stellar",
+  "version": "0.7.3",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
     "src/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
@@ -21,7 +27,9 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/engine.io-client": "^0.7.4",
     "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
@@ -30,7 +38,11 @@
   },
   "dependencies": {
     "@stellarjs/core": "^0.7.1",
-    "bluebird": "3.4.7",
-    "rollbar": "^0.6.6"
+    "lodash": "^4.17.4",
+    "uuid": "^3.1.0"
+  },
+  "peerDependencies": {
+    "@stellarjs/engine.io-client": "^0.7.4",
+    "redux-promise-middleware": "^4.3.0"
   }
 }

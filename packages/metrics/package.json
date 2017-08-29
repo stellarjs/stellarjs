@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/mw-rollbar",
+  "name": "@stellarjs/metrics",
   "version": "0.7.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -20,8 +20,18 @@
   "publishConfig": {
     "access": "public"
   },
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
   "devDependencies": {
+    "@stellarjs/core": "^0.5.2",
+    "@stellarjs/transport-memory": "^0.7.1",
     "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "bluebird": "3.4.7",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
@@ -29,8 +39,6 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.7.1",
-    "bluebird": "3.4.7",
-    "rollbar": "^0.6.6"
+    "lodash": "^4.17.4"
   }
 }

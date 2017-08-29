@@ -6,12 +6,14 @@ import _ from 'lodash';
 import StellarCore from '../src/StellarCore';
 
 class MockTransport {
-  constructor(data = {}, autoProcess = false) {
+  constructor(data = {}, { autoProcess = false, inMemory = false } = {}) {
     this.queues = {};
     this.subscribers = {};
     this.jobCounter = 1;
     this.autoProcess = autoProcess;
+    this.inMemory = inMemory;
     this.job = { data };
+    this.callbacks = {};
   }
 
   generateId(queueName) {
@@ -44,14 +46,21 @@ class MockTransport {
   enqueue(queueName, data) {
     console.info(`@MockTransport.enqueue queueName=${queueName} callback ${JSON.stringify(data)}`);
     return new Promise((resolve) => {
-      this.queues[queueName] = [{ data }];
+      if (!this.queues[queueName]) {
+        this.queues[queueName] = [];
+      }
+      this.queues[queueName].push({ data });
+      
+      if (this.inMemory) {
+        this.callbacks[queueName]({ data })
+      }
       resolve(_.last(this.queues[queueName]));
     });
   }
 
   process(queueName, callback) {
     console.info(`@MockTransport.process autoProcess=${this.autoProcess} queueName=${queueName}`);
-    this.callback = callback;
+    this.callbacks[queueName] = callback;
 
     if (this.autoProcess) {
       setTimeout(() => {
@@ -70,13 +79,13 @@ class MockTransport {
       .then((id) => {
         _.set(job, 'data.headers.id', id);
         console.info(`triggerJob ${JSON.stringify(job)}`);
-        this.callback(job);
+        _(this.callbacks).values().first()(job);
       });
   }
 }
 
-function mockTransportFactory(log) {
-  return new MockTransport();
+function mockTransportFactory(options = {}) {
+  return new MockTransport(options);
 }
 
 export { MockTransport, mockTransportFactory };

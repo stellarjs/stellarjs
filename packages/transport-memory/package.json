@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/mw-rollbar",
+  "name": "@stellarjs/transport-memory",
   "version": "0.7.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -29,8 +29,6 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.7.1",
-    "bluebird": "3.4.7",
-    "rollbar": "^0.6.6"
+    "bluebird": "3.4.7"
   }
 }
