@@ -21,6 +21,6 @@ export default function (req, next) {
                   newrelic.endTransaction();
                   reject(err);
                 });
-    })();
+    });
   });
 }
