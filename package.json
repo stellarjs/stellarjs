@@ -21,8 +21,8 @@
     "pretest": "lerna run compile",
     "test": "lerna run test",
     "posttest": "lerna run lint",
-    "ci": "lerna run ci",
-    "coverage": "lerna run test:coverage"
+    "coverage": "lerna run test:coverage",
+    "postcoverage": "lerna run lint"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",

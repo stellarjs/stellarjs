@@ -10,7 +10,12 @@
     "verbose": true,
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js",
+      "!src/index.browser.js"
+    ]
   },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
@@ -18,7 +23,7 @@
     "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "test": "jest --runInBand --forceExit",
-    "test:coverage": "jest --runInBand --coverage --forceExit",
+    "test:coverage": "jest --runInBand --coverage --forceExit && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
@@ -41,6 +46,7 @@
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
+    "coveralls": "^2.13.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",

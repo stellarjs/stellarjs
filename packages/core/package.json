@@ -14,7 +14,7 @@
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
@@ -38,11 +38,16 @@
     "verbose": true,
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js"
+    ]
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
+    "coveralls": "^2.13.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",

@@ -5,6 +5,7 @@ machine:
     - redis
   environment:
     PATH: "${PATH}:${HOME}/${CIRCLE_PROJECT_REPONAME}/node_modules/.bin"
+    COVERALLS_REPO_TOKEN: "fsVv3ZKZ4rZeUPKHC1IOycaEobCSR3k1c"
 dependencies:
   override:
     - yarn
