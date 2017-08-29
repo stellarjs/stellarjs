@@ -1,5 +1,5 @@
 machine:
-  node:
+  node: 
     version: 6.10.3
   services:
     - redis
