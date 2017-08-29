@@ -3,6 +3,6 @@
  */
 describe('no tests', () => {
   it('no test', () => {
-    log.info('socket tests');
+    // log.info('socket tests');
   });
 });

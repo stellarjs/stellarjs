@@ -4,6 +4,6 @@
 import '../src/index';
 
 describe('no tests', () => {
-  it('no test', () => {    
+  it('no test', () => {
   });
 });

@@ -3,6 +3,5 @@
  */
 describe('no tests', () => {
   it('no test', () => {
-    
   });
 });
