@@ -7,7 +7,6 @@ import set from 'lodash/set';
 import middleware from '../src';
 
 describe('Test NR middleware use cases', () => {
-
   it('Should pass request w/o queue to the next midddleware ', () => {
     const req = {};
     const val = 'success';
@@ -28,6 +27,6 @@ describe('Test NR middleware use cases', () => {
     
     const reject = () => Promise.reject(val);
     middleware(req, reject)
-      .catch(res => expect(res).(val));
+      .catch(res => expect(res).toBe(val));
   });
 });
