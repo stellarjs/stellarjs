@@ -10,7 +10,11 @@
     "verbose": true,
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js"
+    ]
   },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
@@ -31,6 +35,7 @@
     "@stellarjs/engine.io-client": "^0.7.4",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
+    "coveralls": "^2.13.1",
     "engine.io": "3.1.0",
     "engine.io-client": "3.1.1",
     "eslint": "^3.19.0",
