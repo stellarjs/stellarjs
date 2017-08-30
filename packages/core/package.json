@@ -38,11 +38,17 @@
     "verbose": true,
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js",
+      "!src/index.browser.js"
+    ]
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
+    "coveralls": "^2.13.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
@@ -53,6 +59,6 @@
     "bluebird": "3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4",
-    "uuid": "^3.0.1"
+    "uuid": "^3.1.0"
   }
 }
