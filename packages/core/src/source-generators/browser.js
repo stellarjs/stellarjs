@@ -22,7 +22,7 @@ const Base64 = {
     let rixit; // like 'digit', only in some non-decimal radix
     let residual = Math.floor(number);
     let result = '';
-    while (true) {
+    while (true) { // eslint-disable-line no-constant-condition
       rixit = residual % 64;
       result = this._Rixits.charAt(rixit) + result;
       residual = Math.floor(residual / 64);
