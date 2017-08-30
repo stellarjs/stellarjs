@@ -41,7 +41,8 @@
     },
     "collectCoverageFrom": [
       "src/*.js",
-      "!src/index.js"
+      "!src/index.js",
+      "!src/index.browser.js"
     ]
   },
   "devDependencies": {
