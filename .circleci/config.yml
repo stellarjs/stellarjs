@@ -21,12 +21,12 @@ jobs:
               name: Run Tests
               command: yarn run coverage
           - store_test_results:
-            path: ./.artifacts/test_results
+              path: ./.artifacts/test_results
           - store_test_results:
-            path: ./.artifacts/lint_results
+              path: ./.artifacts/lint_results
           - run:
-            name: Uploading coverage to coveralls...
-            command: cat ./.artifacts/coverage/*/lcov.info | ./node_modules/.bin/coveralls
+              name: Uploading coverage to coveralls...
+              command: cat ./.artifacts/coverage/*/lcov.info | ./node_modules/.bin/coveralls
           - save_cache:
               key: yarn-cache-{{ checksum "yarn.lock" }}
               paths:
