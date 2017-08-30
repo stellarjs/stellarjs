@@ -23,7 +23,7 @@
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest",
-    "test:coverage": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
+    "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
