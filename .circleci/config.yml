@@ -14,13 +14,13 @@ jobs:
               name: Update yarn
               command: 'sudo npm install -g yarn@latest'
           - restore_cache:
-            key: yarn-cache-{{ checksum "yarn.lock" }}
+              key: yarn-cache-{{ checksum "yarn.lock" }}
           - run: 
-            name: Install Dependencies
-            command: yarn
+              name: Install Dependencies
+              command: yarn
           - run:
-            name: Run Tests
-            command: yarn run coverage
+              name: Run Tests
+              command: yarn run coverage
           - store_artifacts:
               path: test-results.xml
               prefix: tests
@@ -28,7 +28,7 @@ jobs:
               path: coverage
               prefix: coverage
           - save_cache:
-            key: yarn-cache-{{ checksum "yarn.lock" }}
-            paths:
-              - node_modules
+              key: yarn-cache-{{ checksum "yarn.lock" }}
+              paths:
+                - node_modules
         
