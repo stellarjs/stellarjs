@@ -14,7 +14,14 @@
     "collectCoverageFrom": [
       "src/*.js",
       "!src/index.js"
-    ]
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/bridge",    
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/bridge.xml",
+    "usePathForSuiteName": "true"
   },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
@@ -25,7 +32,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
-    "lint": "eslint src",
+    "lint": "eslint src --format junit --output-file ../../.artifacts/lint_results/bridge.xml",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
@@ -35,7 +42,6 @@
     "@stellarjs/engine.io-client": "^0.7.4",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
-    "coveralls": "^2.13.1",
     "engine.io": "3.1.0",
     "engine.io-client": "3.1.1",
     "eslint": "^3.19.0",

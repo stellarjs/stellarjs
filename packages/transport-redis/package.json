@@ -15,7 +15,14 @@
       "src/*.js",
       "!src/index.js",
       "!src/index.browser.js"
-    ]
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/transport-redis",
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },  
+  "jest-junit": {
+    "suiteName": "jest tests",
+    "output": "../../.artifacts/test_results/transport-redis.xml",
+    "usePathForSuiteName": "true"
   },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
@@ -25,7 +32,7 @@
     "test": "jest --runInBand --forceExit",
     "test:coverage": "jest --runInBand --coverage --forceExit",
     "prepublish": "yarn run compile",
-    "lint": "eslint src",
+    "lint": "eslint src --format junit --output-file ../../.artifacts/lint_results/transport-redis.xml",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
@@ -46,7 +53,6 @@
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
-    "coveralls": "^2.13.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
