@@ -6,6 +6,15 @@
   "src": [
     "src/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js"
+    ]
+  },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
@@ -29,9 +38,9 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.5.1",
+    "@stellarjs/core": "^0.7.1",
     "bluebird": "3.4.7",
-    "lodash": "4.17.4",
+    "lodash": "^4.17.4",
     "newrelic": "^2.2.0"
   }
 }
