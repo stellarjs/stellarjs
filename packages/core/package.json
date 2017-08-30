@@ -58,6 +58,6 @@
     "bluebird": "3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4",
-    "uuid": "^3.0.1"
+    "uuid": "^3.1.0"
   }
 }
