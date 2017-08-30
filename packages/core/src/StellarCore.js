@@ -14,6 +14,7 @@ class StellarCore {
     this.handlerChain = [];
     this.configure(transport);
     this.log = log;
+     // eslint-disable-next-line no-return-assign
     this.sourceSemaphore = new Promise(resolve => (this.sourceResolver = resolve));
     this.setSource(source);
   }
