@@ -30,7 +30,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
-    "lint": "eslint src --format junit --output-file ../../.artifacts/lint_results/transport-memory.xml",
+    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/transport-memory.xml src",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {

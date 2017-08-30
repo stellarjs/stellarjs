@@ -1,7 +1,7 @@
 /**
  * Created by arolave on 29/05/2017.
  */
-/* global window*/
+/* global window */
 import Promise from 'bluebird';
 import { getFromInstanceId } from './common';
 

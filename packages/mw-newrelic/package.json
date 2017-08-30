@@ -30,7 +30,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
-    "lint": "eslint src --format junit --output-file ../../.artifacts/lint_results/mw-newrelic.xml",
+    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/mw-newrelic.xml src",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {

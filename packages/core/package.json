@@ -16,7 +16,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
-    "lint": "eslint src --format junit --output-file ../../.artifacts/lint_results/core.xml",
+    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/core.xml src",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {

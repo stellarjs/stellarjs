@@ -32,7 +32,7 @@
     "test": "jest --runInBand --forceExit",
     "test:coverage": "jest --runInBand --coverage --forceExit",
     "prepublish": "yarn run compile",
-    "lint": "eslint src --format junit --output-file ../../.artifacts/lint_results/transport-redis.xml",
+    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/transport-redis.xml src",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
