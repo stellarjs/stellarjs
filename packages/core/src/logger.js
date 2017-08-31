@@ -14,7 +14,7 @@ export function initLogger() {
 const loggerHandler = {
   get: (target, propKey) => {
     const origMethod = target[propKey];
-    return function (...args) { // eslint-ignore-line func-names
+    return function (...args) { // eslint-disable-line func-names
       if (enableLogging) {
         return origMethod.apply(target, args);
       }

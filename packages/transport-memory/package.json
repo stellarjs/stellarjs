@@ -13,7 +13,14 @@
     },
     "collectCoverageFrom": [
       "src/*.js"
-    ]
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/transport-memory",    
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/transport-memory.xml",
+    "usePathForSuiteName": "true"
   },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
@@ -23,7 +30,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
-    "lint": "eslint src",
+    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/transport-memory.xml src",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
@@ -31,7 +38,6 @@
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "coveralls": "^2.13.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",

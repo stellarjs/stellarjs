@@ -13,7 +13,14 @@
     },
     "collectCoverageFrom": [
       "src/*.js"
-    ]
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/mw-rollbar",    
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/mw-rollbar.xml",
+    "usePathForSuiteName": "true"
   },
   "scripts": {
     "ci": "yarn run lint && yarn run test-coverage",
@@ -23,7 +30,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
-    "lint": "eslint src",
+    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/mw-rollbar.xml src",
     "lint:fix": "eslint src --fix"
   },
   "publishConfig": {
