@@ -29,7 +29,7 @@ StellarError.prototype = new Error();
 StellarError.prototype.name = 'StellarError';
 StellarError.prototype.constructor = StellarError;
 
-StellarError.prototype._add = function (key, val) {
+StellarError.prototype._add = function (key, val) { // eslint-disable-line func-names
   if (!this.errors[key]) {
     this.errors[key] = [];
   }
@@ -37,15 +37,15 @@ StellarError.prototype._add = function (key, val) {
   this.errors[key].push(val);
 };
 
-StellarError.prototype.addGeneral = function (error) {
+StellarError.prototype.addGeneral = function (error) { // eslint-disable-line func-names
   this._add('general', error);
 };
 
-StellarError.prototype.messageKeys = function () {
+StellarError.prototype.messageKeys = function () { // eslint-disable-line func-names
   return mapValues(this.errors, (v, k) => snakeCase(`${k} ${v}`));
 };
 
-StellarError.prototype.addPropertyError = function (propertyPath, error) {
+StellarError.prototype.addPropertyError = function (propertyPath, error) { // eslint-disable-line func-names
   this._add(propertyPath, error);
 };
 
