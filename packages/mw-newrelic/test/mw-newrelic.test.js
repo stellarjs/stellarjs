@@ -6,7 +6,7 @@ import Promise from 'bluebird';
 import set from 'lodash/set';
 import middleware from '../src';
 
-describe('Test NR middleware use cases', () => {
+describe('New Relic middleware', () => {
   it('Should pass request w/o queue to the next midddleware ', () => {
     const req = {};
     const val = 'success';
