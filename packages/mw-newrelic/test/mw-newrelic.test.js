@@ -4,16 +4,21 @@
 
 import Promise from 'bluebird';
 import set from 'lodash/set';
+import newrelic from 'newrelic';
 import middleware from '../src';
 
 describe('New Relic middleware', () => {
   it('Should pass request w/o queue to the next midddleware ', (done) => {
     const req = {};
-    const val = 'success';
+    const val = 'noop';
     const next = () => Promise.resolve(val);
-
+    
     middleware(req, next)
       .then(res => expect(res).toEqual(val))
+      .then(() => expect(newrelic.addCustomParameters).not.toBeCalled())
+      .then(() => expect(newrelic.startWebTransaction).not.toBeCalled())
+      .then(() => expect(newrelic.endTransaction).not.toBeCalled())
+      .then(() => expect(newrelic.noticeError).not.toBeCalled())
       .finally(() => done());
   });
 
@@ -25,6 +30,10 @@ describe('New Relic middleware', () => {
 
     middleware(req, resolve)
       .then(res => expect(res).toEqual(val))
+      .then(() => expect(newrelic.addCustomParameters).toBeCalled())
+      .then(() => expect(newrelic.startWebTransaction).toBeCalled())
+      .then(() => expect(newrelic.endTransaction).toBeCalled())
+      .then(() => expect(newrelic.noticeError).not.toBeCalled())
       .finally(() => done());
   });
 
@@ -35,6 +44,10 @@ describe('New Relic middleware', () => {
     const reject = () => Promise.reject(val);
     middleware(req, reject)
       .catch(res => expect(res).toEqual(val))
+      .then(() => expect(newrelic.addCustomParameters).toBeCalled())
+      .then(() => expect(newrelic.startWebTransaction).toBeCalled())
+      .then(() => expect(newrelic.endTransaction).toBeCalled())
+      .then(() => expect(newrelic.noticeError).toBeCalled())
       .finally(() => done());
   });
 });
