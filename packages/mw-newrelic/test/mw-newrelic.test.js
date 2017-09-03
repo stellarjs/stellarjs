@@ -18,7 +18,7 @@ describe('New Relic middleware', () => {
 
   it('Should pass request with queue to NR and to the next midddleware (success)', () => {
     const req = {};
-    set(req, 'headers.queueName', 'queueName')
+    set(req, 'headers.queueName', 'queueName');
     const val = 'success';
     const resolve = () => Promise.resolve(val);
 
@@ -28,7 +28,7 @@ describe('New Relic middleware', () => {
 
   it('Should pass request with queue to NR and to the next midddleware (failure)', () => {
     const req = {};
-    set(req, 'headers.queueName', 'queueName')
+    set(req, 'headers.queueName', 'queueName');
     const val = 'reject';
     const reject = () => Promise.reject(val);
     middleware(req, reject)
