@@ -7,25 +7,25 @@ import { StellarError } from '@stellarjs/core';
 export default function (req, next) {
   return new Promise((resolve, reject) => {
     next()
-            .then(response => resolve(response))
-            .catch((err) => {
-              const cb = (rollbarErr) => {
-                if (rollbarErr) {
-                  logger.error(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
-                }
+      .then(response => resolve(response))
+      .catch((err) => {
+        const cb = (rollbarErr) => {
+          if (rollbarErr) {
+            logger.error(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
+          }
 
-                reject(err);
-              };
+          reject(err);
+        };
 
-              if (!err || err instanceof StellarError) {
-                return reject(err);
-              }
+        if (!err || err instanceof StellarError) {
+          return reject(err);
+        }
 
-              if (err instanceof Error) {
-                return rollbar.handleError(err, req, cb);
-              }
+        if (err instanceof Error) {
+          return rollbar.handleError(err, req, cb);
+        }
 
-              return rollbar.reportMessage(`Error: ${err}`, 'error', req, cb);
-            });
+        return rollbar.reportMessage(`Error: ${err}`, 'error', req, cb);
+      });
   });
 }
