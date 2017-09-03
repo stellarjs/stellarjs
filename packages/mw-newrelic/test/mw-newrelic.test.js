@@ -14,12 +14,14 @@ describe('New Relic middleware', () => {
     const next = () => Promise.resolve(val);
     
     middleware(req, next)
-      .then(res => expect(res).toEqual(val))
-      .then(() => expect(newrelic.addCustomParameters).not.toBeCalled())
-      .then(() => expect(newrelic.startWebTransaction).not.toBeCalled())
-      .then(() => expect(newrelic.endTransaction).not.toBeCalled())
-      .then(() => expect(newrelic.noticeError).not.toBeCalled())
-      .finally(() => done());
+      .then((res) => {
+        expect(res).toEqual(val);
+        expect(newrelic.addCustomParameters).not.toBeCalled();
+        expect(newrelic.startWebTransaction).not.toBeCalled();
+        expect(newrelic.endTransaction).not.toBeCalled();
+        expect(newrelic.noticeError).not.toBeCalled();
+        done();
+      });
   });
 
   it('Should pass request with queue to NR and to the next midddleware (success)', (done) => {
@@ -29,12 +31,14 @@ describe('New Relic middleware', () => {
     const resolve = () => Promise.resolve(val);
 
     middleware(req, resolve)
-      .then(res => expect(res).toEqual(val))
-      .then(() => expect(newrelic.addCustomParameters).toBeCalled())
-      .then(() => expect(newrelic.startWebTransaction).toBeCalled())
-      .then(() => expect(newrelic.endTransaction).toBeCalled())
-      .then(() => expect(newrelic.noticeError).not.toBeCalled())
-      .finally(() => done());
+      .then((res) => {
+        expect(res).toEqual(val);
+        expect(newrelic.addCustomParameters).toBeCalled();
+        expect(newrelic.startWebTransaction).toBeCalled();
+        expect(newrelic.endTransaction).toBeCalled();
+        expect(newrelic.noticeError).not.toBeCalled();
+        done();
+      });
   });
 
   it('Should pass request with queue to NR and to the next midddleware (failure)', (done) => {
@@ -43,11 +47,13 @@ describe('New Relic middleware', () => {
     const val = 'reject';
     const reject = () => Promise.reject(val);
     middleware(req, reject)
-      .catch(res => expect(res).toEqual(val))
-      .then(() => expect(newrelic.addCustomParameters).toBeCalled())
-      .then(() => expect(newrelic.startWebTransaction).toBeCalled())
-      .then(() => expect(newrelic.endTransaction).toBeCalled())
-      .then(() => expect(newrelic.noticeError).toBeCalled())
-      .finally(() => done());
+      .catch((res) => {
+        expect(res).toEqual(val);
+        expect(newrelic.addCustomParameters).toBeCalled();
+        expect(newrelic.startWebTransaction).toBeCalled();
+        expect(newrelic.endTransaction).toBeCalled();
+        expect(newrelic.noticeError).toBeCalled();
+        done();
+      });
   });
 });
