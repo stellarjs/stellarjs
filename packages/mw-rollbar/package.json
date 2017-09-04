@@ -37,6 +37,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/core": "^0.7.1",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
