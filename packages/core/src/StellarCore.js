@@ -96,6 +96,7 @@ class StellarCore {
           id,
           type: 'response',
           requestId: jobData.headers.id,
+          traceId: jobData.headers.traceId,
           queueName: jobData.headers.respondTo,
         });
         let body = val;
