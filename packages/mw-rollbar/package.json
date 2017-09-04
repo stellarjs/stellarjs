@@ -37,7 +37,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/core": "^0.7.1",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -45,10 +44,8 @@
     "jest": "^20.0.4",
     "rimraf": "^2.6.1"
   },
-  "peerDependencies": {
-    "@stellarjs/core": "^0.7.1"
-  },
   "dependencies": {
+    "@stellarjs/core": "^0.7.1",
     "bluebird": "3.4.7",
     "rollbar": "^2.2.6"
   }
