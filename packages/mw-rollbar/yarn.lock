@@ -368,9 +368,9 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@3.4.6:
-  version "3.4.6"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.4.6.tgz#01da8d821d87813d158967e743d5fe6c62cf8c0f"
+bluebird@3.4.7:
+  version "3.4.7"
+  resolved "https://registry.npmjs.org/bluebird/-/bluebird-3.4.7.tgz#f72d760be09b7f76d08ed8fae98b289a8d05fab3"
 
 boom@2.x.x:
   version "2.10.1"
@@ -557,6 +557,10 @@ console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
 
+console-polyfill@0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/console-polyfill/-/console-polyfill-0.3.0.tgz#84900902a18c47a5eba932be75fa44d23e8af861"
+
 contains-path@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/contains-path/-/contains-path-0.1.0.tgz#fe8cf184ff6670b6baef01a9d4861a5cbec4120a"
@@ -611,7 +615,7 @@ debug@2.2.0, debug@^2.1.1, debug@^2.2.0:
   dependencies:
     ms "0.7.1"
 
-debug@^2.6.3:
+debug@2.6.8, debug@^2.6.3:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
@@ -706,6 +710,12 @@ error-ex@^1.2.0:
   resolved "https://registry.yarnpkg.com/error-ex/-/error-ex-1.3.1.tgz#f855a86ce61adc4e8621c3cda21e7a7612c3a8dc"
   dependencies:
     is-arrayish "^0.2.1"
+
+error-stack-parser@1.3.3:
+  version "1.3.3"
+  resolved "https://registry.npmjs.org/error-stack-parser/-/error-stack-parser-1.3.3.tgz#fada6e3a9cd2b0e080e6d6fc751418649734f35c"
+  dependencies:
+    stackframe "^0.3.1"
 
 es5-ext@^0.10.14, es5-ext@^0.10.9, es5-ext@~0.10.14:
   version "0.10.15"
@@ -929,6 +939,10 @@ expand-range@^1.8.1:
   resolved "https://registry.yarnpkg.com/expand-range/-/expand-range-1.8.2.tgz#a299effd335fe2721ebae8e257ec79644fc85337"
   dependencies:
     fill-range "^2.1.0"
+
+extend@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/extend/-/extend-3.0.0.tgz#5a474353b9f3353ddd8176dfd37b91c83a46f1d4"
 
 extend@~3.0.0:
   version "3.0.1"
@@ -1425,6 +1439,10 @@ is-typedarray@~1.0.0:
 is-utf8@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/is-utf8/-/is-utf8-0.2.1.tgz#4b0da1442104d1b336340e80797e865cf39f7d72"
+
+is_js@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.npmjs.org/is_js/-/is_js-0.9.0.tgz#0ab94540502ba7afa24c856aa985561669e9c52d"
 
 isarray@1.0.0, isarray@^1.0.0, isarray@~1.0.0:
   version "1.0.0"
@@ -2339,9 +2357,11 @@ repeating@^2.0.0:
   dependencies:
     is-finite "^1.0.0"
 
-request-ip@~1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/request-ip/-/request-ip-1.2.3.tgz#66988f0e22406ec4af630d19b573fe4b447c3b49"
+request-ip@~2.0.1:
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/request-ip/-/request-ip-2.0.2.tgz#deeae6d4af21768497db8cd05fa37143f8f1257e"
+  dependencies:
+    is_js "^0.9.0"
 
 request@^2.79.0, request@^2.81.0:
   version "2.81.0"
@@ -2418,16 +2438,19 @@ rimraf@2, rimraf@^2.2.8, rimraf@^2.5.1, rimraf@^2.6.1:
   dependencies:
     glob "^7.0.5"
 
-rollbar@^0.6.6:
-  version "0.6.6"
-  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-0.6.6.tgz#8630cff4af967667d06b227f243635ea86dcc5ba"
+rollbar@^2.2.6:
+  version "2.2.6"
+  resolved "https://registry.npmjs.org/rollbar/-/rollbar-2.2.6.tgz#7a90541648d4c4714dbd4de6308e906cb29c6152"
   dependencies:
     async "~1.2.1"
-    debug "2.2.0"
+    console-polyfill "0.3.0"
+    debug "2.6.8"
+    error-stack-parser "1.3.3"
+    extend "3.0.0"
     json-stringify-safe "~5.0.0"
     lru-cache "~2.2.1"
-    request-ip "~1.2.3"
-    uuid "~3.0.0"
+    request-ip "~2.0.1"
+    uuid "3.0.x"
   optionalDependencies:
     decache "^3.0.5"
 
@@ -2557,6 +2580,10 @@ sshpk@^1.7.0:
     jodid25519 "^1.0.0"
     jsbn "~0.1.0"
     tweetnacl "~0.14.0"
+
+stackframe@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.npmjs.org/stackframe/-/stackframe-0.3.1.tgz#33aa84f1177a5548c8935533cbfeb3420975f5a4"
 
 string-length@^1.0.1:
   version "1.0.1"
@@ -2760,7 +2787,7 @@ util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
 
-uuid@^3.0.0, uuid@~3.0.0:
+uuid@3.0.x, uuid@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
 

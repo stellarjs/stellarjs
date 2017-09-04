@@ -44,9 +44,11 @@
     "jest": "^20.0.4",
     "rimraf": "^2.6.1"
   },
+  "peerDependencies": {
+    "@stellarjs/core": "^0.7.1"
+  },
   "dependencies": {
-    "@stellarjs/core": "^0.7.1",
     "bluebird": "3.4.7",
-    "rollbar": "^0.6.6"
+    "rollbar": "^2.2.6"
   }
 }
