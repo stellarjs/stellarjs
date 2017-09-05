@@ -3,6 +3,7 @@
  */
 import Job from 'bull/lib/job';
 import Queue from 'bull/lib/queue';
+
 class Enqueuer {
   constructor(name, { keyPrefix, client }) {
     this.client = client;
