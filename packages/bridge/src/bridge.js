@@ -41,9 +41,9 @@ function startSession(log, socket) {
             if (!session.reactiveStoppers[channel]) {
               throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
             }
-            
+
             delete session.reactiveStoppers[channel];
-            return stopperPromise.then((stopper) => stopper());
+            return stopperPromise.then(stopper => stopper());
           }],
         }
       );
