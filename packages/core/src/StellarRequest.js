@@ -134,7 +134,7 @@ export default class StellarRequest extends StellarCore {
     return this.sourceSemaphore
       .then(() => this.getNextId(inbox))
       .then(id => defaultsDeep({ respondTo: this.responseInbox, id, queueName }, requestHeaders, { traceId: id }))
-      .then((headers) => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
+      .then(headers => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
       .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
         if (e.__stellarResponse == null) {

@@ -18,7 +18,7 @@
     ],
     "coverageDirectory": "../../.artifacts/coverage/transport-redis",
     "testResultsProcessor": "../../node_modules/jest-junit"
-  },  
+  },
   "jest-junit": {
     "suiteName": "jest tests",
     "output": "../../.artifacts/test_results/transport-redis.xml",
