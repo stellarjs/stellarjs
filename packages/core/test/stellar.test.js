@@ -405,7 +405,7 @@ describe('mock handler', () => {
   });
 
 
-  it('if an error is returned and a respondTo is set, send a error response', (done) => {
+  it('if an error is thrown and a respondTo is set, send a error response', (done) => {
     const stellarHandler = getStellarHandler('testservice:resource:create');
 
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
@@ -451,6 +451,31 @@ describe('mock handler', () => {
       expect(job.data.body.errors).toEqual({ x: ['blah'] });
       done();
     });
+  });
+
+  it('if an stellar error is rethrown, send a error response', (done) => {
+      const stellarHandler = getStellarHandler('testservice:resource:create');
+
+      stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
+          expect(request.body.text).toEqual('hi');
+          const error = new Error('blah');
+          error.__stellarResponse = { headers: { val: 'boohoo' }, body: {} };
+          throw error;
+      });
+
+      Promise.delay(200).then(() => {
+          const qName = 'myQueue';
+          const queue = stellarHandler.transport.queues[qName];
+          const job = _.last(queue);
+
+          expect(queue).toHaveLength(1);
+          // expect(job.data.headers.id).toEqual('myQueue:2');
+          // expect(job.data.headers).not.toHaveProperty('respondTo');
+          // expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+          // expect(job.data.headers.errorType).toEqual('Error');
+          expect(job.data.body).toEqual({ message: 'blah' });
+          done();
+      });
   });
 });
 
