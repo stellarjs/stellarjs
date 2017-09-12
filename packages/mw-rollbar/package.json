@@ -47,6 +47,6 @@
   "dependencies": {
     "@stellarjs/core": "^0.7.1",
     "bluebird": "3.4.7",
-    "rollbar": "^0.6.6"
+    "rollbar": "^2.2.6"
   }
 }
