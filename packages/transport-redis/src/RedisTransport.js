@@ -7,15 +7,10 @@ import difference from 'lodash/difference';
 import map from 'lodash/map';
 import size from 'lodash/size';
 import Promise from 'bluebird';
-import RedisExclusiveTask from 'redis-exclusive-task';
 
 import RedisClient from './config-redisclient';
 import Enqueuer from './Enqueuer';
-
-const MINUTE_1 = 60 * 1000; // 1 minute
-const DEFAULT_INTERVAL = 15 * MINUTE_1; // 15 minutes
-const JOB_TIMEOUT = 5 * MINUTE_1;
-const TWO_WEEKS = 14 * 24 * 60 * MINUTE_1;
+import { MINUTE_1, DEFAULT_INTERVAL, JOB_TIMEOUT, TWO_WEEKS } from './intervals';
 
 const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 1000;
 
@@ -25,28 +20,6 @@ class RedisTransport {
     this.queues = {};
     this.redis = new RedisClient(log);
     this.bullConfig = Object.assign({}, this.redis.bullConfig);
-
-    if (!this.subscriberCleanerRunning && process.env.NODE_ENV !== 'test') {
-      this.subscriberCleanerRunning = true;
-      this.runSubscriberCleaning();
-    }
-  }
-
-  runSubscriberCleaning() {
-    this.log.info(`runSubscriberCleaning`);
-    RedisExclusiveTask.configure([this.redis.newConnection()], this.log);
-
-    RedisExclusiveTask.run(
-      'stlr:subscribers:cleaner',
-      () => this._cleanResources(),
-      DEFAULT_INTERVAL
-    );
-
-    RedisExclusiveTask.run(
-      'stlr:queues:remover',
-      () => this._removeUnusedQueues('stlr:*:inbox'),
-      DEFAULT_INTERVAL
-    );
   }
 
   close() {
