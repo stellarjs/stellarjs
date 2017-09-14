@@ -174,14 +174,18 @@ describe('call server', () => {
         expect(result.text).toEqual('kong');
         return retval2.results;
       })
-      .catch((result) => {
+      .then((result) => {
+        fail(`retval2.result ${JSON.stringify(result)} should NOT be returned`);
+      })
+      .catch((errorResult) => {
         console.info('result 2 received');
-        console.info(JSON.stringify(result));
-        expect(_.first(result.message.split(':'))).toMatch('Multiple subscriptions to same channel (stellarBridge');
+        console.info(JSON.stringify(errorResult));
+        expect(_.first(errorResult.message.split(':'))).toMatch('Multiple subscriptions to same channel (stellarBridge');
+        console.info(`Calling stop 1 ${JSON.stringify(retval1)}`);
         return retval1.onStop;
       })
       .then((doStop1) => {
-        console.info('Calling stop 1');
+        console.info(`Calling stop 1 ${JSON.stringify(doStop1)} ${typeof doStop1}`);
         doStop1();
         return retval2.onStop;
       })

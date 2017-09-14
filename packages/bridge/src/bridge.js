@@ -33,13 +33,17 @@ function startSession(log, socket) {
     ip: _.get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
     logPrefix: `${stellarSource()} @StellarBridge(${socket.id})`,
-    registerStopper(channel, stopper, requestId) {
+    registerStopper(channel, stopperPromise, requestId) {
       _.assign(session.reactiveStoppers,
         {
           [channel]: [requestId, () => {
             log.info(`${session.logPrefix}: stopped subscription ${channel}`);
-            stopper();
+            if (!session.reactiveStoppers[channel]) {
+              throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
+            }
+
             delete session.reactiveStoppers[channel];
+            return stopperPromise.then(stopper => stopper());
           }],
         }
       );
@@ -173,7 +177,7 @@ function handleMessage(log, session, command) {
                                                  options),
       };
 
-      reactiveRequest.onStop.then(stopper => session.registerStopper(requestHeaders.channel, stopper, requestHeaders.id));
+      session.registerStopper(requestHeaders.channel, reactiveRequest.onStop, requestHeaders.id);
 
       return reactiveRequest.results.then(response => sendResponse(log, session, command, response));
     }

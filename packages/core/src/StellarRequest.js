@@ -2,6 +2,7 @@
  * Created by arolave on 25/09/2016.
  */
 import assign from 'lodash/assign';
+import defaultsDeep from 'lodash/defaultsDeep';
 import defaults from 'lodash/defaults';
 import get from 'lodash/get';
 import includes from 'lodash/includes';
@@ -82,12 +83,13 @@ export default class StellarRequest extends StellarCore {
                                 options);
   }
 
-  _doQueueRequest(queueName, body = {}, headers = {}, options = {}) {
+  _doQueueRequest(queueName, body = {}, requestHeaders = {}, options = {}) {
     const inbox = StellarCore.getServiceInbox(queueName);
     const allMiddlewares = [].concat(this.handlerChain, {
       fn: request => this._enqueue(inbox, request)
         // TODO need to response handling to after _executeMiddlewares
           .then(job => new Promise((resolve, reject) => {
+            const headers = request.headers;
             let requestTimer;
             if (this.requestTimeout && !options.requestOnly) {
               requestTimer = setTimeout(() => {
@@ -131,8 +133,8 @@ export default class StellarRequest extends StellarCore {
 
     return this.sourceSemaphore
       .then(() => this.getNextId(inbox))
-      .then(id => assign(headers, { respondTo: this.responseInbox, id, queueName }))
-      .then(() => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
+      .then(id => defaultsDeep({ respondTo: this.responseInbox, id, queueName }, requestHeaders, { traceId: id }))
+      .then(headers => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
       .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
         if (e.__stellarResponse == null) {

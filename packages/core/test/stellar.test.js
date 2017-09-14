@@ -9,7 +9,10 @@ import { MockTransport } from './mocks';
 
 const getStellarRequest = () => new StellarRequest(new MockTransport(), 'test', console, 1000);
 const getStellarHandler = (queueName, body = { text: 'hi' }) => {
-  const transport = new MockTransport({ headers: { queueName, respondTo: 'myQueue', type:'request' }, body  }, { autoProcess: true });
+  const transport = new MockTransport(
+    { headers: { queueName, respondTo: 'myQueue', type: 'request' }, body },
+    { autoProcess: true }
+  );
   StellarHandler.isProcessing = new Set();
   return new StellarHandler(transport, 'test', console, 1000);
 };
@@ -19,26 +22,35 @@ const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
 };
 
 describe('mock request response', () => {
-  it('send request', (done) => {
+  it('send request to me', (done) => {
     const stellarRequest = getStellarRequest();
     const result = stellarRequest.create('testservice:resource', { text: 'toot' });
-    setTimeout(() => {
-      expect(result.then).toBeInstanceOf(Function);
-      const qName = StellarCore.getServiceInbox('testservice');
-      const queue = stellarRequest.transport.queues[qName];
-      const job = _.last(queue);
+    Promise.delay(50)
+      .then(() => {
+          expect(result.then).toBeInstanceOf(Function);
+          const qName = StellarCore.getServiceInbox('testservice');
+          const queue = stellarRequest.transport.queues[qName];
+          const job = _.last(queue);
 
-      expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
-      expect(job.data.headers.queueName).toEqual('testservice:resource:create');
-      expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
-      expect(job.data.headers.source).toEqual(stellarRequest.source);
-      expect(job.data.body).toEqual({ text: 'toot' });
-      done();
-    }, 50); // takes a bit of time as it blocks on a semaphore before enqueuing
+          expect(queue).toHaveLength(1);
+          expect(job.data.headers).toEqual(
+            {
+                action: undefined,
+                id: 'stlr:s:testservice:inbox:1',
+                traceId: 'stlr:s:testservice:inbox:1',
+                queueName: 'testservice:resource:create',
+                respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+                source: stellarRequest.source,
+                timestamp: expect.any(Number),
+                type: 'request',
+            });
+
+          expect(job.data.body).toEqual({ text: 'toot' });
+          done();
+      }) ;
   });
 
-  it('send request that doesnt respond in time', (done) => {
+  it('send request run that doesnt respond in time', (done) => {
     const stellarRequest = getStellarRequest();
     const result = stellarRequest.update('testservice:resource', { text: 'toot' });
     expect(result.then).toBeInstanceOf(Function);
@@ -58,8 +70,21 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
-      stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'}, body: { text: 'world' } } });
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'stlr:s:testservice:inbox:1',
+            traceId: 'stlr:s:testservice:inbox:1',
+            queueName: 'testservice:resource:create',
+            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+            source: stellarRequest.source,
+            timestamp: expect.any(Number),
+            type: 'request',
+        });
+
+        // expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
+      stellarRequest.inflightRequests[job.data.headers.id](
+        { data: { headers: { type: 'response' }, body: { text: 'world' } } });
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -74,8 +99,21 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
-      stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'}, body: [{ text: 'world' }] } });
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'stlr:s:testservice:inbox:1',
+            traceId: 'stlr:s:testservice:inbox:1',
+            queueName: 'testservice:resource:create',
+            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+            source: stellarRequest.source,
+            timestamp: expect.any(Number),
+            type: 'request',
+        });
+
+        // expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
+      stellarRequest.inflightRequests[job.data.headers.id](
+        { data: { headers: { type: 'response' }, body: [{ text: 'world' }] } });
 
       result
         .then(r => expect(r).toEqual([{ text: 'world' }]))
@@ -100,7 +138,7 @@ describe('mock request response', () => {
         .catch(Error, (e) => {
           expect(e.message).toEqual('blah');
           done();
-        })
+        });
     });
   });
 
@@ -113,7 +151,12 @@ describe('mock request response', () => {
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
       stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response', errorType: 'StellarError' }, body: { message: 'blah', errors: { x: ['shit'] } } } }
+        {
+          data: {
+            headers: { type: 'response', errorType: 'StellarError' },
+            body: { message: 'blah', errors: { x: ['shit'] } },
+          },
+        }
       );
 
       result
@@ -135,7 +178,8 @@ describe('no-timeout behaviour on mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id]({ data: { headers: {type: 'response'},  body: { text: 'world' } } });
+      stellarRequest.inflightRequests[job.data.headers.id](
+        { data: { headers: { type: 'response' }, body: { text: 'world' } } });
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -156,7 +200,6 @@ describe('no-timeout behaviour on mock request response', () => {
       done();
     });
   });
-
 });
 
 describe('middlewares', () => {
@@ -175,11 +218,24 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
-      expect(job.data.headers.queueName).toEqual('testservice:resource:get');
-      expect(job.data.headers.userId).toEqual(1);
-      expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
-      expect(job.data.headers.source).toEqual(stellarRequest.source);
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            userId: 1,
+            id: 'stlr:s:testservice:inbox:1',
+            traceId: 'stlr:s:testservice:inbox:1',
+            queueName: 'testservice:resource:get',
+            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+            source: stellarRequest.source,
+            timestamp: expect.any(Number),
+            type: 'request',
+        });
+
+      // expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
+      // expect(job.data.headers.queueName).toEqual('testservice:resource:get');
+      // expect(job.data.headers.userId).toEqual(1);
+      // expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
+      // expect(job.data.headers.source).toEqual(stellarRequest.source);
       expect(job.data.body).toEqual({ text: 'toot' });
       done();
     });
@@ -189,10 +245,10 @@ describe('middlewares', () => {
     const stellarRequest = getStellarRequest();
 
     const middlewareRun = {
-      ".*:create": false,
-      ".*:get": false,
-      "testservice:resource:.*": false,
-      "testservice:not:.*": false,
+      '.*:create': false,
+      '.*:get': false,
+      'testservice:resource:.*': false,
+      'testservice:not:.*': false,
     };
 
     _.each(middlewareRun, (v, k) => {
@@ -210,16 +266,27 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
-      expect(job.data.headers.queueName).toEqual('testservice:resource:get');
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'stlr:s:testservice:inbox:1',
+            traceId: 'stlr:s:testservice:inbox:1',
+            queueName: 'testservice:resource:get',
+            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+            source: stellarRequest.source,
+            timestamp: expect.any(Number),
+            type: 'request',
+        });
+      // expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
+      // expect(job.data.headers.queueName).toEqual('testservice:resource:get');
       expect(middlewareRun).toEqual({
-                                         ".*:create": false,
-                                         ".*:get": true,
-                                         "testservice:resource:.*": true,
-                                         "testservice:not:.*": false,
-                                       });
-      expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
-      expect(job.data.headers.source).toEqual(stellarRequest.source);
+        '.*:create': false,
+        '.*:get': true,
+        'testservice:resource:.*': true,
+        'testservice:not:.*': false,
+      });
+      // expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
+      // expect(job.data.headers.source).toEqual(stellarRequest.source);
       expect(job.data.body).toEqual({ text: 'toot' });
       done();
     });
@@ -244,10 +311,6 @@ describe('middlewares', () => {
     });
 
     Promise.delay(200).then(() => {
-      const qName = 'myQueue';
-      const queue = stellarHandler.transport.queues[qName];
-      const job = _.last(queue);
-
       expect(mwRequest.body).toEqual({ text: 'hi' });
       expect(mwResult).toEqual({ text: 'world' });
       done();
@@ -257,11 +320,9 @@ describe('middlewares', () => {
   it('reject error from handler mw ', (done) => {
     const stellarHandler = getStellarHandler('testservice:resource:create');
 
-    stellarHandler.use('.*', (jobData, next) => {
-      return Promise.reject(new StellarError('boo hoo'));
-    });
+    stellarHandler.use('.*', (jobData) => Promise.reject(new StellarError('boo hoo')));
 
-    stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
+    stellarHandler.handleMethod('testservice:resource', 'create', () => {
       fail('shouldnt be called');
       return { text: 'world' };
     });
@@ -272,11 +333,24 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-      expect(job.data.headers.errorType).toEqual('StellarError'); // eslint-disable-line
-      expect(job.data.body).toEqual({"errors": {"general": ["boo hoo"]},  message: 'boo hoo' });
+
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+            errorType: 'StellarError'
+        });
+      // expect(job.data.headers.id).toEqual('');
+      // expect(job.data.headers).not.toHaveProperty('respondTo');
+      // expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      // expect(job.data.headers.errorType).toEqual('StellarError'); // eslint-disable-line
+      expect(job.data.body).toEqual({ errors: { general: ['boo hoo'] }, message: 'boo hoo' });
       done();
     });
   });
@@ -284,11 +358,11 @@ describe('middlewares', () => {
   it('throw error from handler mw ', (done) => {
     const stellarHandler = getStellarHandler('testservice:resource:create');
 
-    stellarHandler.use('.*', (jobData, next) => {
+    stellarHandler.use('.*', (jobData) => {
       throw new Error('boo hoo');
     });
 
-    stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
+    stellarHandler.handleMethod('testservice:resource', 'create', () => {
       fail('shouldnt be called');
       return { text: 'world' };
     });
@@ -299,10 +373,18 @@ describe('middlewares', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-      expect(job.data.headers.errorType).toEqual('Error'); // eslint-disable-line
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+            errorType: 'Error'
+        });
       expect(job.data.body).toEqual({ message: 'boo hoo' });
       done();
     });
@@ -353,7 +435,7 @@ describe('middlewares', () => {
 
     Promise.delay(200).then(() => {
       expect(mwRequest.body).toEqual({ text: 'hi' });
-      expect(mwError).toEqual({ errors: {general: ['simple validation error']}, message: 'simple validation error' });
+      expect(mwError).toEqual({ errors: { general: ['simple validation error'] }, message: 'simple validation error' });
       done();
     });
   });
@@ -374,19 +456,28 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+        });
+
       expect(job.data.body).toEqual({ text: 'world' });
       done();
     });
   });
 
   it('if a result is returned and a respondTo is set, send a response with the result array', (done) => {
-    const stellarHandler = getStellarHandler('testservice:resource:create', [{text: 'hi'}]);
+    const stellarHandler = getStellarHandler('testservice:resource:create', [{ text: 'hi' }]);
 
     stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-      expect(request.body).toEqual([{text: 'hi'}]);
+      expect(request.body).toEqual([{ text: 'hi' }]);
       return Promise.resolve([{ text: 'world' }]);
     });
 
@@ -396,9 +487,18 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+        });
+      
       expect(job.data.body).toEqual([{ text: 'world' }]);
       done();
     });
@@ -419,10 +519,19 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-      expect(job.data.headers.errorType).toEqual('Error');
+        expect(job.data.headers).toEqual(
+          {
+              action: undefined,
+              id: 'myQueue:2',
+              requestId: 'stlr:n:testservice:inbox:1',
+              traceId: undefined,
+              queueName: 'myQueue',
+              source: stellarHandler.source,
+              timestamp: expect.any(Number),
+              type: 'response',
+              errorType: 'Error',
+          });
+
       expect(job.data.body).toEqual({ message: 'blah' });
       done();
     });
@@ -444,10 +553,19 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-      expect(job.data.headers.errorType).toEqual('StellarError');
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+            errorType: 'StellarError'
+        });
+
       expect(job.data.body.errors).toEqual({ x: ['blah'] });
       done();
     });
@@ -480,7 +598,6 @@ describe('mock handler', () => {
 });
 
 describe('handler loaders', () => {
-
   it('_handleLoader 1 element array contains handler no middleware should send a response with the result',
      (done) => {
        const stellarHandler = getStellarHandler('testservice:resource:create');
@@ -496,15 +613,23 @@ describe('handler loaders', () => {
          const job = _.last(queue);
 
          expect(queue).toHaveLength(1);
-         expect(job.data.headers.id).toEqual('myQueue:2');
-         expect(job.data.headers).not.toHaveProperty('respondTo');
-         expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-         expect(job.data.body).toEqual({ text: 'world' });
+         expect(job.data.headers).toEqual(
+           {
+               action: undefined,
+               id: 'myQueue:2',
+               requestId: 'stlr:n:testservice:inbox:1',
+               traceId: undefined,
+               queueName: 'myQueue',
+               source: stellarHandler.source,
+               timestamp: expect.any(Number),
+               type: 'response',
+           });
          done();
        });
      });
 
-  it('_handleLoader 2 elements array contains handler and middleware should send a response with the result and call middleware',
+  it('_handleLoader 2 elements array contains handler and middleware' +
+      'should send a response with the result and call middleware',
      (done) => {
        const stellarHandler = getStellarHandler('testservice:resource:create');
 
@@ -513,7 +638,7 @@ describe('handler loaders', () => {
        stellarHandler._handleLoader('testservice:resource', 'create', [(headers, body) => {
          expect(body.text).toEqual('hi');
          return { text: 'world' };
-       },(request, next) => {
+       }, (request, next) => {
          middlewareRun = true;
          return next();
        }]);
@@ -524,26 +649,34 @@ describe('handler loaders', () => {
          const job = _.last(queue);
 
          expect(queue).toHaveLength(1);
-         expect(job.data.headers.id).toEqual('myQueue:2');
-         expect(job.data.headers).not.toHaveProperty('respondTo');
-         expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+         expect(job.data.headers).toEqual(
+           {
+               action: undefined,
+               id: 'myQueue:2',
+               requestId: 'stlr:n:testservice:inbox:1',
+               traceId: undefined,
+               queueName: 'myQueue',
+               source: stellarHandler.source,
+               timestamp: expect.any(Number),
+               type: 'response',
+           });
          expect(job.data.body).toEqual({ text: 'world' });
          expect(middlewareRun).toEqual(true);
          done();
        });
      });
 
-  it('_handleLoader 3 elements array contains handler and 2 middlewares should send a response with the result and call both middlewares',
+  it('_handleLoader 3 elements array contains handler and 2 middlewares' +
+      'should send a response with the result and call both middlewares',
      (done) => {
        const stellarHandler = getStellarHandler('testservice:resource:create');
-
-
+         
        let middleware1Run = false;
        let middleware2Run = false;
        stellarHandler._handleLoader('testservice:resource', 'create', [(headers, body) => {
          expect(body.text).toEqual('hi');
          return { text: 'world' };
-       },(request, next) => {
+       }, (request, next) => {
          middleware1Run = true;
          return next();
        }, (request, next) => {
@@ -557,9 +690,17 @@ describe('handler loaders', () => {
          const job = _.last(queue);
 
          expect(queue).toHaveLength(1);
-         expect(job.data.headers.id).toEqual('myQueue:2');
-         expect(job.data.headers).not.toHaveProperty('respondTo');
-         expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+         expect(job.data.headers).toEqual(
+           {
+               action: undefined,
+               id: 'myQueue:2',
+               requestId: 'stlr:n:testservice:inbox:1',
+               traceId: undefined,
+               queueName: 'myQueue',
+               source: stellarHandler.source,
+               timestamp: expect.any(Number),
+               type: 'response',
+           });
          expect(job.data.body).toEqual({ text: 'world' });
          expect(middleware1Run).toEqual(true);
          expect(middleware2Run).toEqual(true);
@@ -570,7 +711,7 @@ describe('handler loaders', () => {
   it('_handleLoader undefined should do nothing', (done) => {
     const stellarHandler = getStellarHandler('testservice:resource:create');
 
-    stellarHandler._handleLoader('testservice:resource', 'create', undefined)
+    stellarHandler._handleLoader('testservice:resource', 'create', undefined);
     Promise.delay(200).then(() => {
       const qName = 'myQueue';
       const queue = stellarHandler.transport.queues[qName];
@@ -596,9 +737,17 @@ describe('handler loaders', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+        });
       expect(job.data.body).toEqual({ text: 'world' });
       done();
     });
@@ -611,7 +760,7 @@ describe('handler loaders', () => {
       create: (headers, body) => {
         expect(body.text).toEqual('hi');
         return { text: 'world' };
-      }
+      },
     });
 
     Promise.delay(200).then(() => {
@@ -620,17 +769,24 @@ describe('handler loaders', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-      expect(job.data.headers.id).toEqual('myQueue:2');
-      expect(job.data.headers).not.toHaveProperty('respondTo');
-      expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
+      expect(job.data.headers).toEqual(
+        {
+            action: undefined,
+            id: 'myQueue:2',
+            requestId: 'stlr:n:testservice:inbox:1',
+            traceId: undefined,
+            queueName: 'myQueue',
+            source: stellarHandler.source,
+            timestamp: expect.any(Number),
+            type: 'response',
+        });
       expect(job.data.body).toEqual({ text: 'world' });
       done();
     });
   });
-})
+});
 
 describe('mock pubsub', () => {
-
   const channel = 'testpubsub:channel';
   it('fake subscribe handler', (done) => {
     const defaultPubSub = getDefaultPubSub(channel);
@@ -639,7 +795,7 @@ describe('mock pubsub', () => {
       expect(message.text).toEqual('hi');
       done();
     });
-    
+
     setTimeout(
       () => defaultPubSub.transport.triggerJob(defaultPubSub.transport.job, defaultPubSub.subscriptionInbox),
       5
@@ -661,7 +817,7 @@ describe('mock pubsub', () => {
       .then(() => {
         expect(_.keys(defaultPubSub.transport.queues)).toHaveLength(1);
         expect(_.head(_.keys(defaultPubSub.transport.queues))).toEqual('POO');
-        const job = _.head(defaultPubSub.transport.queues['POO']);
+        const job = _.head(defaultPubSub.transport.queues.POO);
         expect(job.data.headers.id).toEqual(`POO:1`);
         done();
       });

@@ -13,6 +13,7 @@ let connectionInterval = null;
 
 class RedisClient {
   constructor(log) {
+    this.id = uuid.v4();
     this.log = log;
     Object.assign(this, {
       defaultConnection: this.newConnection(),
@@ -27,31 +28,38 @@ class RedisClient {
   newConnection() {
     const client = new Redis(redisConfig);
     assign(client, {id: uuid.v4()});
-    client.on('reconnecting', this.log.info);
-    client.on('warning', this.log.warn);
-    client.on('error', this.log.error);
+
+    const prefix = `@RedisClient(${this.id}).${client.id}`;
+    
+    client.on('reconnecting', (msg) => this.log.info(`${prefix}.reconnecting: ${msg}`));
+    client.on('warning', (msg) => this.log.warn(`${prefix}.warning: ${msg}`));
+    client.on('error', (msg) => this.log.error(msg, `${prefix}.error: ${msg}`));
     client.on('close', () => {
-      this.log.info(`@StellarRedis: Closed Connection`);
+      this.log.info(`${prefix}: Closed Connection`);
       delete connections[client.id];
     });
-    this.log.info(`@StellarRedis: New Connection`);
+    this.log.info(`${prefix}: New Connection`);
     connections[client.id] = client;
 
     if (connectionInterval == null) {
-      // 2 Minutes conneciton counting
-      connectionInterval = setInterval(() => this.log.info(`@StellarRedis: Connection Count: ${connectionCount}`), 120000);
+      // 2 Minutes connection counting
+      connectionInterval = setInterval(() => this.log.info(`@@RedisClient(${this.id}): Connection Count: ${connectionCount}`), 120000);
     }
 
     return client;
   }
 
   closeAll() {
-    this.log.info(`@RedisClient.closeAll redis connections ${this.countConnections()}`);
+    const prefix = `@RedisClient(${this.id})`;
+    this.log.info(`${prefix}.closeAll redis connections ${this.countConnections()}`);
     forEach(connections, (client) => {
-      this.log.info(`RedisClient.close ${client.id}`);
-      client.disconnect();
+      if (!client.manuallyClosing) {
+        this.log.info(`${prefix}.${client.id}.close ${client.id}`);
+        client.quit();
+      }
     });
-    this.log.info(`@RedisClient.closeAll complete`);
+    clearInterval(connectionInterval);
+    this.log.info(`${prefix}.closeAll complete`);
   }
 }
 

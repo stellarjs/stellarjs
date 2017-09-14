@@ -68,6 +68,11 @@ class MemoryTransport {
 
     return Promise.resolve();
   }
+
+  stopProcessing(queueName) {
+    delete this.queues[queueName];
+    return Promise.resolve(true);
+  }
 }
 
 function memoryTransportFactory() {

@@ -77,6 +77,15 @@ export default class StellarPubSub extends StellarCore {
     }
   }
 
+  reset() {
+    if (!this.isProcessingSubscriptions || !this.subscriptionInbox) {
+      return Promise.resolve(true);
+    }
+
+    this.isProcessingSubscriptions = false;
+    return this._stopProcessing(this.subscriptionInbox);
+  }
+
   subscribe(channel, messageHandler, options = {}) {
         // TODO add separate middleware chain for subscriptions
     return this
