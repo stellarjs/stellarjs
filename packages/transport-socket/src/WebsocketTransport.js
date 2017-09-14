@@ -80,6 +80,11 @@ class WebsocketTransport {
     });
     return Promise.resolve();
   }
+
+  stopProcessing(queueName) {
+    this.log.info(`@WebsocketTransport: Stopping inbox: ${queueName}`);
+    return this.messageHandler.removeAllListeners(queueName);
+  }
 }
 
 WebsocketTransport.START_2016 = new Date(2016, 1, 1).getTime();

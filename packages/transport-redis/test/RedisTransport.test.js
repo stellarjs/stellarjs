@@ -8,24 +8,23 @@ import RedisClient from '../src/config-redisclient';
 import { RedisTransport } from '../src/index';
 
 const log = console;
-let redisClient;
 let redisTransport;
-let redisClientFactory;
+let connection;
 
 beforeAll(() => {
   redisTransport = new RedisTransport(log);
-  redisClientFactory = new RedisClient(log);
-  redisClient = redisClientFactory.newConnection()
+  connection = redisTransport.redis.defaultConnection;
 });
 
-afterAll(() => {
-  // redisClientFactory.closeAll();
+afterAll((done) => {
+  redisTransport.close()
+    .then(() => done());
 });
 
 const clearRedis = (done) => {
-  if (redisClient.options.db === 7) {
+  if (connection.options.db === 7) {
     log.info('Flush redis');
-    redisClient.flushdb(done);
+    connection.flushdb(done);
   } else {
     done();
   }
@@ -42,13 +41,13 @@ describe('redis transport subscription', () => {
     redisTransport.registerSubscriber(channel, queue)
       .then(stopper => _.assign(context, { stopper }))
       .then(
-        () => redisClient.zrange(redisTransport.constructor._subscribersKey(channel), 0, -1, 'WITHSCORES'))
+        () => connection.zrange(redisTransport.constructor._subscribersKey(channel), 0, -1, 'WITHSCORES'))
       .then((subscribers) => {
         expect(_.filter(subscribers, (s, i) => i % 2 === 0)).toEqual([queue]);
         _(subscribers).filter((s, i) => i % 2 === 1).forEach(ttl => expect(parseInt(ttl)).toBeGreaterThan(Date.now()));
         context.stopper();
       })
-      .then(() => [redisClient.zrange(redisTransport.constructor._subscribersKey(channel), 0, -1, 'WITHSCORES')])
+      .then(() => [connection.zrange(redisTransport.constructor._subscribersKey(channel), 0, -1, 'WITHSCORES')])
       .all()
       .then((subscribers) => {
         expect(subscribers).toEqual([[]]);
@@ -70,7 +69,7 @@ describe('redis transport queue resources', () => {
         done();
       })
       // .then(
-      //   () => redisClient.zrange(redisTransport.constructor._queueKey(), 0, -1, 'WITHSCORES'))
+      //   () => connection.zrange(redisTransport.constructor._queueKey(), 0, -1, 'WITHSCORES'))
       // .then((queueNames) => {
       //   _.filter(queueNames, (q, i) => i % 2 === 0).should.deep.equal([queue]);
       //   _(queueNames).filter((q, i) => i % 2 === 1).forEach(ttl => ttl.should.be.above(Date.now()))
@@ -97,20 +96,20 @@ describe('removing unused queues', () => {
       .then(() => redisTransport._removeUnusedQueues('*:inbox'))
       .then(res => expect(res).toBe(0))
       .then(() => expect(redisTransport.redis.countConnections()).toBe(baseConnections))
-      .then(() => redisClient.keys(`bull:${queue}:*`))
+      .then(() => connection.keys(`bull:${queue}:*`))
       .then(keys => expect(_.size(keys)).toBe(3))
       .delay(50)
       .then(() => context.stopper())
       .then(() => redisTransport._getQueues())
       .then(queues => expect(queues).toEqual([]))
-      .then(() => redisClient.keys(`bull:${queue}:*`))
+      .then(() => connection.keys(`bull:${queue}:*`))
       .then(keys => {
         console.log(keys);
         expect(_.size(keys)).toBe(3)
       })
       .then(() => redisTransport._removeUnusedQueues('*:inbox'))
       .then(res => expect(res).toBe(1))
-      .then(() => redisClient.keys(`bull:*`))
+      .then(() => connection.keys(`bull:*`))
       .then(keys => {
         console.log(keys);
         expect(_.size(keys)).toBe(0);
@@ -130,8 +129,8 @@ describe('redis transport resources invalidation', () => {
     console.log(Date.now());
     const score = Date.now() - (20 * 60 * 1000);
     console.log(score);
-    Promise.all([redisClient.zadd(redisTransport.constructor._subscribersKey(channel), score, queue),
-                 redisClient.zadd(redisTransport.constructor._queueKey(), score, queue)])
+    Promise.all([connection.zadd(redisTransport.constructor._subscribersKey(channel), score, queue),
+                 connection.zadd(redisTransport.constructor._queueKey(), score, queue)])
       .then(() => redisTransport.getSubscribers(channel))
       .then(subscribers => expect(subscribers).toEqual([queue]))
       .then(() => redisTransport._getQueues())

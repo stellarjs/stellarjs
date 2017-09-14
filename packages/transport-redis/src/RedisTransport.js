@@ -4,20 +4,13 @@
 import Queue from 'bull';
 import assign from 'lodash/assign';
 import difference from 'lodash/difference';
-import forEach from 'lodash/forEach';
-import keys from 'lodash/keys';
 import map from 'lodash/map';
 import size from 'lodash/size';
 import Promise from 'bluebird';
-import RedisExclusiveTask from 'redis-exclusive-task';
 
 import RedisClient from './config-redisclient';
 import Enqueuer from './Enqueuer';
-
-const MINUTE_1 = 60 * 1000; // 1 minute
-const DEFAULT_INTERVAL = 15 * MINUTE_1; // 15 minutes
-const JOB_TIMEOUT = 5 * MINUTE_1;
-const TWO_WEEKS = 14 * 24 * 60 * MINUTE_1;
+import { MINUTE_1, DEFAULT_INTERVAL, JOB_TIMEOUT, TWO_WEEKS } from './intervals';
 
 const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 1000;
 
@@ -26,24 +19,14 @@ class RedisTransport {
     this.log = log;
     this.queues = {};
     this.redis = new RedisClient(log);
+    this.bullConfig = Object.assign({}, this.redis.bullConfig);
+  }
 
-    if (!this.subscriberCleanerRunning) {
-      this.subscriberCleanerRunning = true;
-
-      RedisExclusiveTask.configure([this.redis.newConnection()], log);
-
-      RedisExclusiveTask.run(
-        'stlr:subscribers:cleaner',
-        () => this._cleanResources(),
-        DEFAULT_INTERVAL
-      );
-
-      RedisExclusiveTask.run(
-        'stlr:queues:remover',
-        () => this._removeUnusedQueues('stlr:*:inbox'),
-        DEFAULT_INTERVAL
-      );
-    }
+  close() {
+    this.log.info(`@RedisTransport queue.close`);
+    return Promise
+      .all(map(this.queues, (val, key) => this.stopProcessing(key)))
+      .then(() => this.redis.closeAll());
   }
 
   getSubscribers(channel) {
@@ -80,21 +63,31 @@ class RedisTransport {
   }
 
   process(queueName, callback) {
-    return this._getQueue(queueName).process(STELLAR_CONCURRENCY, callback);
+    try {
+      return this._getQueue(queueName).process(STELLAR_CONCURRENCY, callback);
+    } catch (e) {
+      throw new Error(`${queueName} already has a handler on this node`);
+    }
   }
 
-  flush() {
-    this._doCleanResources(-DEFAULT_INTERVAL * 2);
-    forEach(keys(this.queues), (k) => {
-      this.queues[k].close();
-      delete this.queues[k];
-    });
+  stopProcessing(queueName) {
+    if (!this.queues[queueName]) {
+      return Promise.resolve(true);
+    }
+
+    this.log.info(`@RedisTransport: closing queue ${queueName}`);
+    return this.queues[queueName]
+      .close()
+      .then(() => {
+        delete this.queues[queueName];
+        return true;
+      });
   }
 
   _getQueue(queueName) {
     if (!this.queues[queueName]) {
       this._registerQueue(queueName);
-      this.queues[queueName] = new Queue(queueName, this.redis.bullConfig);
+      this.queues[queueName] = new Queue(queueName, this.bullConfig);
     }
 
     return this.queues[queueName];

@@ -51,12 +51,6 @@ class StellarCore {
     this.handlerChain.push({ pattern, fn });
   }
 
-  flush() {
-    if (this.transport.flush) {
-      this.transport.flush();
-    }
-  }
-
   getNextId(inbox) {
     return this.transport.generateId(inbox).then(id => `${inbox}:${id}`);
   }
@@ -96,6 +90,7 @@ class StellarCore {
           id,
           type: 'response',
           requestId: jobData.headers.id,
+          traceId: jobData.headers.traceId,
           queueName: jobData.headers.respondTo,
         });
         let body = val;
@@ -171,6 +166,10 @@ class StellarCore {
       this.log.info(`@StellarCore.process ${job.data.headers.id}: ${stringify(job.data)}`);
       return callback(job);
     });
+  }
+
+  _stopProcessing(inbox) {
+    return this.transport.stopProcessing(inbox);
   }
 
 }

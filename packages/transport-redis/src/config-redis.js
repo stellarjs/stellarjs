@@ -7,6 +7,7 @@ const passAndhost = parts[2].split('@');
 const redisConfig = {
   host: passAndhost[1],
   port: parseInt(parts[3], 10),
+  showFriendlyErrorStack: true,
 };
 
 if (process.env.NODE_ENV === 'test') {
