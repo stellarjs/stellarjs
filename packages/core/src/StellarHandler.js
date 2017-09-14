@@ -150,7 +150,18 @@ though it processes the ${serviceInbox} queue`);
         this._enqueue(jobData.headers.respondTo, response)
           .then(() => logComplete(response, e));
 
-      const allMiddlewares = [].concat(this.handlerChain, { fn: jd => Promise.try(() => handler(jd)) });
+      function callHandler(jd) {
+        return Promise.try(() => handler(jd))
+          .catch((e) => {
+            if (e.__stellarResponse) {
+              delete e.__stellarResponse;
+            }
+
+            return Promise.reject(e);
+          });
+      }
+
+      const allMiddlewares = [].concat(this.handlerChain, { fn: callHandler });
 
       return this
         ._executeMiddlewares(allMiddlewares, jobData)
