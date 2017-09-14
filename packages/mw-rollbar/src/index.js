@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import rollbar from 'rollbar';
-import logger from 'rollbar/lib/logger';
 import { StellarError } from '@stellarjs/core';
 
 /* reimplementation of rollbar.errorHandler() for promise based middleware */
@@ -11,7 +10,7 @@ export default function (req, next) {
       .catch((err) => {
         const cb = (rollbarErr) => {
           if (rollbarErr) {
-            logger.error(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
+            rollbar.error(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
           }
 
           reject(err);
