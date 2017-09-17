@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/core",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -44,7 +44,7 @@
       "!src/index.js",
       "!src/index.browser.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/core",    
+    "coverageDirectory": "../../.artifacts/coverage/core",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {

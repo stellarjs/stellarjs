@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/metrics",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -28,7 +28,7 @@
     "collectCoverageFrom": [
       "src/*.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/metrics",    
+    "coverageDirectory": "../../.artifacts/coverage/metrics",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
@@ -37,8 +37,8 @@
     "usePathForSuiteName": "true"
   },
   "devDependencies": {
-    "@stellarjs/core": "^0.7.1",
-    "@stellarjs/transport-memory": "^0.7.1",
+    "@stellarjs/core": "^0.7.2",
+    "@stellarjs/transport-memory": "^0.7.2",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "bluebird": "3.4.7",

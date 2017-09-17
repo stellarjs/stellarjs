@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/mw-rollbar",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -14,7 +14,7 @@
     "collectCoverageFrom": [
       "src/*.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/mw-rollbar",    
+    "coverageDirectory": "../../.artifacts/coverage/mw-rollbar",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
@@ -45,7 +45,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.7.1",
+    "@stellarjs/core": "^0.7.2",
     "bluebird": "3.4.7",
     "rollbar": "^2.2.6"
   }

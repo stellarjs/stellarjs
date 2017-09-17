@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-memory",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -14,7 +14,7 @@
     "collectCoverageFrom": [
       "src/*.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/transport-memory",    
+    "coverageDirectory": "../../.artifacts/coverage/transport-memory",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
