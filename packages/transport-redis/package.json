@@ -62,7 +62,7 @@
   "dependencies": {
     "@stellarjs/core": "^0.7.2",
     "bluebird": "3.4.7",
-    "bull": "https://github.com/sloops77/bull/archive/a5135def39ae0957a682c21df362b1f67dc93c3a.tar.gz",
+    "bull": "3.1.0",
     "ioredis": "^2.4.0",
     "lodash": "^4.17.4",
     "redis-exclusive-task": "^0.1.0",
