@@ -4,7 +4,7 @@ module.exports = {
     "env": {
         "es6": true,
         "node": true,
-        "mocha": true
+        "jest": true
     },
     rules: {
         indent: ['error', 2, { SwitchCase: 1, VariableDeclarator: 1, outerIIFEBody: 1 }],

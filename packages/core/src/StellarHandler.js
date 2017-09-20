@@ -8,6 +8,7 @@ import isArray from 'lodash/isArray';
 import isFunction from 'lodash/isFunction';
 import isPlainObject from 'lodash/isPlainObject';
 import lowerCase from 'lodash/lowerCase';
+import map from 'lodash/map';
 import omit from 'lodash/omit';
 
 import Promise from 'bluebird';
@@ -23,26 +24,50 @@ export default class StellarHandler extends StellarCore {
 
   _startProcessing(url) {
     const serviceInbox = StellarCore.getServiceInbox(url);
-    if (!StellarHandler.isProcessing.has(serviceInbox)) {
-      StellarHandler.isProcessing.add(serviceInbox);
-      this.log.info(`@StellarHandler(${serviceInbox}): Starting processing`);
-      this._process(serviceInbox, (job) => {
-        const handler = this.messageHandlers[job.data.headers.queueName];
-        if (!handler) {
-          this.log.error(
-            `No handler for ${job.data.headers.queueName} endpoint registered on this microservice, 
-though it processes the ${serviceInbox} queue`);
-          throw new Error(`No handler for ${job.data.headers.queueName}`);
-        }
 
-        return this.messageHandlers[job.data.headers.queueName](job);
-      });
+    if (StellarHandler.isProcessing.has(serviceInbox)) {
+      return;
     }
+
+    StellarHandler.isProcessing.add(serviceInbox);
+    this.log.info(`@StellarHandler(${serviceInbox}): Starting processing`);
+    this._process(serviceInbox, (job) => {
+      const handler = this.messageHandlers[job.data.headers.queueName];
+      if (!handler) {
+        this.log.error(
+          `No handler for ${job.data.headers.queueName} endpoint registered on this microservice, 
+though it processes the ${serviceInbox} queue`);
+        throw new Error(`No handler for ${job.data.headers.queueName}`);
+      }
+
+      return this.messageHandlers[job.data.headers.queueName](job);
+    });
+  }
+
+  reset() {
+    return Promise.all(map(
+        StellarHandler.isProcessing,
+        (serviceInbox) => {
+          this.log.info(`serviceInbox: ${serviceInbox}`);
+          return this._stopProcessing(serviceInbox);
+        }
+      ));
+  }
+
+  stopProcessing(url) {
+    const serviceInbox = StellarCore.getServiceInbox(url);
+    if (!StellarHandler.isProcessing.has(serviceInbox)) {
+      return Promise.resolve(true);
+    }
+
+    StellarHandler.isProcessing.delete(serviceInbox);
+    return this._stopProcessing(serviceInbox);
   }
 
   _addHandler(url, messageHandler) {
     this.messageHandlers[url] = messageHandler;
     this._startProcessing(url);
+    return this;
   }
 
   _handleLoader(url, method, value) {
@@ -125,7 +150,18 @@ though it processes the ${serviceInbox} queue`);
         this._enqueue(jobData.headers.respondTo, response)
           .then(() => logComplete(response, e));
 
-      const allMiddlewares = [].concat(this.handlerChain, { fn: jd => Promise.try(() => handler(jd)) });
+      function callHandler(jd) {
+        return Promise.try(() => handler(jd))
+          .catch((e) => {
+            if (e.__stellarResponse) {
+              delete e.__stellarResponse;
+            }
+
+            return Promise.reject(e);
+          });
+      }
+
+      const allMiddlewares = [].concat(this.handlerChain, { fn: callHandler });
 
       return this
         ._executeMiddlewares(allMiddlewares, jobData)

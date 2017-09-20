@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-redis",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -18,7 +18,7 @@
     ],
     "coverageDirectory": "../../.artifacts/coverage/transport-redis",
     "testResultsProcessor": "../../node_modules/jest-junit"
-  },  
+  },
   "jest-junit": {
     "suiteName": "jest tests",
     "output": "../../.artifacts/test_results/transport-redis.xml",
@@ -60,7 +60,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.7.1",
+    "@stellarjs/core": "^0.7.2",
     "bluebird": "3.4.7",
     "bull": "3.1.0",
     "ioredis": "^2.4.0",
