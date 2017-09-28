@@ -171,7 +171,6 @@ class StellarCore {
   _stopProcessing(inbox) {
     return this.transport.stopProcessing(inbox);
   }
-
 }
 
 export default StellarCore;

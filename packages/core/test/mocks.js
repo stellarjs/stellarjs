@@ -52,6 +52,8 @@ class MockTransport {
       this.queues[queueName].push({ data });
       
       if (this.inMemory) {
+        console.info(queueName)
+          console.info(_.keys(this.callbacks));
         this.callbacks[queueName]({ data })
       }
       resolve(_.last(this.queues[queueName]));
@@ -68,6 +70,11 @@ class MockTransport {
       });
     }
     return new Promise.resolve();
+  }
+
+  stopProcessing(queueName) {
+    delete this.callbacks[queueName];
+    return Promise.resolve(true);
   }
 
   getNextId(inbox) {

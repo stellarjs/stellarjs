@@ -45,13 +45,15 @@ though it processes the ${serviceInbox} queue`);
   }
 
   reset() {
+    const processingArray = Array.from(StellarHandler.isProcessing);
+    StellarHandler.isProcessing.clear();
     return Promise.all(map(
-        StellarHandler.isProcessing,
-        (serviceInbox) => {
-          this.log.info(`serviceInbox: ${serviceInbox}`);
-          return this._stopProcessing(serviceInbox);
-        }
-      ));
+      processingArray,
+      (serviceInbox) => {
+        this.log.info(`@StellarHandler.reset serviceInbox=${serviceInbox}`);
+        return this._stopProcessing(serviceInbox);
+      }
+    ));
   }
 
   stopProcessing(url) {

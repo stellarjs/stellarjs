@@ -1,10 +1,9 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
-import stringify from 'safe-json-stringify';
 
 import {
   stellarRequest as stellarRequestFactory,
-  stellarSource,
+  getSource,
   configureStellar,
   StellarError } from '@stellarjs/core';
 import redisTransportFactory from '@stellarjs/transport-redis';
@@ -12,18 +11,16 @@ import { WebsocketTransport } from '@stellarjs/transport-socket';
 
 let stellarRequest;
 function connectToMicroservices(log, middlewares) {
-  return configureStellar({ log, transportFactory: redisTransportFactory })
-    .then(() => {
-      const sourceOverride = `bridge-${stellarSource()}`;
-      stellarRequest = stellarRequestFactory({ sourceOverride });
+  configureStellar({ log, transportFactory: redisTransportFactory });
+  const sourceOverride = `bridge-${getSource()}`;
+  stellarRequest = stellarRequestFactory({ sourceOverride });
 
-      _.forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
-      // TODO customize
-      // stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
-      //   _.assign(req.headers, options.session.headers);
-      //   return next();
-      // });
-    });
+  _.forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
+  // TODO customize
+  // stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
+  //   _.assign(req.headers, options.session.headers);
+  //   return next();
+  // });
 }
 
 const sessions = {};
@@ -32,12 +29,12 @@ function startSession(log, socket) {
     sessionId: socket.id,
     ip: _.get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
-    logPrefix: `${stellarSource()} @StellarBridge(${socket.id})`,
+    logPrefix: `${getSource()} @StellarBridge(${socket.id})`,
     registerStopper(channel, stopperPromise, requestId) {
       _.assign(session.reactiveStoppers,
         {
           [channel]: [requestId, () => {
-            log.info(`${session.logPrefix}: stopped subscription ${channel}`);
+            log.info(`${session.logPrefix}: stopped subscription`, { sessionId: socket.id, channel });
             if (!session.reactiveStoppers[channel]) {
               throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
             }
@@ -49,7 +46,7 @@ function startSession(log, socket) {
       );
     },
     offlineFns: [() => {
-      log.info(`${session.logPrefix}: ended session`);
+      log.info(`${session.logPrefix}: ended session`, { sessionId: socket.id });
       delete session[socket.id];
     }],
   };
@@ -99,30 +96,26 @@ function assignClientToSession({ log, socket, session }) {
 
 function sendResponse(log, session, command, jobDataResp) {
   if (_.isUndefined(session.client)) {
-    log.info(`${session.logPrefix}: Socket was closed before response was sent.`);
+    log.warn(`${session.logPrefix}: Socket was closed before response was sent.`);
     return Promise.reject(new Error('Socket was closed'));
   }
-
-  log.info(`${session.logPrefix}.bridgeResponse ${stringify(jobDataResp)}`);
 
   const requestId = command.data.headers.id;
   const queueName = command.data.headers.respondTo;
 
-  const headers = _.defaults({ requestId, queueName, source: stellarSource() }, jobDataResp.headers);
+  const headers = _.defaults({ requestId, queueName, source: getSource() }, jobDataResp.headers);
   const obj = { headers, body: jobDataResp.body };
-  log.info(`${session.logPrefix}.enqueue ${queueName}: ${stringify(obj)}`);
+  log.info(`${session.logPrefix}.clientEnqueue`, { queueName, obj });
   return session.client.enqueue(queueName, obj);
 }
 
 function bridgeReactive(log, session, requestHeaders) {
   return (subscriptionData, channel) => {
-    log.info(`${session.logPrefix}.bridgeReactive: bridging subscription`);
-
     const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
-    const headers = _.defaults({ channel, queueName, source: stellarSource() }, subscriptionData.headers);
+    const headers = _.defaults({ channel, queueName, source: getSource() }, subscriptionData.headers);
     const obj = { headers, body: subscriptionData.body };
 
-    log.info(`${session.logPrefix}.enqueue ${queueName}: ${stringify(obj)}`);
+    log.info(`${session.logPrefix}.clientEnqueue`, { channel, queueName, obj });
     return session.client.enqueue(queueName, obj);
   };
 }
@@ -135,7 +128,7 @@ function handleMessage(log, session, command) {
       return stellarRequest
         ._doQueueRequest(requestHeaders.queueName,
                          command.data.body,
-                         _.defaults({ source: stellarSource() }, requestHeaders),
+                         _.defaults({ source: getSource() }, requestHeaders),
                          { session, responseType: 'raw' })
         .then(response => sendResponse(log, session, command, response));
     }
@@ -170,7 +163,7 @@ function handleMessage(log, session, command) {
       const reactiveRequest = {
         results: stellarRequest._doQueueRequest(requestHeaders.queueName,
                                                  command.data.body,
-                                                 _.defaults({ source: stellarSource() }, requestHeaders),
+                                                 _.defaults({ source: getSource() }, requestHeaders),
                                                  options),
         onStop: stellarRequest.pubsub.subscribe(requestHeaders.channel,
                                                  bridgeReactive(log, session, requestHeaders),
@@ -264,32 +257,31 @@ function init({
   const reportError = initErrorHandlers(log, errorHandlers);
   const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
   server.on('connection', (socket) => {
-    log.info(`${stellarSource()} @StellarBridge: New Connection`);
+    log.info(`${getSource()} @StellarBridge: New Connection`);
     const startTime = Date.now();
 
     const initialSession = startSession(log, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
       .then((session) => {
-        log.info(`${session.logPrefix} Connected: ${stringify(session)}`);
+        log.info(`${session.logPrefix} Connected`, { session });
 
         socket.on('close', () => {
           _.forEach(session.reactiveStoppers, (stopper, channel) => {
             if (_.last(stopper)) {
               _.last(stopper)();
             } else {
-              log.warn(`${session.logPrefix}: Unable to find stopper for ${channel}`);
+              log.error(`${session.logPrefix}: Unable to find stopper for ${channel}`,
+                        { sessionId: session.sessionId, channel });
             }
           });
 
           _.forEach(_.get(sessions, `${session.sessionId}.offlineFns`), _.invoke);
 
-          log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`);
+          log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, _.pick(session, ['sessionId']));
           delete session.client; // eslint-disable-line no-param-reassign
         });
 
         socket.on('message', (str) => {
-          log.info(`${session.logPrefix}.onMessage: ${str}`);
-
           let command = null;
           try {
             command = JSON.parse(str);

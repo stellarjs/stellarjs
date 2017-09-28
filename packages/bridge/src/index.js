@@ -9,7 +9,7 @@ import attachToServer from './bridge';
 function boot(config = {}) {
   const log = config.log || console;
   const port = process.env.PORT || 8091;
-  log.info(`Start initializing server on port ${port}`);
+  log.info('@StellarBridge: Start initializing server', { port });
   const server = engine.listen(port, { transports: ['websocket', 'polling'] }, () => {
     log.info('@StellarBridge: Server is running');
   });

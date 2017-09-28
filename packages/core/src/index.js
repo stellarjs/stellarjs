@@ -3,10 +3,9 @@
  */
 import { setSourceGenerators, configureStellar } from './factory';
 import uuid from './source-generators/uuid';
-import amazonEc2 from './source-generators/amazonEc2';
 
 function configure(arg) {
-  setSourceGenerators('uuid', { uuid, amazonEc2 });
+  setSourceGenerators('uuid', { uuid });
   return configureStellar(arg);
 }
 
@@ -17,16 +16,12 @@ export { default as StellarCore } from './StellarCore';
 export { default as StellarPubSub } from './StellarPubSub';
 export { default as StellarRequest } from './StellarRequest';
 export { default as StellarHandler } from './StellarHandler';
-export { uuid, amazonEc2 };
+export { uuid };
 export {
   stellarRequest,
   stellarHandler,
   stellarAppPubSub,
-  stellarNodePubSub,
-  stellarPublish,
-  stellarSubscribe,
-  stellarSource,
-  resetCache,
+  getSource,
   setSourceGenerators,
 } from './factory';
 

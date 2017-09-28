@@ -46,7 +46,8 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
 }
 
 function stellarSocketFactory(eio) {
-  configureStellar({ log, transportFactory }).then(() => log.info('@StellarClient initialized'));
+  configureStellar({ log, transportFactory });
+  log.info('@StellarClient initialized');
 
   return {
     socket: null,
@@ -77,11 +78,6 @@ function stellarSocketFactory(eio) {
     connect(url, options = {}) {
       log.info(`@StellarEngineIO.connect`);
 
-      if (this.stellar == null || options.newInstance) {
-        const stellarOptions = options.newInstance ? { sourceOverride: uuidSourceGenerator() } : {};
-        this.stellar = stellarRequest(stellarOptions);
-      }
-
       tryToReconnect = options.tryToReconnect !== false;
 
       this.options = options;
@@ -106,6 +102,9 @@ function stellarSocketFactory(eio) {
     _closeIfNeeded() {
       return new Promise((resolve) => {
         try {
+          const stellarOptions = typeof window === 'undefined' ? { sourceOverride: uuidSourceGenerator() } : {};
+          this.stellar = stellarRequest(stellarOptions);
+
           if (this.socket) {
             log.info('@StellarEngineIO.closeIfNeeded: Already open socket. Closing it before reconnect.');
             this.socket.off('close');
