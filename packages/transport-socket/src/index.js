@@ -3,13 +3,10 @@
  */
 import WebsocketTransport from './WebsocketTransport';
 
-let instance;
 function transportFactory({ log, socket, sendingOnly = false }) {
   log.info(`${process.pid}: @WebsocketTransportFactory returning instance`);
-  if (!instance) {
-    instance = new WebsocketTransport(socket, log, sendingOnly);
-  }
-  return instance;
+
+  return new WebsocketTransport(socket, log, sendingOnly);
 }
 transportFactory.type = `websocket`;
 

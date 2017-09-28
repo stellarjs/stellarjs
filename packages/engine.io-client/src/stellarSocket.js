@@ -6,6 +6,7 @@ import qs from 'qs';
 import assign from 'lodash/assign';
 import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
+import { runSync as uuidSourceGenerator } from '@stellarjs/core/lib-es6/source-generators/uuid';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
@@ -53,7 +54,7 @@ function stellarSocketFactory(eio) {
     state: 'disconnected',
     connectedOnce: false,
     userId: null,
-    stellar: stellarRequest(),
+    stellar: null,
     _reconnect(url, options) {
       log.info(`@StellarEngineIO: Reconnecting`);
       // eslint-disable-next-line no-use-before-define
@@ -75,6 +76,11 @@ function stellarSocketFactory(eio) {
     },
     connect(url, options = {}) {
       log.info(`@StellarEngineIO.connect`);
+
+      if (this.stellar == null || options.newInstance) {
+        const stellarOptions = options.newInstance ? { sourceOverride: uuidSourceGenerator() } : {};
+        this.stellar = stellarRequest(stellarOptions);
+      }
 
       tryToReconnect = options.tryToReconnect !== false;
 

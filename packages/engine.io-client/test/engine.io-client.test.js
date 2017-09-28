@@ -4,6 +4,7 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 import stellarSocketFactory from '../src/stellarSocket';
+import uuid from 'uuid/v4';
 
 let lastInstance;
 
@@ -32,6 +33,7 @@ const eio = {
         });
       },
       close: jest.fn(),
+      id: uuid(),
     };
 
     triggerOpen(socketInstance);
@@ -128,4 +130,42 @@ describe('engine-io client', () => {
         done();
       });
   });
+
+    it('two calls to connect should return two connections', (done) => {
+        const stellarSocketA = stellarSocketFactory(eio);
+        let stellarSocketB;
+
+        const context = {};
+        stellarSocketA.connect('localhost:8091', {
+            secure: false,
+            userId: '123',
+            token: '123',
+            tokenType: 'API',
+            eioConfig: { upgrade: false },
+            params: {
+                extraParam: 1,
+            },
+        }).then((socketA) => {
+            _.assign(context, { socketA });
+            stellarSocketB = stellarSocketFactory(eio);
+            return stellarSocketB.connect('localhost:8091', {
+                secure: false,
+                userId: 'ABC',
+                token: 'ABC',
+                tokenType: 'API',
+                eioConfig: { upgrade: false },
+                params: {
+                    extraParam: 1,
+                },
+                newInstance: true
+            });
+        }).then((socketB) => {
+            expect(stellarSocketA.socket.id).not.toEqual(stellarSocketB.socket.id);
+            return [context.socketA.transport.socket, socketB.transport.socket];
+        }).all()
+          .then(([realSocketA, realSocketB]) => {
+            expect(realSocketA.id).not.toEqual(realSocketB.id);
+            done();
+          });
+    });
 });
