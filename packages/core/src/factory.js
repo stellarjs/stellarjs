@@ -58,7 +58,7 @@ function configureStellar({ log, transport, transportFactory, source, sourceGene
   configureTransport(transport, transportFactory, assign({log}, options));
 
   _source = source || getSourceGenerator(sourceGenerator)(_log);
-  _log.info(`setting source ${_source}`);
+  // _log.info(`setting source ${_source}`);
   return _source;
 }
 

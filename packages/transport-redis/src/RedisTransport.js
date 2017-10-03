@@ -23,7 +23,7 @@ class RedisTransport {
   }
 
   close() {
-    this.log.info(`@RedisTransport queue.close`);
+    this.log.log('trace', `@RedisTransport queue.close`);
     return Promise
       .all(map(this.queues, (val, key) => this.stopProcessing(key)))
       .then(() => this.redis.closeAll());
@@ -75,7 +75,7 @@ class RedisTransport {
       return Promise.resolve(true);
     }
 
-    this.log.info(`@RedisTransport: closing queue ${queueName}`);
+    this.log.log('trace', `@RedisTransport: closing queue ${queueName}`);
     return this.queues[queueName]
       .close()
       .then(() => {
@@ -115,7 +115,7 @@ class RedisTransport {
       let numCleaned = 0;
 
       stream.on('data', (resourceKeys) => {
-        this.log.info(`@RedisTransport.cleanResources: keys=${resourceKeys}`);
+        this.log.info(`@RedisTransport.cleanResources`, { resourceKeys });
         numCleaned += size(resourceKeys);
 
         Promise
@@ -126,7 +126,7 @@ class RedisTransport {
       });
 
       stream.on('end', () => {
-        this.log.info(`@RedisTransport.cleanResources: ${numCleaned} cleaned in ${Date.now() - startTime}ms`);
+        this.log.info(`@RedisTransport.resourceClean finished in ${Date.now() - startTime}ms`, { numCleaned });
         resolve(numCleaned);
       });
     });
@@ -141,7 +141,7 @@ class RedisTransport {
         }
 
         const totalCleaned = numCleaned + size(jobs);
-        this.log.info(`@RedisTransport._doClean Cleaned ${totalCleaned} ${type} jobs out of ${q.name}`);
+        this.log.info(`@RedisTransport.jobClean finished`, { totalCleaned, type, queueName: q.name });
         return [q.name, type, totalCleaned];
       });
   }
@@ -163,19 +163,17 @@ class RedisTransport {
 
     const emptyQueue = qName => Promise
       .using(this._getQueueForClean(qName),
-             q => Promise.all(
-               [q.empty(), cleanOldJobs(q), delId(q.name)]
-             )
+             q => Promise.all([q.empty(), cleanOldJobs(q), delId(q.name)])
       )
-      .catch(e => this.log.warn(`Unable to clean queue`, e));
+      .catch(e => this.log.warn(e, `Unable to clean queue`));
 
     return this._getQueues()
       .then((registeredQueues) => {
-        this.log.info(`@RedisTransport._removeUnusedQueues: registeredQueues=${registeredQueues}`);
+        this.log.info(`@RedisTransport._removeUnusedQueues`, { registeredQueues });
         return this._doRemoveUnusedQueues(inboxStyle, (bullQueueNames) => {
-          this.log.info(`@RedisTransport._removeUnusedQueues: bullQueueNames=${bullQueueNames}`);
+          this.log.info(`@RedisTransport._removeUnusedQueues`, { bullQueueNames });
           const unregisteredQueueNames = difference(bullQueueNames, registeredQueues);
-          this.log.info(`@RedisTransport._removeUnusedQueues: unregisteredQueueNames=${unregisteredQueueNames}`);
+          this.log.info(`@RedisTransport._removeUnusedQueues`, { unregisteredQueueNames });
           return Promise.all(map(unregisteredQueueNames, emptyQueue));
         });
       });

@@ -30,13 +30,13 @@ export default class StellarHandler extends StellarCore {
     }
 
     StellarHandler.isProcessing.add(serviceInbox);
-    this.log.info(`@StellarHandler(${serviceInbox}): Starting processing`);
+    this.log.info(`@StellarHandler: Starting processing`, { inbox: serviceInbox });
     this._process(serviceInbox, (job) => {
       const handler = this.messageHandlers[job.data.headers.queueName];
       if (!handler) {
         this.log.error(
           `No handler for ${job.data.headers.queueName} endpoint registered on this microservice, 
-though it processes the ${serviceInbox} queue`);
+though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
         throw new Error(`No handler for ${job.data.headers.queueName}`);
       }
 
@@ -50,7 +50,7 @@ though it processes the ${serviceInbox} queue`);
     return Promise.all(map(
       processingArray,
       (serviceInbox) => {
-        this.log.info(`@StellarHandler.reset serviceInbox=${serviceInbox}`);
+        this.log.info(`@StellarHandler.reset`, { inbox: serviceInbox });
         return this._stopProcessing(serviceInbox);
       }
     ));
@@ -126,7 +126,7 @@ though it processes the ${serviceInbox} queue`);
   }
 
   handleRequest(url, handler) {
-    this.log.info(`@StellarHandler adding handler for ${url}`);
+    this.log.info(`@StellarHandler adding handler`, { url });
 
     return this._addHandler(url, (job) => {
       const startTime = Date.now();
@@ -135,14 +135,14 @@ though it processes the ${serviceInbox} queue`);
       const logComplete = (result, e) => {
         const executionTime = Date.now() - startTime;
         if (!e) {
-          this.log.info(`@StellarHandler(${jobData.headers.id}) processed in ${executionTime}ms`);
+          this.log.info(`@StellarHandler processed in ${executionTime}ms`, { requestId: jobData.headers.id });
         } else if (e instanceof StellarError) {
           // eslint-disable-next-line max-len
-          this.log.warn(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ StellarErrors: e.messageKeys(), requestHeaders: jobData.headers })} (${executionTime}ms)`);
+          this.log.warn(`@StellarHandler error in ${executionTime}ms`, { requestId: jobData.headers.id, errorMessageKeys: e.messageKeys() });
         } else {
-          // eslint-disable-next-line max-len
-          this.log.error(`@StellarHandler(${jobData.headers.id}) ${JSON.stringify({ Error: e.message, requestHeaders: jobData.headers })} (${executionTime}ms)`);
           this.log.error(omit(e, '__stellarResponse'));
+          // eslint-disable-next-line max-len
+          this.log.error(`@StellarHandler error in ${executionTime}ms`, { requestId: jobData.headers.id, errorMessage: e.message });
         }
 
         return result;
@@ -173,7 +173,7 @@ though it processes the ${serviceInbox} queue`);
             return sendResponse(e.__stellarResponse, e);
           }
 
-          this.log.error(e, `@StellarHandler ${jobData.headers.id}: Unexpected error`);
+          this.log.error(e, `@StellarHandler Unexpected error`, { requestId: jobData.headers.id });
           throw e;
         });
     });

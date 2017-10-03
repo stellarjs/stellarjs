@@ -70,7 +70,7 @@ export default class StellarPubSub extends StellarCore {
   _processSubscriptions() {
     if (!this.isProcessingSubscriptions) {
       this.isProcessingSubscriptions = true;
-      this.log.info(`@StellarPubSub(${this.subscriptionInbox}): Starting subscriptions`);
+      this.log.info(`@StellarPubSub: Starting subscriptions`, { inbox: this.subscriptionInbox });
       this._process(this.subscriptionInbox, (job) => {
         forEach(this.messageHandlers[job.data.headers.channel], fn => fn(job));
       });
