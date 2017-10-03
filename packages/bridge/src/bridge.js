@@ -263,7 +263,7 @@ function init({
     const initialSession = startSession(log, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
       .then((session) => {
-        log.info(`${session.logPrefix} Connected`, { session });
+        log.info(`${session.logPrefix} Connected`, { session: _.omit(session, ['client']) });
 
         socket.on('close', () => {
           _.forEach(session.reactiveStoppers, (stopper, channel) => {
