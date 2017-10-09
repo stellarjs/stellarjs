@@ -5,7 +5,7 @@ import uuid from 'uuid';
 import unset from 'lodash/unset';
 import isFunction from 'lodash/isFunction';
 
-import  { getActionType } from './getActionType';
+import { getActionType } from './getActionType';
 
 export default function (stellarSocket, mwOptions = { transformChannel: undefined }) {
   const stellar = stellarSocket.stellar;
