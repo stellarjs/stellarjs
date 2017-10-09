@@ -1,3 +1,5 @@
+import isFunction from 'lodash/isFunction';
+
 const FULFILLED = 'FULFILLED';
 const PENDING = 'PENDING';
 const REJECTED = 'REJECTED';
@@ -8,7 +10,7 @@ const DOCUMENT_UPDATED = 'DOCUMENT_UPDATED';
 const DOCUMENT_REMOVED = 'DOCUMENT_REMOVED';
 
 export function getActionType(action) {
-  const theAction = typeof action === 'function' ? action() : action;
+  const theAction = isFunction(action) ? action() : action;
   if (theAction.type) {
     return theAction.type;
   }
