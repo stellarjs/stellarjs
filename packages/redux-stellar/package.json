@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/redux-stellar",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -30,7 +30,7 @@
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6 && yarn run compile:umd",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
-    "compile:umd": "webpack -p",    
+    "compile:umd": "webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prepublish": "yarn run compile",
