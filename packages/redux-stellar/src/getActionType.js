@@ -7,7 +7,7 @@ const DOCUMENT_ADDED = 'DOCUMENT_ADDED';
 const DOCUMENT_UPDATED = 'DOCUMENT_UPDATED';
 const DOCUMENT_REMOVED = 'DOCUMENT_REMOVED';
 
-export default function getActionType(action) {
+export function getActionType(action) {
   const theAction = typeof action === 'function' ? action() : action;
   if (theAction.type) {
     return theAction.type;
