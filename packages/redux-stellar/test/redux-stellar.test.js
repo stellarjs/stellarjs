@@ -23,7 +23,7 @@ describe('redux-stellar', () => {
         };
 
         expect(mockNext)
-          .toHaveBeenLastCalledWith( { type: action.type, payload: expectedPayload });
+          .toHaveBeenLastCalledWith( { type: action.type, payload: { promise:expectedPayload, data: expectedPayload.payload }});
     });
 
     it('should pass the intercepted action to next while unsubscribe while !method && !resource', () => {
@@ -50,6 +50,6 @@ describe('redux-stellar', () => {
 
         middleware(mockRef)(mockNext)(action);
         expect(mockNext)
-          .toHaveBeenLastCalledWith( { type: action.type, payload: Promise.prototype });
+          .toHaveBeenLastCalledWith( { type: action.type, payload: { promise: Promise.prototype, data: action.payload }});
     });
 });
