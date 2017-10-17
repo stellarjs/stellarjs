@@ -46,6 +46,10 @@ export function getDocAddedActionType(action) {
     return `${getActionType(action)}_${DOCUMENT_ADDED}`;
 }
 
+export function getDocUpdatedActionType(action) {
+    return `${getActionType(action)}_${DOCUMENT_UPDATED}`;
+}
+
 export function getDocRemovedActionType(action) {
     return `${getActionType(action)}_${DOCUMENT_REMOVED}`;
 }
