@@ -53,7 +53,8 @@
   "dependencies": {
     "@stellarjs/core": "^0.7.2",
     "lodash": "^4.17.4",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "yudarity": "^0.1.0"
   },
   "peerDependencies": {
     "@stellarjs/engine.io-client": "^0.7.5",
