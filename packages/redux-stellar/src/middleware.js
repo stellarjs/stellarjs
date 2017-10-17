@@ -61,7 +61,7 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
                     return ({ stopperId, results });
                   });
 
-        return next({ type, payload: { promise: getReactivePromise, data: payload }});
+        return next({ type, payload: { promise: getReactivePromise, data: payload } });
       }
 
       return next({ type, payload: { promise: stellar.request(url, method, payload, options), data: payload } });
