@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/redux-stellar",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
