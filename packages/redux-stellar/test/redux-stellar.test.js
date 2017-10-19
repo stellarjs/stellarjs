@@ -1,4 +1,5 @@
 import reduxStellar from '../src';
+import { getActionType } from '../src/getActionType';
 import { mockAction, mockRef, mockStellarSocket} from './mocks';
 
 describe('redux-stellar', () => {
@@ -51,5 +52,35 @@ describe('redux-stellar', () => {
         middleware(mockRef)(mockNext)(action);
         expect(mockNext)
           .toHaveBeenLastCalledWith( { type: action.type, payload: { promise: Promise.prototype, data: action.payload }});
+    });
+
+    it('should return action type - 3 parameters', () => {
+        function testFn(id, options, dispatch = () => null) {
+            return dispatch({
+                resource: 'a',
+                method: 'b',
+                path: 'c',
+                payload: id,
+                options,
+            });
+        }
+        const x = getActionType(testFn);
+
+        expect(x).toEqual('a:b:c');
+    });
+
+    it('should return action type - 4 parameters', () => {
+        function testFn({ id }, { bla }, options, dispatch = () => null) {
+            return dispatch({
+                resource: 'a',
+                method: 'b',
+                path: 'c',
+                payload: { id, bla },
+                options,
+            });
+        }
+        const x = getActionType(testFn);
+
+        expect(x).toEqual('a:b:c');
     });
 });

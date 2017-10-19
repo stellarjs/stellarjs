@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import arity from 'yudarity';
 
 const FULFILLED = 'FULFILLED';
 const PENDING = 'PENDING';
@@ -10,10 +9,10 @@ const DOCUMENT_ADDED = 'DOCUMENT_ADDED';
 const DOCUMENT_UPDATED = 'DOCUMENT_UPDATED';
 const DOCUMENT_REMOVED = 'DOCUMENT_REMOVED';
 
+const fakeArgsArray = _.times(10, () => (action => action));
+
 function getActionProps(action) {
-  const argumentsForAction = [];
-  argumentsForAction[arity(action) - 1] = props => props;
-  return action(..._.map(argumentsForAction, argument => argument || {}));
+  return action(...fakeArgsArray);
 }
 
 export function getActionType(action) {
