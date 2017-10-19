@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import times from 'lodash/times';
 
 const FULFILLED = 'FULFILLED';
 const PENDING = 'PENDING';
@@ -9,7 +9,7 @@ const DOCUMENT_ADDED = 'DOCUMENT_ADDED';
 const DOCUMENT_UPDATED = 'DOCUMENT_UPDATED';
 const DOCUMENT_REMOVED = 'DOCUMENT_REMOVED';
 
-const fakeArgsArray = _.times(10, () => (action => action));
+const fakeArgsArray = times(10, () => (action => action));
 
 function getActionProps(action) {
   return action(...fakeArgsArray);
