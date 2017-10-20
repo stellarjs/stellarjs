@@ -1,3 +1,4 @@
+import isFunction from 'lodash/isFunction';
 import times from 'lodash/times';
 
 const FULFILLED = 'FULFILLED';
@@ -16,7 +17,7 @@ function getActionProps(action) {
 }
 
 export function getActionType(action) {
-  const theAction = typeof action === 'function' ? getActionProps(action) : action;
+  const theAction = isFunction(action) ? getActionProps(action) : action;
   if (theAction.type) {
     return theAction.type;
   }
