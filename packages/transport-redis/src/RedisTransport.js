@@ -6,6 +6,7 @@ import assign from 'lodash/assign';
 import difference from 'lodash/difference';
 import map from 'lodash/map';
 import size from 'lodash/size';
+import split from 'lodash/split';
 import Promise from 'bluebird';
 
 import RedisClient from './config-redisclient';
@@ -19,7 +20,7 @@ class RedisTransport {
     this.log = log;
     this.queues = {};
     this.redis = new RedisClient(log);
-    this.bullConfig = Object.assign({}, this.redis.bullConfig);
+    this.bullConfig = assign({}, this.redis.bullConfig);
   }
 
   close() {
@@ -98,11 +99,11 @@ class RedisTransport {
     return new Enqueuer(queueName, { client: this.redis.defaultConnection });
   }
 
-  _cleanResources() {
-    this._doCleanResources(MINUTE_1);
+  _doCleanQueueResources(resourceKey, queueNames) {
+    return Promise.each(queueNames, (queueName => this._unsetTempResource(resourceKey, queueName)));
   }
 
-  _doCleanResources(expiryWithin) {
+  _cleanResources(expiryWithin = MINUTE_1) {
     const startTime = Date.now();
     const score = startTime - expiryWithin;
 
@@ -112,17 +113,15 @@ class RedisTransport {
     return new Promise((resolve) => {
       const stream = this.redis.defaultConnection.scanStream(
         { match: RedisTransport._resourceKey('*'), count: 1000 });
-      let numCleaned = 0;
 
+      let numCleaned = 0;
       stream.on('data', (resourceKeys) => {
         this.log.info(`@RedisTransport.cleanResources: keys=${resourceKeys}`);
-        numCleaned += size(resourceKeys);
+        numCleaned += size(resourceKeys); // eslint-disable-line better-mutation/no-mutation
 
-        Promise
+        return Promise // eslint-disable-line lodash/prefer-lodash-method
           .map(resourceKeys, resourceKey => [resourceKey, this.redis.defaultConnection.zrangebyscore(resourceKey, 0, score)])
-          .each(([resourceKey, queueNames]) => {
-            Promise.each(queueNames, (queueName => this._unsetTempResource(resourceKey, queueName)));
-          });
+          .each(([resourceKey, queueNames]) => this._doCleanQueueResources(resourceKey, queueNames));
       });
 
       stream.on('end', () => {
@@ -186,7 +185,7 @@ class RedisTransport {
     return this.redis.defaultConnection
       .scan(cursor, 'MATCH', `bull:${inboxStyle}:id`, 'COUNT', '1000')
       .then(results => assign(context, { nextCursor: results[0], rawNames: results[1] }))
-      .then(() => map(context.rawNames, n => n.split(':').slice(1, -1).join(':')))
+      .then(() => map(context.rawNames, n => split(n, ':').slice(1, -1).join(':')))
       .then(queueNames => handler(queueNames))
       .then((cleanedQueues) => {
         const newCount = totalCount + size(cleanedQueues);

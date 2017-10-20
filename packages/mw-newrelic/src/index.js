@@ -14,7 +14,7 @@ export default function (req, next) {
       return next()
                 .then((result) => {
                   newrelic.endTransaction();
-                  resolve(result);
+                  return resolve(result);
                 })
                 .catch((err) => {
                   newrelic.noticeError(omit(err, '__stellarResponse'));

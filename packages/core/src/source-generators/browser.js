@@ -18,13 +18,13 @@ const Base64 = {
       throw new Error(`Can't represent negative numbers now`);
     }
 
-    let rixit; // like 'digit', only in some non-decimal radix
+    let rixit = 0; // like 'digit', only in some non-decimal radix
     let residual = Math.floor(number);
     let result = '';
     while (true) { // eslint-disable-line no-constant-condition
       rixit = residual % 64;
       result = this._Rixits.charAt(rixit) + result;
-      residual = Math.floor(residual / 64);
+      residual = Math.floor(residual / 64); // eslint-disable-line better-mutation/no-mutation
 
       if (residual === 0) {
         break;
@@ -37,7 +37,7 @@ const Base64 = {
 export default function run() {
   if (!window.localStorage.browserId) {
     const val = ((Date.now() - new Date(2016, 1, 1).getTime()) * 100000) + Math.floor(Math.random() * 100000);
-    window.localStorage.browserId = Base64.fromNumber(val);
+    window.localStorage.browserId = Base64.fromNumber(val);  // eslint-disable-line better-mutation/no-mutation
   }
 
   return getFromInstanceId(window.localStorage.browserId, 'browser');

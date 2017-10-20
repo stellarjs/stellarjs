@@ -1,7 +1,6 @@
 /**
  * Created by arolave on 05/10/2016.
  */
-/* eslint-disable */
 import assign from 'lodash/assign';
 import includes from 'lodash/includes';
 

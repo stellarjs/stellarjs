@@ -14,9 +14,24 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
 
   return (ref) => {
     const { dispatch, getState } = ref;
+
+    function cb(type, data, publishAction) {
+      return dispatch({
+        type: `${type}_${publishAction}`,
+        payload: data,
+      });
+    }
+
     return next => (action) => {
       const { payload, resource, method, path, channel, reactiveHandler, options } = action;
       const type = getActionType(action);
+
+      function _reactiveHandler(data, publishAction) {
+        cb(type, data, publishAction);
+        if (reactiveHandler) {
+          reactiveHandler(data, publishAction);
+        }
+      }
 
       if (!resource && !method) {
         return next(action);
@@ -34,30 +49,16 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
       const url = path ? `${resource}:${path}` : resource;
 
       if (method === 'subscribe') {
-        const cb = (data, publishAction) => dispatch(
-          {
-            type: `${type}_${publishAction}`,
-            payload: data,
-          }
-                );
-
                 // in angular no reducers yet so will have to pass reactiveHandler with the action
-        const handler = (data, publishAction) => {
-          cb(data, publishAction);
-          if (reactiveHandler) {
-            reactiveHandler(data, publishAction);
-          }
-        };
-
         const finalChannel = isFunction(mwOptions.transformChannel)
                   ? mwOptions.transformChannel(channel, getState())
                   : channel;
 
-        const response = stellar.getReactive(url, finalChannel, payload, handler, options);
+        const response = stellar.getReactive(url, finalChannel, payload, _reactiveHandler, options);
         const getReactivePromise = Promise.all([response.onStop, response.results])
                   .then(([stopper, results]) => {
                     const stopperId = uuid();
-                    stoppersMap[stopperId] = stopper;
+                    stoppersMap[stopperId] = stopper; // eslint-disable-line better-mutation/no-mutation
                     return ({ stopperId, results });
                   });
 

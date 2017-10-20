@@ -4,6 +4,7 @@
 import Promise from 'bluebird';
 import qs from 'qs';
 import assign from 'lodash/assign';
+import forEach from 'lodash/forEach';
 import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 import { runSync as uuidSourceGenerator } from '@stellarjs/core/lib-es6/source-generators/uuid';
@@ -14,35 +15,13 @@ const MAX_RECONNECT_INTERVAL = 20000;
 
 const log = console;
 
-// A function that keeps trying, "toTry" until it returns true or has
-// tried "max" number of times. First retry has a delay of "delay".
-// "callback" is called upon success.
-let tryToReconnect = true;
-function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
-  log.info(`max:${max}, next delay: ${delay}, tryToReconnect: ${tryToReconnect}`);
-  if (!tryToReconnect) {
-    return;
+function _calcNextDelay(maxDelay, delay) {
+  const nextDelay = delay * 1.25;
+  if (nextDelay > maxDelay) {
+    return maxDelay;
   }
 
-  toTry()
-    .then((result) => {
-      if (callback) {
-        callback(result);
-      }
-    })
-    .catch(() => {
-      if (max > 0) {
-        setTimeout(() => {
-          let nextDelay = delay * 1.25;
-          if (nextDelay > maxDelay) {
-            nextDelay = maxDelay;
-          }
-          _exponentialBackoff(toTry, max - 1, nextDelay, callback);
-        }, delay);
-      } else {
-        log.info('we give up');
-      }
-    });
+  return nextDelay;
 }
 
 function stellarSocketFactory(eio) {
@@ -56,21 +35,50 @@ function stellarSocketFactory(eio) {
     connectedOnce: false,
     userId: null,
     stellar: null,
+    tryToReconnect: true,
+
+    // A function that keeps trying, "toTry" until it returns true or has
+    // tried "max" number of times. First retry has a delay of "delay".
+    // "callback" is called upon success.
+    _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
+      log.info(`max:${max}, next delay: ${delay}, tryToReconnect: ${this.tryToReconnect}`);
+      if (!this.tryToReconnect) {
+        return;
+      }
+
+      toTry()
+      .then((result) => {
+        if (callback) {
+          return callback(result);
+        }
+        return undefined;
+      })
+      .catch(() => {
+        if (max > 0) {
+          setTimeout(() => {
+            const nextDelay = _calcNextDelay(maxDelay, delay);
+            this._exponentialBackoff(toTry, max - 1, nextDelay, callback);
+          }, delay);
+        } else {
+          log.info('reconnect: giving up');
+        }
+      });
+    },
+
     _reconnect(url, options) {
       log.info(`@StellarEngineIO: Reconnecting`);
-      // eslint-disable-next-line no-use-before-define
-      _exponentialBackoff(() => this._doConnect(url, options), MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
+      this._exponentialBackoff(() => this._doConnect(url, options), MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
     },
 
     on(event, handler) {
       if (!this.handlers[event]) {
         this.handlers[event] = [];
       }
-      this.handlers[event].push(handler);
+      this.handlers[event] = this.handlers[event].concat([handler]);
     },
     trigger(event) {
       if (event && this.handlers[event]) {
-        this.handlers[event].forEach((handler) => {
+        forEach(this.handlers[event], (handler) => {
           handler();
         });
       }
@@ -78,22 +86,22 @@ function stellarSocketFactory(eio) {
     connect(url, options = {}) {
       log.info(`@StellarEngineIO.connect`);
 
-      tryToReconnect = options.tryToReconnect !== false;
+      this.tryToReconnect = options.tryToReconnect !== false;
 
       this.options = options;
       return this
         ._closeIfNeeded()
         .then(() => {
           this.connectedOnce = false;
+          return this._doConnect(url, options);
         })
-        .then(() => this._doConnect(url, options))
         .then((result) => {
           log.info(`@StellarEngineIO connection success`);
           return result;
         })
         .catch((e) => {
           log.info(`@StellarEngineIO connection failed`);
-          if (tryToReconnect) {
+          if (this.tryToReconnect) {
             return this._reconnect(url, options);
           }
           throw e;
@@ -102,8 +110,10 @@ function stellarSocketFactory(eio) {
     _closeIfNeeded() {
       return new Promise((resolve) => {
         try {
-          const stellarOptions = typeof window === 'undefined' ? { sourceOverride: uuidSourceGenerator() } : {};
-          this.stellar = stellarRequest(stellarOptions);
+          if (!this.stellar) {
+            const stellarOptions = typeof window === 'undefined' ? { sourceOverride: uuidSourceGenerator() } : {};
+            this.stellar = stellarRequest(stellarOptions);
+          }
 
           if (this.socket) {
             log.info('@StellarEngineIO.closeIfNeeded: Already open socket. Closing it before reconnect.');
@@ -120,7 +130,7 @@ function stellarSocketFactory(eio) {
             resolve(this.state);
           }
         } catch (e) {
-          log.warn('unable to close socket');
+          log.warn(e, 'unable to close socket');
           resolve(this.state);
         }
       });
@@ -149,7 +159,7 @@ function stellarSocketFactory(eio) {
 
           if (jam.messageType === 'error') {
             log.error(`@StellarEngineIO Error: ${jam.message}`);
-            tryToReconnect = false;
+            this.tryToReconnect = false;
             socketAttempt.close();
             const ctor = jam.errorType === 'StellarError' ? StellarError : Error;
             reject(new ctor('Authentication Error')); // eslint-disable-line new-cap
@@ -178,7 +188,7 @@ function stellarSocketFactory(eio) {
             this.trigger('close');
             this.state = 'disconnected';
             this.socket = null;
-            if (tryToReconnect) {
+            if (this.tryToReconnect) {
               this._reconnect(url, { userId, token, secure });
             }
           }
@@ -200,7 +210,7 @@ function stellarSocketFactory(eio) {
     },
 
     close() {
-      tryToReconnect = false;
+      this.tryToReconnect = false;
 
       if (this.socket) {
         log.info(`@StellarEngineIO: Close requested`);

@@ -7,7 +7,7 @@ import startCleaner from './cleaner';
 let instance;
 function transportFactory({ log }) {
   if (!instance) {
-    instance = new RedisTransport(log);
+    instance = new RedisTransport(log); // eslint-disable-line better-mutation/no-mutation
     startCleaner(instance, log);
   }
   return instance;

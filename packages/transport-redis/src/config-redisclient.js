@@ -1,5 +1,4 @@
-/* eslint-disable */
-import Redis from 'ioredis';  // eslint-disable-line import/no-extraneous-dependencies
+import Redis from 'ioredis';
 import uuid from 'uuid'
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';

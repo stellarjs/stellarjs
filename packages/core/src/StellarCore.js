@@ -2,7 +2,7 @@
  * Created by arolave on 25/09/2016.
  */
 import assign from 'lodash/assign';
-import first from 'lodash/first';
+import head from 'lodash/head';
 import get from 'lodash/get';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
@@ -32,7 +32,7 @@ class StellarCore {
   }
 
   static getServiceName(queueName) {
-    return first(queueName.split(':'));
+    return head(queueName.split(':')); // eslint-disable-line lodash/prefer-lodash-method
   }
 
   static getServiceInbox(queueName) {
@@ -48,7 +48,7 @@ class StellarCore {
   }
 
   use(pattern, fn) {
-    this.handlerChain.push({ pattern, fn });
+    this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
   }
 
   getNextId(inbox) {
@@ -81,11 +81,18 @@ class StellarCore {
   }
 
   _prepareResponse(jobData, val) {
+    function buildBody(headers) {
+      if (val instanceof Error) {
+        assign(headers, { errorType: val.constructor.name });
+        return pick(val, ['errors', 'message']);
+      }
+
+      return val;
+    }
+
     return this
       .getNextId(jobData.headers.respondTo)
       .then((id) => {
-        const convertError = e => pick(e, ['errors', 'message']);
-
         const headers = assign(this._getHeaders(), {
           id,
           type: 'response',
@@ -93,14 +100,8 @@ class StellarCore {
           traceId: jobData.headers.traceId,
           queueName: jobData.headers.respondTo,
         });
-        let body = val;
 
-        if (val instanceof Error) {
-          assign(headers, { errorType: val.constructor.name });
-          body = convertError(val);
-        }
-
-        return { headers, body };
+        return { headers, body: buildBody(headers) };
       });
   }
 
@@ -122,14 +123,16 @@ class StellarCore {
     });
   }
 
-  _executeMiddlewares(handlers, jobData, options = {}) { // eslint-disable-line class-methods-use-this
+  _executeMiddlewares(handlers, jobData, options = {}) {
     function match(url, pattern) {
       return url.match(pattern);
     }
     // this.log.info(`@StellarCore.executeMiddlewares: handlers ${_.size(handlers)}`);
 
     const runMw = (i) => {
-      const next = () => runMw(i + 1);
+      function next() {
+        return runMw(i + 1);
+      }
 
       if (handlers.length === i) {
         this.log.error(`@StellarCore ${jobData}: Final Handler should not call next`);

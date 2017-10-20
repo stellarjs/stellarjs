@@ -6,7 +6,7 @@ import size from 'lodash/size';
 let enableLogging = true;
 
 export function initLogger() {
-  enableLogging = size(process.env.STELLAR_DEBUG_LOGS)
+  enableLogging = size(process.env.STELLAR_DEBUG_LOGS) // eslint-disable-line better-mutation/no-mutation
         ? process.env.STELLAR_DEBUG_LOGS !== 'false'
         : process.env.NODE_ENV === 'development';
 }
@@ -14,7 +14,7 @@ export function initLogger() {
 const loggerHandler = {
   get: (target, propKey) => {
     const origMethod = target[propKey];
-    return function (...args) { // eslint-disable-line func-names
+    return function fn(...args) {
       if (enableLogging) {
         return origMethod.apply(target, args);
       }

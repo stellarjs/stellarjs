@@ -1,30 +1,32 @@
 import forEach from 'lodash/forEach';
+import isString from 'lodash/isString';
 
-let metrics = {};
 const ONE_MINUTE = 60 * 1000;
 const PUBLISH_INTERVAL = process.env.STELLAR_METRICS_PUBLISH_INTERVAL || ONE_MINUTE;
+
 let pubSubIntervalId;
+let metrics = {};
 
 function addMetricsURL(url) {
   if (!metrics[url]) {
-    metrics[url] = { chunks: {} };
+    metrics[url] = { chunks: {} }; // eslint-disable-line better-mutation/no-mutation
   }
 }
 
 function addRequest(url) {
   addMetricsURL(url);
 
-  metrics[url].requests = (metrics[url].requests || 0) + 1;
+  metrics[url].requests = (metrics[url].requests || 0) + 1; // eslint-disable-line better-mutation/no-mutation
 }
 
 function addFailedRequest(url) {
   addMetricsURL(url);
 
-  metrics[url].failedRequests = (metrics[url].failedRequests || 0) + 1;
+  metrics[url].failedRequests = (metrics[url].failedRequests || 0) + 1; // eslint-disable-line better-mutation/no-mutation
 }
 
 export function resetMetrics() {
-  metrics = {};
+  metrics = {}; // eslint-disable-line better-mutation/no-mutation
 
   if (pubSubIntervalId) {
     clearInterval(pubSubIntervalId);
@@ -46,12 +48,7 @@ export function middleware(req, next) {
       });
 }
 
-export default function ({ handler, pubSub }, microServiceName, publishInterval, ...urlPatterns) {
-  if (typeof publishInterval === 'string') {
-    urlPatterns.unshift(publishInterval);
-    publishInterval = PUBLISH_INTERVAL; // eslint-disable-line no-param-reassign
-  }
-
+function init({ handler, pubSub }, microServiceName, publishInterval, urlPatterns) {
   const startTime = Date.now();
 
   function prepareMetrics() {
@@ -67,8 +64,17 @@ export default function ({ handler, pubSub }, microServiceName, publishInterval,
   handler.get(`${microServiceName}:metrics`, () => prepareMetrics());
 
   if (pubSub) {
+     // eslint-disable-next-line better-mutation/no-mutation
     pubSubIntervalId = setInterval(() => {
       pubSub.publish(`channel:${microServiceName}:metrics`, prepareMetrics());
     }, publishInterval);
   }
+}
+
+export default function ({ handler, pubSub }, microServiceName, publishInterval, ...urlPatterns) {
+  if (isString(publishInterval)) {
+    return init({ handler, pubSub }, microServiceName, PUBLISH_INTERVAL, [publishInterval].concat(urlPatterns));
+  }
+
+  return init({ handler, pubSub }, microServiceName, publishInterval, urlPatterns);
 }

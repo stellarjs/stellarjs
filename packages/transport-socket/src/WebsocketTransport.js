@@ -47,11 +47,11 @@ class WebsocketTransport {
     return Promise.resolve();
   }
 
-  registerSubscriber(channel, queueName) { // eslint-disable-line no-unused-vars
+  registerSubscriber(channel, queueName) {
     return Promise.resolve(() => this._deregisterSubscriber(channel, queueName));
   }
 
-  _deregisterSubscriber(channel, queueName) { // eslint-disable-line no-unused-vars
+  _deregisterSubscriber(channel, queueName) {
     return this.enqueue(queueName, { headers: { channel, type: 'stopReactive' } });
   }
 
