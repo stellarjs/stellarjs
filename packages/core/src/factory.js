@@ -13,7 +13,7 @@ const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 30000;
 let _log = console;
 function configureStellarLog(stellarLog) {
   if (stellarLog) {
-    _log = stellarLog;
+    _log = stellarLog; // eslint-disable-line better-mutation/no-mutation
   }
 }
 
@@ -25,43 +25,43 @@ let _app = null;
 
 let _registry = {};
 function register(source, name) {
-    if (includes(_registry[source], name)) {
-        throw new Error(`@Factory Unable to register multiple ${name} instances for ${source}`);
-    }
+  if (includes(_registry[source], name)) {
+    throw new Error(`@Factory Unable to register multiple ${name} instances for ${source}`);
+  }
 
-    if (_registry[source]) {
-        _registry[source].push(name);
-    } else {
-        _registry[source] = [name];
-    }
-};
+  if (_registry[source]) {
+    _registry[source].push(name); // eslint-disable-line better-mutation/no-mutating-methods
+  } else {
+    _registry[source] = [name]; // eslint-disable-line better-mutation/no-mutation
+  }
+}
 
 function getSource() {
   return _source;
 }
 
 function getSourceGenerator(value) {
-  return _sourceGenerators[ value || process.env.STELLAR_SOURCE_GENERATOR || _defaultSourceGenerator ];
+  return _sourceGenerators[value || process.env.STELLAR_SOURCE_GENERATOR || _defaultSourceGenerator];
 }
 
 function configureTransport(transport, transportFactory, options) {
-  _transport = transport || transportFactory(options);
+  _transport = transport || transportFactory(options); // eslint-disable-line better-mutation/no-mutation
   return _transport;
 }
 
 function configureStellar({ log, transport, transportFactory, source, sourceGenerator, app = process.env.APP, ...options }) {
-  _registry = {};
-  _app = app;
+  _registry = {}; // eslint-disable-line better-mutation/no-mutation
+  _app = app; // eslint-disable-line better-mutation/no-mutation
 
   configureStellarLog(log);
-  configureTransport(transport, transportFactory, assign({log}, options));
+  configureTransport(transport, transportFactory, assign({ log }, options));
 
-  _source = source || getSourceGenerator(sourceGenerator)(_log);
+  _source = source || getSourceGenerator(sourceGenerator)(_log); // eslint-disable-line better-mutation/no-mutation
   _log.info(`setting source ${_source}`);
   return _source;
 }
 
-function stellarAppPubSub(options = {}) {
+function stellarAppPubSub() {
   register(_source, 'stellarAppPubSub');
   return new StellarPubSub(_transport, _source, _log, _app);
 }
@@ -84,8 +84,8 @@ function stellarHandler() {
 }
 
 function setSourceGenerators(defaultSourceGenerator, sourceGenerators) {
-  _defaultSourceGenerator = defaultSourceGenerator;
-  _sourceGenerators = sourceGenerators;
+  _defaultSourceGenerator = defaultSourceGenerator; // eslint-disable-line better-mutation/no-mutation
+  _sourceGenerators = sourceGenerators; // eslint-disable-line better-mutation/no-mutation
 }
 
 configureStellarLog(console);
