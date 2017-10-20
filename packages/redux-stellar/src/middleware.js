@@ -57,7 +57,7 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
         const getReactivePromise = Promise.all([response.onStop, response.results])
                   .then(([stopper, results]) => {
                     const stopperId = uuid();
-                    stoppersMap[stopperId] = stopper;
+                    stoppersMap[stopperId] = stopper; // eslint-disable-line better-mutation/no-mutation
                     return ({ stopperId, results });
                   });
 
