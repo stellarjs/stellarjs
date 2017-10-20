@@ -1,4 +1,5 @@
 import isFunction from 'lodash/isFunction';
+import times from 'lodash/times';
 
 const FULFILLED = 'FULFILLED';
 const PENDING = 'PENDING';
@@ -9,11 +10,18 @@ const DOCUMENT_ADDED = 'DOCUMENT_ADDED';
 const DOCUMENT_UPDATED = 'DOCUMENT_UPDATED';
 const DOCUMENT_REMOVED = 'DOCUMENT_REMOVED';
 
-export default function getActionType(action) {
-  const theAction = isFunction(action) ? action() : action;
+const fakeArgsArray = times(10, () => (action => action));
+
+function getActionProps(action) {
+  return action(...fakeArgsArray);
+}
+
+export function getActionType(action) {
+  const theAction = isFunction(action) ? getActionProps(action) : action;
   if (theAction.type) {
     return theAction.type;
   }
+
   const pathSuffix = theAction.path ? `:${theAction.path}` : '';
   return `${theAction.resource}:${theAction.method}${pathSuffix}`;
 }
@@ -38,10 +46,10 @@ export function getDocAddedActionType(action) {
   return `${getActionType(action)}_${DOCUMENT_ADDED}`;
 }
 
-export function getDocRemovedActionType(action) {
-  return `${getActionType(action)}_${DOCUMENT_REMOVED}`;
-}
-
 export function getDocUpdatedActionType(action) {
   return `${getActionType(action)}_${DOCUMENT_UPDATED}`;
+}
+
+export function getDocRemovedActionType(action) {
+  return `${getActionType(action)}_${DOCUMENT_REMOVED}`;
 }
