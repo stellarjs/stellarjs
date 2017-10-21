@@ -31,9 +31,9 @@ class RedisClient {
     assign(client, { id: uuid.v4() });
 
     const prefix = `@RedisClient(${this.id}).${client.id}`;
-    
+
     client.on('reconnecting', msg => this.log.log('trace', `${prefix}.reconnecting`, { msg }));
-    client.on('warning', msg => this.log.log('trace', `${prefix}.warning`, { msg } ));
+    client.on('warning', msg => this.log.log('trace', `${prefix}.warning`, { msg }));
     client.on('error', e => this.log.log('trace', e, `${prefix}.error`));
     client.on('close', () => {
       this.log.log('trace', `${prefix}: Closed Connection`);

@@ -18,7 +18,7 @@ import { WebsocketTransport } from '@stellarjs/transport-socket';
 function createStellarRequest(stellarFactory, middlewares) {
   const sourceOverride = `bridge-${stellarFactory.source}`;
   const stellarRequest = stellarFactory.stellarRequest({ sourceOverride });
-  _.forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
+  forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
   return stellarRequest;
   // TODO customize
   // stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
@@ -299,10 +299,10 @@ function init({
   }
 
   function onConnection(socket) {
-    log.info(`${getSource()} @StellarBridge: New Connection`);
+    log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
     const startTime = Date.now();
 
-    const initialSession = startSession(log, socket);
+    const initialSession = startSession(log, stellarRequest.source, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
       .then((session) => {
         log.info(`${session.logPrefix} Connected`, { session });

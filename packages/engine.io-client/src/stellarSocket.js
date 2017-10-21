@@ -41,7 +41,7 @@ function stellarSocketFactory(eio) {
     // tried "max" number of times. First retry has a delay of "delay".
     // "callback" is called upon success.
     _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
-      log.info(`@StellarSocket._exponentialBackoff`, { max, delay, tryToReconnect });
+      log.info(`@StellarSocket._exponentialBackoff`, { max, delay, tryToReconnect: this.tryToReconnect });
       if (!this.tryToReconnect) {
         return;
       }
