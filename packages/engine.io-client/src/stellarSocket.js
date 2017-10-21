@@ -4,7 +4,7 @@
 import Promise from 'bluebird';
 import qs from 'qs';
 import assign from 'lodash/assign';
-import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
+import { configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 import { runSync as uuidSourceGenerator } from '@stellarjs/core/lib-es6/source-generators/uuid';
 
@@ -46,7 +46,7 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
 }
 
 function stellarSocketFactory(eio) {
-  configureStellar({ log, transportFactory });
+  const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
 
   return {

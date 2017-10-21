@@ -14,14 +14,12 @@ function setBluebirdConfig(values) {
   Promise.config(values);
 }
 
-setSourceGenerators('browser', { browser });
+const configureStellar = preconfigure({ defaultSourceGenerator: 'browser', sourceGenerators: { browser } });
 
-export { setBluebirdScheduler, setBluebirdConfig };
 export { logger } from './logger';
 export { StellarError } from './StellarError';
 export { default as StellarCore } from './StellarCore';
 export { default as StellarPubSub } from './StellarPubSub';
 export { default as StellarRequest } from './StellarRequest';
 export { default as StellarHandler } from './StellarHandler';
-export * from './factory';
-export { browser };
+export { setBluebirdScheduler, setBluebirdConfig, configureStellar, browser };
