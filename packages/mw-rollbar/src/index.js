@@ -1,3 +1,4 @@
+import isError from 'lodash/isError';
 import Promise from 'bluebird';
 import rollbar from 'rollbar';
 import { StellarError } from '@stellarjs/core';
@@ -8,19 +9,19 @@ export default function (req, next) {
     next()
       .then(response => resolve(response))
       .catch((err) => {
-        const cb = (rollbarErr) => {
+        function cb(rollbarErr) {
           if (rollbarErr) {
             rollbar.error(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
           }
 
           reject(err);
-        };
+        }
 
         if (!err || err instanceof StellarError) {
           return reject(err);
         }
 
-        if (err instanceof Error) {
+        if (err instanceof Error || isError(err)) {
           return rollbar.handleError(err, req, cb);
         }
 

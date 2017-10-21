@@ -26,8 +26,8 @@ class MemoryTransport {
 
   generateId(queueName) {
     this.setQueue(queueName);
-
-    return Promise.resolve(this.queues[queueName].currentId++); //eslint-disable-line
+    this.queues[queueName].currentId += 1;
+    return Promise.resolve(this.queues[queueName].currentId);
   }
 
   getSubscribers(channel) {

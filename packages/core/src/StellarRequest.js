@@ -90,47 +90,59 @@ export default class StellarRequest extends StellarCore {
   }
 
   _doQueueRequest(queueName, body = {}, requestHeaders = {}, options = {}) {
+    function prepErrorResponse(responseData, error) {
+      error.__stellarResponse = responseData; // eslint-disable-line better-mutation/no-mutation, no-param-reassign
+      return error;
+    }
+
+    const startRequestTimer = (headers, jobData, reject) => {
+      const handleRequestTimeout = () => {
+        if (!this.inflightRequests[headers.id]) {
+          const context = { id: headers.id };
+          const message = `@StellarRequest: timeout for missing inflightRequest ${this.requestTimeout}ms`;
+          this.log.error(message, context);
+          return Promise.reject(`${message} ${JSON.stringify(context)}`);
+        }
+
+        this.log.warn(`@StellarRequest: timeout after ${this.requestTimeout}ms`, { id: headers.id });
+        delete this.inflightRequests[headers.id];
+        const error = new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`);
+        return this._prepareResponse(jobData, error)
+            .then(responseData => reject(prepErrorResponse(responseData, error)));
+      };
+
+      if (this.requestTimeout && !options.requestOnly) {
+        return setTimeout(() => handleRequestTimeout(headers, jobData, reject), this.requestTimeout);
+      }
+
+      return undefined;
+    };
+
+    const stopRequestTimer = (requestTimer) => {
+      if (requestTimer) {
+        clearTimeout(requestTimer);
+      }
+    };
+
     const inbox = StellarCore.getServiceInbox(queueName);
     const allMiddlewares = [].concat(this.handlerChain, {
       fn: request => this._enqueue(inbox, request)
         // TODO need to response handling to after _executeMiddlewares
           .then(job => new Promise((resolve, reject) => {
             const headers = request.headers;
-            let requestTimer;
-            if (this.requestTimeout && !options.requestOnly) {
-              requestTimer = setTimeout(() => {
-                if (!this.inflightRequests[headers.id]) {
-                  this.log.error(`@StellarRequest: timeout for missing inflightRequest ${this.requestTimeout}ms`,
-                    { id: headers.id });
-                  return;
-                }
-
-                this.log.warn(`@StellarRequest: timeout after ${this.requestTimeout}ms`, { id: headers.id });
-                delete this.inflightRequests[headers.id];
-                const error = new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`);
-                this._prepareResponse(job.data, error).then((response) => {
-                  error.__stellarResponse = response;
-                  return reject(error);
-                });
-              }, this.requestTimeout);
-            }
-
+            const requestTimer = startRequestTimer(headers, job.data, reject);
             this.inflightRequests[headers.id] = (responseJob) => {
-              if (requestTimer) {
-                clearTimeout(requestTimer);
-              }
+              stopRequestTimer(requestTimer);
 
               delete this.inflightRequests[headers.id];
 
               const responseData = responseJob.data;
               if (get(responseData, 'headers.errorType') === 'StellarError') {
                 const error = new StellarError(responseData.body);
-                error.__stellarResponse = responseData;
-                reject(error);
+                reject(prepErrorResponse(responseData, error));
               } else if (get(responseData, 'headers.errorType')) {
                 const error = new Error(get(responseData, 'body.message'));
-                error.__stellarResponse = responseData;
-                reject(error);
+                reject(prepErrorResponse(responseData, error));
               } else {
                 resolve(responseData);
               }

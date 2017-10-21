@@ -10,7 +10,7 @@ function runSubscriberCleaning(transport, log) {
     return;
   }
 
-  subscriberCleanerRunning = true;
+  subscriberCleanerRunning = true; // eslint-disable-line better-mutation/no-mutation
   log.info(`runSubscriberCleaning`);
   RedisExclusiveTask.configure([transport.redis.newConnection()], log);
 

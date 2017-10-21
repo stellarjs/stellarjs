@@ -31,6 +31,7 @@ beforeAll((done) => {
 });
 
 afterAll(() => {
+  console.error('PROC.KILL');
   proc.kill('SIGINT');
   redisClient.defaultConnection.quit();
 });

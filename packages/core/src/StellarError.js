@@ -2,6 +2,7 @@
  * Created by arolave on 13/11/2016.
  */
 import assign from 'lodash/assign';
+import isString from 'lodash/isString';
 import mapValues from 'lodash/mapValues';
 import size from 'lodash/size';
 import snakeCase from 'lodash/snakeCase';
@@ -13,7 +14,7 @@ function StellarError(message) {
     Error.captureStackTrace(this, this.constructor);
   }
 
-  if (message == null || typeof message === 'string' || message instanceof String) {
+  if (message == null || isString(message) || message instanceof String) {
     this.message = message;
     this.errors = {};
 
@@ -29,23 +30,23 @@ StellarError.prototype = new Error();
 StellarError.prototype.name = 'StellarError';
 StellarError.prototype.constructor = StellarError;
 
-StellarError.prototype._add = function (key, val) { // eslint-disable-line func-names
+StellarError.prototype._add = function fn(key, val) {
   if (!this.errors[key]) {
     this.errors[key] = [];
   }
 
-  this.errors[key].push(val);
+  this.errors[key] = this.errors[key].concat([val]);
 };
 
-StellarError.prototype.addGeneral = function (error) { // eslint-disable-line func-names
+StellarError.prototype.addGeneral = function fn(error) {
   this._add('general', error);
 };
 
-StellarError.prototype.messageKeys = function () { // eslint-disable-line func-names
+StellarError.prototype.messageKeys = function fn() {
   return mapValues(this.errors, (v, k) => snakeCase(`${k} ${v}`));
 };
 
-StellarError.prototype.addPropertyError = function (propertyPath, error) { // eslint-disable-line func-names
+StellarError.prototype.addPropertyError = function fn(propertyPath, error) {
   this._add(propertyPath, error);
 };
 
