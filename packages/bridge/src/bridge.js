@@ -254,7 +254,6 @@ function init({
   server.on('connection', (socket) => {
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
 
-    log.info(`${getSource()} @StellarBridge: New Connection`);
     const startTime = Date.now();
     const initialSession = startSession(log, stellarRequest.source, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
