@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
+import stringify from 'safe-json-stringify';
 
 import {
   stellarRequest as stellarRequestFactory,
