@@ -1,7 +1,7 @@
 /**
  * Created by arolave on 10/04/2017.
  */
-import { preconfigure } from './factory';
+import preconfigure from './factory';
 import uuid from './source-generators/uuid';
 
 const configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid } });

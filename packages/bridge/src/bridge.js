@@ -248,11 +248,10 @@ function init({
                   sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars
                 },
                 middlewares = [] }) {
-
   const stellarRequest = createStellarRequest(stellarFactory, middlewares);
   const reportError = initErrorHandlers(log, errorHandlers);
   const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
-  
+
   server.on('connection', (socket) => {
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
 

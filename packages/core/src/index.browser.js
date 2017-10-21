@@ -3,7 +3,7 @@
  */
 import Promise from 'bluebird';
 
-import { setSourceGenerators } from './factory';
+import preconfigure from './factory';
 import browser from './source-generators/browser';
 
 function setBluebirdScheduler(fn) {

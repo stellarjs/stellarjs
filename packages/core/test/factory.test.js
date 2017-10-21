@@ -2,7 +2,7 @@
  * Created by arolave on 29/05/2017.
  */
 import Promise from 'bluebird';
-import { preconfigure } from '../src/factory';
+import preconfigure from '../src/factory';
 import { MockTransport, mockTransportFactory } from './mocks';
 import { default as uuid } from '../src/source-generators/uuid';
 import { default as browser } from '../src/source-generators/browser';

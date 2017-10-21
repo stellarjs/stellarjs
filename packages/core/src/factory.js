@@ -72,6 +72,4 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
     }
 }
 
-export {
-  preconfigure
-};
+export default preconfigure;
