@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import _ from 'lodash';]import stringify from 'safe-json-stringify';
+import _ from 'lodash';
 
 import { StellarError } from '@stellarjs/core';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
@@ -142,7 +142,7 @@ function handleMessage(log, stellarRequest, session, command) {
         return stellarRequest
           ._prepareResponse(command.data, new StellarError(message))
           .then((errorResponse) => {
-            log.warn(`${session.logPrefix}: ${message}`);
+            log.warn(session.logPrefix, message);
 
             return sendResponse(
               log,
