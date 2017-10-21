@@ -6,6 +6,7 @@ import defaultsDeep from 'lodash/defaultsDeep';
 import defaults from 'lodash/defaults';
 import get from 'lodash/get';
 import includes from 'lodash/includes';
+import keys from 'lodash/keys';
 import lowerCase from 'lodash/lowerCase';
 
 import Promise from 'bluebird';
@@ -40,6 +41,11 @@ export default class StellarRequest extends StellarCore {
   startResponseHandler() {
     this.responseInbox = StellarCore.getNodeInbox(this.source);
     this._process(this.responseInbox, (job) => {
+      if (!this.inflightRequests[job.data.headers.requestId]) {
+        throw new Error(
+          `@StellarRequest ${job.data.headers.requestId} inflightRequest entry not found! Only ${
+            keys(this.inflightRequests)} exist`);
+      }
       this.inflightRequests[job.data.headers.requestId](job);
     }).catch((e) => {
       throw e;

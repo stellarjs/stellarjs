@@ -2,20 +2,20 @@
 # yarn lockfile v1
 
 
-"@stellarjs/core@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.7.0.tgz#221b76d49419a015ea8e9fa6a721b018955bd4e1"
+"@stellarjs/core@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.npmjs.org/@stellarjs/core/-/core-0.7.2.tgz#59ce5119ddfcdca05ff6b1754a20f33477e32a2f"
   dependencies:
     bluebird "3.4.7"
     lodash "^4.17.4"
     safe-json-stringify "^1.0.4"
-    uuid "^3.0.1"
+    uuid "^3.1.0"
 
-"@stellarjs/transport-socket@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@stellarjs/transport-socket/-/transport-socket-0.7.0.tgz#81c8eea4b320442da53953db6231c87ce674b3d2"
+"@stellarjs/transport-socket@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.npmjs.org/@stellarjs/transport-socket/-/transport-socket-0.7.2.tgz#c042da0db10e6505a6509c94811d33c15f947dec"
   dependencies:
-    "@stellarjs/core" "^0.7.0"
+    "@stellarjs/core" "^0.7.2"
     bluebird "3.4.7"
     lodash "^4.17.4"
 
@@ -3209,9 +3209,13 @@ util@0.10.3, util@^0.10.3:
   dependencies:
     inherits "2.0.1"
 
-uuid@^3.0.0, uuid@^3.0.1:
+uuid@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
+
+uuid@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
 
 v8flags@^2.0.10:
   version "2.1.1"

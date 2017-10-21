@@ -4,8 +4,9 @@
 import Promise from 'bluebird';
 import qs from 'qs';
 import assign from 'lodash/assign';
-import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
+import { configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
+import { runSync as uuidSourceGenerator } from '@stellarjs/core/lib-es6/source-generators/uuid';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
@@ -45,7 +46,8 @@ function _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
 }
 
 function stellarSocketFactory(eio) {
-  configureStellar({ log, transportFactory }).then(() => log.info('@StellarClient initialized'));
+  const { stellarRequest } = configureStellar({ log, transportFactory });
+  log.info('@StellarClient initialized');
 
   return {
     socket: null,
@@ -53,7 +55,7 @@ function stellarSocketFactory(eio) {
     state: 'disconnected',
     connectedOnce: false,
     userId: null,
-    stellar: stellarRequest(),
+    stellar: null,
     _reconnect(url, options) {
       log.info(`@StellarEngineIO: Reconnecting`);
       // eslint-disable-next-line no-use-before-define
@@ -100,6 +102,9 @@ function stellarSocketFactory(eio) {
     _closeIfNeeded() {
       return new Promise((resolve) => {
         try {
+          const stellarOptions = typeof window === 'undefined' ? { sourceOverride: uuidSourceGenerator() } : {};
+          this.stellar = stellarRequest(stellarOptions);
+
           if (this.socket) {
             log.info('@StellarEngineIO.closeIfNeeded: Already open socket. Closing it before reconnect.');
             this.socket.off('close');
