@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
-import stringify from 'safe-json-stringify';
 
 import { StellarError } from '@stellarjs/core';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
@@ -143,7 +142,7 @@ function handleMessage(log, stellarRequest, session, command) {
         return stellarRequest
           ._prepareResponse(command.data, new StellarError(message))
           .then((errorResponse) => {
-            log.warn(`${session.logPrefix}: ${message}`);
+            log.warn(session.logPrefix, message);
 
             return sendResponse(
               log,
@@ -259,7 +258,7 @@ function init({
     const initialSession = startSession(log, stellarRequest.source, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
       .then((session) => {
-        log.info(`${session.logPrefix} Connected: ${stringify(_.omit(session, 'client'))}`);
+        log.info(`${session.logPrefix} Connected`, { session: _.omit(session, ['client']) });
 
         socket.on('close', () => {
           _.forEach(session.reactiveStoppers, (stopper, channel) => {

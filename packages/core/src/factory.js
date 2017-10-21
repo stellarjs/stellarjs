@@ -18,7 +18,7 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
     function getSourceGenerator(value) {
         return _sourceGenerators[ value || process.env.STELLAR_SOURCE_GENERATOR || _defaultSourceGenerator ];
     }
-    
+
     const _registry = {};
     function register(source, name) {
         if (includes(_registry[source], name)) {
@@ -38,7 +38,6 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
         const _transport = transport || transportFactory(assign({log}, options));
         const _source = source || getSourceGenerator(sourceGenerator)(_log);
         const _requestTimeout = options.requestTimeout || requestTimeout;
-        _log.info(`setting source ${_source}`);
 
         function stellarAppPubSub(options = {}) {
             register(_source, 'stellarAppPubSub');

@@ -31,19 +31,19 @@ class RedisClient {
 
     const prefix = `@RedisClient(${this.id}).${client.id}`;
     
-    client.on('reconnecting', (msg) => this.log.info(`${prefix}.reconnecting: ${msg}`));
-    client.on('warning', (msg) => this.log.warn(`${prefix}.warning: ${msg}`));
-    client.on('error', (msg) => this.log.error(msg, `${prefix}.error: ${msg}`));
+    client.on('reconnecting', (msg) => this.log.log('trace', `${prefix}.reconnecting`, { msg }));
+    client.on('warning', (msg) => this.log.log('trace', `${prefix}.warning`, { msg } ));
+    client.on('error', (e) => this.log.log('trace', e, `${prefix}.error`));
     client.on('close', () => {
-      this.log.info(`${prefix}: Closed Connection`);
+      this.log.log('trace', `${prefix}: Closed Connection`);
       delete connections[client.id];
     });
-    this.log.info(`${prefix}: New Connection`);
+    this.log.log('trace', `${prefix}: New Connection`);
     connections[client.id] = client;
 
     if (connectionInterval == null) {
       // 2 Minutes connection counting
-      connectionInterval = setInterval(() => this.log.info(`@@RedisClient(${this.id}): Connection Count: ${connectionCount}`), 120000);
+      connectionInterval = setInterval(() => this.log.log('trace', `@@RedisClient(${this.id}): Connection Count: ${connectionCount}`), 120000);
     }
 
     return client;
@@ -51,15 +51,15 @@ class RedisClient {
 
   closeAll() {
     const prefix = `@RedisClient(${this.id})`;
-    this.log.info(`${prefix}.closeAll redis connections ${this.countConnections()}`);
+    this.log.log('trace', `${prefix}.closeAll redis connections ${this.countConnections()}`);
     forEach(connections, (client) => {
       if (!client.manuallyClosing) {
-        this.log.info(`${prefix}.${client.id}.close ${client.id}`);
+        this.log.log('trace', `${prefix}.${client.id}.close ${client.id}`);
         client.quit();
       }
     });
     clearInterval(connectionInterval);
-    this.log.info(`${prefix}.closeAll complete`);
+    this.log.log('trace', `${prefix}.closeAll complete`);
   }
 }
 
