@@ -5,7 +5,7 @@ import Promise from 'bluebird';
 import qs from 'qs';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
-import { stellarRequest, configureStellar, StellarError } from '@stellarjs/core';
+import { configureStellar, StellarError } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-socket';
 import { runSync as uuidSourceGenerator } from '@stellarjs/core/lib-es6/source-generators/uuid';
 
@@ -25,7 +25,7 @@ function _calcNextDelay(maxDelay, delay) {
 }
 
 function stellarSocketFactory(eio) {
-  configureStellar({ log, transportFactory });
+  const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
 
   return {
@@ -41,7 +41,7 @@ function stellarSocketFactory(eio) {
     // tried "max" number of times. First retry has a delay of "delay".
     // "callback" is called upon success.
     _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
-      log.info(`max:${max}, next delay: ${delay}, tryToReconnect: ${this.tryToReconnect}`);
+      log.info(`@StellarSocket._exponentialBackoff`, { max, delay, tryToReconnect });
       if (!this.tryToReconnect) {
         return;
       }
@@ -60,13 +60,13 @@ function stellarSocketFactory(eio) {
             this._exponentialBackoff(toTry, max - 1, nextDelay, callback);
           }, delay);
         } else {
-          log.info('reconnect: giving up');
+          log.info('@StellarSocket._exponentialBackoff: we give up');
         }
       });
     },
 
     _reconnect(url, options) {
-      log.info(`@StellarEngineIO: Reconnecting`);
+      log.info(`@StellarSocket._reconnect`, { url, socketId: this.socket && this.socket.id });
       this._exponentialBackoff(() => this._doConnect(url, options), MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
     },
 
@@ -84,7 +84,7 @@ function stellarSocketFactory(eio) {
       }
     },
     connect(url, options = {}) {
-      log.info(`@StellarEngineIO.connect`);
+      log.info(`@StellarSocket.connect`, { url, options });
 
       this.tryToReconnect = options.tryToReconnect !== false;
 
@@ -96,11 +96,11 @@ function stellarSocketFactory(eio) {
           return this._doConnect(url, options);
         })
         .then((result) => {
-          log.info(`@StellarEngineIO connection success`);
+          log.info(`@StellarSocket connection success`);
           return result;
         })
         .catch((e) => {
-          log.info(`@StellarEngineIO connection failed`);
+          log.info(`@StellarSocket connection failed`);
           if (this.tryToReconnect) {
             return this._reconnect(url, options);
           }
@@ -116,27 +116,28 @@ function stellarSocketFactory(eio) {
           }
 
           if (this.socket) {
-            log.info('@StellarEngineIO.closeIfNeeded: Already open socket. Closing it before reconnect.');
+            log.info('@StellarSocket.closeIfNeeded: Already open socket. Closing it before reconnect.',
+              { socketId: this.socket && this.socket.id });
             this.socket.off('close');
             this.socket.on('close', () => {
               this.socket.off('close');
-              log.info(`@StellarEngineIO: Closed`);
+              log.info(`@StellarSocket.closeIfNeeded: Socket Closed`, { socketId: this.socket && this.socket.id });
               this.stellar.transport.onClose();
               resolve(this.state);
             });
             this.socket.close();
           } else {
-            log.info('@StellarEngineIO.closeIfNeeded: Clean slate');
+            log.info('@StellarSocket.closeIfNeeded: Clean slate');
             resolve(this.state);
           }
         } catch (e) {
-          log.warn(e, 'unable to close socket');
+          log.warn(e, '@StellarSocket.closeIfNeeded: unable to close socket');
           resolve(this.state);
         }
       });
     },
     _doConnect(url, { userId, token, secure, tokenType, params, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
-      log.info(`@StellarEngineIO._doConnect: ${userId}, ${token}`);
+      log.info(`@StellarSocket._doConnect`, { url, userId, secure, tokenType, token });
       return new Promise((resolve, reject) => {
         this.state = 'connecting';
         const urlParams = assign({ 'x-auth-user': userId, 'x-auth-token': token, 'x-auth-token-type': tokenType }, params);
@@ -144,7 +145,7 @@ function stellarSocketFactory(eio) {
         try {
           socketAttempt = new eio.Socket(`${secure ? 'wss' : 'ws'}://${url}?${qs.stringify(urlParams)}`, eioConfig);
         } catch (e) {
-          log.info(`@StellarEngineIO error`, e);
+          log.info(e, `@StellarSocket._doConnect`, { url, userId, secure, tokenType, token });
           reject('Connect failed');
         }
 
@@ -153,12 +154,12 @@ function stellarSocketFactory(eio) {
           try {
             jam = JSON.parse(m);
           } catch (e) {
-            log.error(e, `@StellarEngineIO: message ignored ${m}`);
+            log.error(e, `@StellarSocket: message ignored`, { m });
             return;
           }
 
           if (jam.messageType === 'error') {
-            log.error(`@StellarEngineIO Error: ${jam.message}`);
+            log.error(`@StellarSocket Error`, { m: jam.message });
             this.tryToReconnect = false;
             socketAttempt.close();
             const ctor = jam.errorType === 'StellarError' ? StellarError : Error;
@@ -178,11 +179,11 @@ function stellarSocketFactory(eio) {
         });
 
         socketAttempt.on('open', () => {
-          log.info('@StellarEngineIO: socket open');
+          log.info('@StellarSocket: socket open');
         });
 
         socketAttempt.on('close', () => {
-          log.info(`@StellarEngineIO: Closed`);
+          log.info(`@StellarSocket: Closed`);
           this.stellar.transport.onClose();
           if (this.state === 'connected') {
             this.trigger('close');
@@ -195,7 +196,7 @@ function stellarSocketFactory(eio) {
         });
 
         socketAttempt.on('error', (e) => {
-          log.error(e, `Socket error`);
+          log.error(e, `Socket error`, { socketId: socketAttempt && socketAttempt.id });
           this.trigger('error');
           if (this.state === 'connecting') {
             reject('Connect failed');
@@ -203,7 +204,7 @@ function stellarSocketFactory(eio) {
         });
 
         socketAttempt.on('upgrade', () => {
-          log.info(`@StellarEngineIO.event:'UPGRADE': ${socketAttempt.id}`);
+          log.info(`@StellarSocket.event:'UPGRADE'`, { socketId: socketAttempt && socketAttempt.id });
           this.trigger('upgrade');
         });
       });
@@ -213,7 +214,7 @@ function stellarSocketFactory(eio) {
       this.tryToReconnect = false;
 
       if (this.socket) {
-        log.info(`@StellarEngineIO: Close requested`);
+        log.info(`@StellarSocket: Close requested`, { socketId: this.socket && this.socket.id });
         this.socket.close();
       }
     },

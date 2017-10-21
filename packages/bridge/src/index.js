@@ -4,6 +4,7 @@
 import engine from 'engine.io';
 import assign from 'lodash/assign';
 
+import defaultStellarFactory from './defaultStellarFactory';
 import attachToServer from './bridge';
 
 function boot(config = {}) {
@@ -24,7 +25,12 @@ function boot(config = {}) {
     originalHandler(req, res);
   };
 
-  attachToServer(assign(config, { server }));
+  const finalConfig = { server };
+  if (!config.stellarFactory) {
+    assign(finalConfig, { stellarFactory: defaultStellarFactory(log) });
+  }
+
+  attachToServer(assign(finalConfig, config));
   return server;
 }
 

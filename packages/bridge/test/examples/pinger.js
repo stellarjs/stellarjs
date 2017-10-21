@@ -5,9 +5,15 @@ import { stellarAppPubSub, stellarHandler, StellarError } from '@stellarjs/core'
 import url from 'url';
 import omit from 'lodash/omit';
 
+
+import defaultStellarFactory from '../../src/defaultStellarFactory';
 import { boot } from '../../src';
 
+const log = console;
+const stellarFactory = defaultStellarFactory(log);
+
 boot({
+  stellarFactory,
   newSessionHandlers: [
     ({ log, socket, session }) => {
       const request = socket.request;
@@ -33,13 +39,13 @@ const PUBLISH_ACTIONS = {
   UPDATED: 'UPDATED',
   REMOVED: 'REMOVED',
 };
-const publisher = stellarAppPubSub();
+const publisher = stellarFactory.stellarAppPubSub();
 function kongEveryHalfSecond() {
   publisher.publish('stellarBridge:kong:stream', { text: `kong` }, { action: PUBLISH_ACTIONS.UPDATED });
   setTimeout(kongEveryHalfSecond, 500);
 }
 
-const handler = stellarHandler();
+const handler = stellarFactory.stellarHandler();
 handler.get('sampleService:ping', () => ({ text: `pong` }));
 handler.get('sampleService:pingError', () => {
   throw new Error('pongError');

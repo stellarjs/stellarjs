@@ -7,7 +7,6 @@ import get from 'lodash/get';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
-import stringify from 'safe-json-stringify';
 
 class StellarCore {
   constructor(transport, source, log) {
@@ -28,7 +27,7 @@ class StellarCore {
 
     this.source = source;
     this.sourceResolver(source);
-    this.log.info(`Restarting Stellar Obj: ${source}`);
+    this.log.info(`@StellarCore.setSource`, { source });
   }
 
   static getServiceName(queueName) {
@@ -135,7 +134,7 @@ class StellarCore {
       }
 
       if (handlers.length === i) {
-        this.log.error(`@StellarCore ${jobData}: Final Handler should not call next`);
+        this.log.error(`@StellarCore: Final Handler should not call next`, { jobData });
         return Promise.reject(new Error('Final Handler should not call next'));
       }
 
@@ -155,18 +154,18 @@ class StellarCore {
   }
 
   _enqueue(queueName, obj) {
-    this.log.info(`@StellarCore.enqueue ${queueName}: ${stringify(obj)}`);
+    this.log.info(`@StellarCore.enqueue`, { queueName, obj });
     return this.transport
       .enqueue(queueName, obj)
       .catch((e) => {
-        this.log.error(e, `@StellarCore.enqueue error`);
+        this.log.error(e, `@StellarCore.enqueue`, { queueName, obj });
         throw e;
       });
   }
 
   _process(inbox, callback) {
     return this.transport.process(inbox, (job) => {
-      this.log.info(`@StellarCore.process ${job.data.headers.id}: ${stringify(job.data)}`);
+      this.log.info(`@StellarCore.process`, { inbox, obj: job.data });
       return callback(job);
     });
   }

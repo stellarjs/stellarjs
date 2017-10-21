@@ -98,12 +98,13 @@ export default class StellarRequest extends StellarCore {
     const startRequestTimer = (headers, jobData, reject) => {
       const handleRequestTimeout = () => {
         if (!this.inflightRequests[headers.id]) {
-          const message = `@StellarRequest ${headers.id}: timeout for missing inflightRequest ${this.requestTimeout}ms`;
-          this.log.error(message);
-          return Promise.reject('message');
+          const context = { id: headers.id };
+          const message = `@StellarRequest: timeout for missing inflightRequest ${this.requestTimeout}ms`;
+          this.log.error(message, context);
+          return Promise.reject(`${message} ${JSON.stringify(context)}`);
         }
 
-        this.log.warn(`@StellarRequest ${headers.id}: timeout after ${this.requestTimeout}ms`);
+        this.log.warn(`@StellarRequest: timeout after ${this.requestTimeout}ms`, { id: headers.id });
         delete this.inflightRequests[headers.id];
         const error = new StellarError(`Timeout error: No response to job ${headers.id} in ${this.requestTimeout}ms`);
         return this._prepareResponse(jobData, error)

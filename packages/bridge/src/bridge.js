@@ -12,21 +12,14 @@ import pick from 'lodash/pick';
 import size from 'lodash/size';
 import split from 'lodash/split';
 
-import {
-  stellarRequest as stellarRequestFactory,
-  getSource,
-  configureStellar,
-  StellarError } from '@stellarjs/core';
-import redisTransportFactory from '@stellarjs/transport-redis';
+import { StellarError } from '@stellarjs/core';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 
-let stellarRequest;
-function connectToMicroservices(log, middlewares) {
-  configureStellar({ log, transportFactory: redisTransportFactory });
-  const sourceOverride = `bridge-${getSource()}`;
-  stellarRequest = stellarRequestFactory({ sourceOverride }); // eslint-disable-line better-mutation/no-mutation
-
-  forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
+function createStellarRequest(stellarFactory, middlewares) {
+  const sourceOverride = `bridge-${stellarFactory.source}`;
+  const stellarRequest = stellarFactory.stellarRequest({ sourceOverride });
+  _.forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
+  return stellarRequest;
   // TODO customize
   // stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
   //   _.assign(req.headers, options.session.headers);
@@ -35,12 +28,13 @@ function connectToMicroservices(log, middlewares) {
 }
 
 const sessions = {};
-function startSession(log, socket) {
+function startSession(log, source, socket) {
   const session = {
+    source,
     sessionId: socket.id,
     ip: get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
-    logPrefix: `${getSource()} @StellarBridge(${socket.id})`,
+    logPrefix: `${source} @StellarBridge(${socket.id})`,
     registerStopper(channel, stopperPromise, requestId) {
       assign(session.reactiveStoppers,
         {
@@ -113,7 +107,7 @@ function sendResponse(log, session, command, jobDataResp) {
   const requestId = command.data.headers.id;
   const queueName = command.data.headers.respondTo;
 
-  const headers = defaults({ requestId, queueName, source: getSource() }, jobDataResp.headers);
+  const headers = defaults({ requestId, queueName, source: session.source }, jobDataResp.headers);
   const obj = { headers, body: jobDataResp.body };
   log.info(`${session.logPrefix}.clientEnqueue`, { queueName, obj });
   return session.client.enqueue(queueName, obj);
@@ -122,7 +116,7 @@ function sendResponse(log, session, command, jobDataResp) {
 function bridgeReactive(log, session, requestHeaders) {
   return (subscriptionData, channel) => {
     const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
-    const headers = defaults({ channel, queueName, source: getSource() }, subscriptionData.headers);
+    const headers = defaults({ channel, queueName, source: session.source }, subscriptionData.headers);
     const obj = { headers, body: subscriptionData.body };
 
     log.info(`${session.logPrefix}.clientEnqueue`, { channel, queueName, obj });
@@ -130,7 +124,7 @@ function bridgeReactive(log, session, requestHeaders) {
   };
 }
 
-function handleMessage(log, session, command) {
+function handleMessage(log, stellarRequest, session, command) {
   const requestHeaders = command.data.headers;
 
   switch (requestHeaders.type) {
@@ -138,7 +132,7 @@ function handleMessage(log, session, command) {
       return stellarRequest
         ._doQueueRequest(requestHeaders.queueName,
                          command.data.body,
-                         defaults({ source: getSource() }, requestHeaders),
+                         defaults({ source: session.source }, requestHeaders),
                          { session, responseType: 'raw' })
         .then(response => sendResponse(log, session, command, response));
     }
@@ -159,7 +153,7 @@ function handleMessage(log, session, command) {
         return stellarRequest
           ._prepareResponse(command.data, new StellarError(message))
           .then((errorResponse) => {
-            log.warn(`${session.logPrefix}: ${message}`);
+            log.warn(session.logPrefix, message);
 
             return sendResponse(
               log,
@@ -174,7 +168,7 @@ function handleMessage(log, session, command) {
       const reactiveRequest = {
         results: stellarRequest._doQueueRequest(requestHeaders.queueName,
                                                  command.data.body,
-                                                 defaults({ source: getSource() }, requestHeaders),
+                                                 defaults({ source: session.source }, requestHeaders),
                                                  options),
         onStop: stellarRequest.pubsub.subscribe(requestHeaders.channel,
                                                  bridgeReactive(log, session, requestHeaders),
@@ -249,6 +243,7 @@ function getTxName(requestHeaders) {
 function init({
                 server,
                 log = console,
+                stellarFactory,
                 errorHandlers = [],
                 newSessionHandlers = [],
                 instrumentation = {
@@ -263,8 +258,7 @@ function init({
                   sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
                 },
                 middlewares = [] }) {
-  connectToMicroservices(log, middlewares);
-
+  const stellarRequest = createStellarRequest(stellarFactory, middlewares);
   const reportError = initErrorHandlers(log, errorHandlers);
   const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
 
@@ -279,7 +273,7 @@ function init({
 
     instrumentation.startTransaction(getTxName(command.data.headers), session, () => {
       Promise
-        .try(() => handleMessage(log, session, command))
+        .try(() => handleMessage(log, stellarRequest, session, command))
         .then(() => instrumentation.done())
         .catch((e) => {
           instrumentation.done(e);

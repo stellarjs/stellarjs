@@ -70,19 +70,19 @@ class WebsocketTransport {
   }
 
   process(queueName, callback) {
-    this.log.info(`@WebsocketTransport: Registering inbox: ${queueName}`);
+    this.log.log('trace', `@WebsocketTransport: Registering inbox`, { queueName });
     this.messageHandler.on(queueName, (command) => {
       try {
         callback(command);
       } catch (e) {
-        this.log.warn(e, 'invalid message sent to stellar websocket transport');
+        this.log.warn(e, 'invalid message sent to stellar websocket transport', { queueName, obj: command });
       }
     });
     return Promise.resolve();
   }
 
   stopProcessing(queueName) {
-    this.log.info(`@WebsocketTransport: Stopping inbox: ${queueName}`);
+    this.log.info(`@WebsocketTransport: Stopping inbox`, { queueName });
     return this.messageHandler.removeAllListeners(queueName);
   }
 }
