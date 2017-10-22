@@ -27,6 +27,7 @@ function _calcNextDelay(maxDelay, delay) {
 function stellarSocketFactory(eio) {
   const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
+  const stellarRequestOptions = typeof window === 'undefined' ? { sourceOverride: uuidSourceGenerator() } : {};
 
   return {
     socket: null,
@@ -34,8 +35,9 @@ function stellarSocketFactory(eio) {
     state: 'disconnected',
     connectedOnce: false,
     userId: null,
-    stellar: null,
+    stellar: stellarRequest(stellarRequestOptions),
     tryToReconnect: true,
+
 
     // A function that keeps trying, "toTry" until it returns true or has
     // tried "max" number of times. First retry has a delay of "delay".
@@ -110,11 +112,6 @@ function stellarSocketFactory(eio) {
     _closeIfNeeded() {
       return new Promise((resolve) => {
         try {
-          if (!this.stellar) {
-            const stellarOptions = typeof window === 'undefined' ? { sourceOverride: uuidSourceGenerator() } : {};
-            this.stellar = stellarRequest(stellarOptions);
-          }
-
           if (this.socket) {
             log.info('@StellarSocket.closeIfNeeded: Already open socket. Closing it before reconnect.',
               { socketId: this.socket && this.socket.id });

@@ -14,7 +14,7 @@
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest",
     "prepublish": "yarn run compile",
     "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/core.xml src",
     "lint:fix": "eslint src --fix"
