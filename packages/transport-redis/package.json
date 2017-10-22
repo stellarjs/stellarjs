@@ -25,15 +25,16 @@
     "usePathForSuiteName": "true"
   },
   "scripts": {
-    "ci": "yarn run lint && yarn run test-coverage",
+    "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "test": "jest --runInBand --forceExit",
     "test:coverage": "jest --runInBand --coverage --forceExit",
     "prepublish": "yarn run compile",
-    "lint": "eslint --format junit --output-file ../../.artifacts/lint_results/transport-redis.xml src",
-    "lint:fix": "eslint src --fix"
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/transport-redis.xml src"
   },
   "publishConfig": {
     "access": "public"
