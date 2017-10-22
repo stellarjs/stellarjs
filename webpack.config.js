@@ -28,9 +28,12 @@ function webpackConfig(context) {
             loader: 'babel-loader',
             options: {
               babelrc: false,
-              presets: [
-                ['es2015', { modules: false }],
-              ],
+              presets: [['env', {
+                targets: {
+                  browsers: ['> 0.2%', 'not ie 8'],
+                },
+                modules: false,
+              }]],
               plugins: ['transform-object-rest-spread'],
             },
           },
