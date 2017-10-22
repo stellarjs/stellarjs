@@ -3,8 +3,9 @@
  */
 import preconfigure from './factory';
 import uuid from './source-generators/uuid';
+import env from './source-generators/env';
 
-const configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid } });
+const configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, env } });
 
 export { configureStellar };
 export { logger } from './logger';
