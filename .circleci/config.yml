@@ -11,7 +11,7 @@ jobs:
           - checkout
           - run:
               name: Update yarn
-              command: 'sudo npm install -g yarn@latest'
+              command: 'sudo npm install -g yarn@0.27.5'
           - restore_cache:
               key: yarn-cache-{{ checksum "yarn.lock" }}
           - run: 

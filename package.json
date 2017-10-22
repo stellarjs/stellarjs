@@ -20,7 +20,7 @@
     "publish:canary": "lerna publish --canary",
     "pretest": "lerna run lint",
     "test": "lerna run test",
-    "precoverage": "lerna run lint",
+    "precoverage": "lerna run lint:ci",
     "coverage": "lerna run test:coverage"
   },
   "devDependencies": {

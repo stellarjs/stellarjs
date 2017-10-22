@@ -6,11 +6,12 @@ import preconfigure from '../src/factory';
 import { MockTransport, mockTransportFactory } from './mocks';
 import { default as uuid } from '../src/source-generators/uuid';
 import { default as browser } from '../src/source-generators/browser';
+import { default as env } from '../src/source-generators/env';
 
 describe('factory generation', () => {
   let configureStellar;
   beforeEach(() => {
-    configureStellar = preconfigure({defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser }});
+    configureStellar = preconfigure({defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env }});
   });
 
   it('set externalSource generation', () => {
@@ -93,6 +94,20 @@ describe('factory generation', () => {
         const requestObj = stellarRequest();
         expect(requestObj.requestTimeout).toBe(30000);
         expect(source).toMatch(/^browser:[0-9A-Za-z\/\+]+$/);
+        global.window = null;
+        done();
+      });
+  });
+
+  it('set env generation', (done) => {
+    global.localStorage = {};
+    process.env.STELLAR_SOURCE = '12345ABCDE';
+    const { source, stellarRequest } = configureStellar({ log: console, transportFactory: mockTransportFactory, sourceGenerator: 'env' });
+    Promise.delay(50)
+      .then(() => {
+        const requestObj = stellarRequest();
+        expect(requestObj.requestTimeout).toBe(30000);
+        expect(source).toBe('12345ABCDE');
         global.window = null;
         done();
       });
