@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/metrics",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -38,15 +38,15 @@
     "usePathForSuiteName": "true"
   },
   "devDependencies": {
-    "@stellarjs/core": "^0.7.2",
-    "@stellarjs/transport-memory": "^0.7.2",
+    "@stellarjs/core": "^0.8.0",
+    "@stellarjs/transport-memory": "^0.8.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "bluebird": "3.4.7",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
-    "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-better-mutation": "^1.1.2",
+    "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
