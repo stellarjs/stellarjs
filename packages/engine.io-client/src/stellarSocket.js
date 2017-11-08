@@ -21,7 +21,7 @@ function _calcNextDelay(maxDelay, delay) {
   return nextDelay;
 }
 
-function stellarSocketFactory(eio, log) {
+function stellarSocketFactory(eio, log = console) {
   const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
   const stellarRequestOptions = typeof window === 'undefined' ? { sourceOverride: uuid() } : {};
