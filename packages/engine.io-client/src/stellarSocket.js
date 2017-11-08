@@ -12,8 +12,6 @@ const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
 const MAX_RECONNECT_INTERVAL = 20000;
 
-const log = console;
-
 function _calcNextDelay(maxDelay, delay) {
   const nextDelay = delay * 1.25;
   if (nextDelay > maxDelay) {
@@ -23,7 +21,7 @@ function _calcNextDelay(maxDelay, delay) {
   return nextDelay;
 }
 
-function stellarSocketFactory(eio) {
+function stellarSocketFactory(eio, log) {
   const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
   const stellarRequestOptions = typeof window === 'undefined' ? { sourceOverride: uuid() } : {};
