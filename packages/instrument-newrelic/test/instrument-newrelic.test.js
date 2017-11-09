@@ -45,7 +45,6 @@ describe('New Relic middleware', () => {
         const prototype = transportRedis.RedisTransport.prototype;
         expect(messageShim.recordSubscribedConsume).toBeCalledWith(prototype, 'process', expect.any(Object));
         const consumeSpec = get(messageShim, 'recordSubscribedConsume.mock.calls[0][2]');
-        console.log('consumeSpec',consumeSpec);
 
         expect(consumeSpec).toEqual({ consumer: 'LAST', messageHandler: expect.any(Function) })
 
