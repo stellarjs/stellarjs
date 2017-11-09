@@ -1,6 +1,6 @@
 import transportRedis from '@stellarjs/transport-redis';
-import instrumentRedisTransport from '../src';
 import get from 'lodash/get';
+import instrumentRedisTransport from '../src';
 
 let messageShim;
 
@@ -13,13 +13,13 @@ describe('test instrument newrelic', () => {
             recordSubscribedConsume: jest.fn(),
             LAST: 'LAST',
             QUEUE: 'QUEUE'
-        }
+        };
         instrumentRedisTransport(messageShim, transportRedis);
     });
 
-  it('Should set Library name as stellarjs', () => {
-      expect(messageShim.setLibrary).toBeCalledWith('stellarjs');
-  });
+    it('Should set Library name as stellarjs', () => {
+        expect(messageShim.setLibrary).toBeCalledWith('stellarjs');
+    });
 
     it('Should record transport enqueue', () => {
         const prototype = transportRedis.RedisTransport.prototype;
@@ -68,5 +68,4 @@ describe('test instrument newrelic', () => {
             headers: job.data.headers
         })
     });
-
 });
