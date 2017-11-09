@@ -5,6 +5,7 @@ import instrumentRedisTransport from '../src';
 let messageShim;
 
 describe('test instrument newrelic', () => {
+
     beforeEach(() => {
         messageShim = {
             setLibrary: jest.fn(),
@@ -35,7 +36,7 @@ describe('test instrument newrelic', () => {
             callback: 'LAST',
             destinationName: 'queueNameInHeader',
             destinationType: 'QUEUE',
-            headers: { queueName: 'queueNameInHeader' },
+            headers: job.headers,
             parameters: 'body'
         })
     });
