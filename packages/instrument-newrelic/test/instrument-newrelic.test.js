@@ -4,7 +4,7 @@ import get from 'lodash/get';
 
 let messageShim;
 
-describe('New Relic middleware', () => {
+describe('test instrument newrelic', () => {
 
     beforeEach(() => {
         messageShim = {
