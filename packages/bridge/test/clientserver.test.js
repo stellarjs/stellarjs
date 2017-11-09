@@ -38,7 +38,7 @@ afterAll(() => {
 
 describe('call server', () => {
   it('on auth error dont reconnect', () => {
-    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket
       .connect('localhost:8091', {
         secure: false,
@@ -55,8 +55,8 @@ describe('call server', () => {
       });
   });
 
-  it('on other error reconnect automatically', (done) => {
-    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    it('on other error reconnect automatically', (done) => {
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket
       .connect('localhost:8091', {
         secure: false,
@@ -76,7 +76,7 @@ describe('call server', () => {
   });
 
   it('request response should work', (done) => {
-    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket.connect('localhost:8091', {
       secure: false,
       userId: '123',
@@ -100,7 +100,7 @@ describe('call server', () => {
     let reactiveResolve;
     let stopper;
     const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
-    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket.connect('localhost:8091', {
       secure: false,
       userId: '123',
@@ -141,7 +141,7 @@ describe('call server', () => {
     let reactiveResolve;
     const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
 
-    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket.connect('localhost:8091', {
       secure: false,
       userId: '123',
@@ -194,7 +194,7 @@ describe('call server', () => {
   });
 
   it('request response should work when errors are thrown', (done) => {
-    const stellarSocket = require('@stellarjs/engine.io-client').default;
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket.connect('localhost:8091', {
       secure: false,
       userId: '123',
