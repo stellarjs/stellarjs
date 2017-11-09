@@ -1,0 +1,73 @@
+import transportRedis from '@stellarjs/transport-redis';
+import instrumentRedisTransport from '../src';
+import get from 'lodash/get';
+
+let messageShim;
+
+describe('New Relic middleware', () => {
+
+    beforeEach(() => {
+        messageShim = {
+            setLibrary: jest.fn(),
+            recordProduce: jest.fn(),
+            recordSubscribedConsume: jest.fn(),
+            LAST: 'LAST',
+            QUEUE: 'QUEUE'
+        }
+        instrumentRedisTransport(messageShim, transportRedis);
+    });
+
+  it('Should set Library name as stellarjs', () => {
+      expect(messageShim.setLibrary).toBeCalledWith('stellarjs');
+  });
+
+    it('Should record transport enqueue', () => {
+        const prototype = transportRedis.RedisTransport.prototype;
+        expect(messageShim.recordProduce).toBeCalledWith(prototype, 'enqueue', expect.any(Function));
+        const messageHandler = get(messageShim, 'recordProduce.mock.calls[0][2]');
+        const job = {
+            body: 'body',
+            headers: {
+                queueName: 'queueNameInHeader'
+            }
+        };
+        const recordedMessage = messageHandler(messageShim, null, null, ['queueName', job]);
+        expect(recordedMessage).toEqual({
+            callback: 'LAST',
+            destinationName: 'queueNameInHeader',
+            destinationType: 'QUEUE',
+            headers: { queueName: 'queueNameInHeader' },
+            parameters: 'body'
+        })
+    });
+
+    it('Should record transport process', () => {
+        const prototype = transportRedis.RedisTransport.prototype;
+        expect(messageShim.recordSubscribedConsume).toBeCalledWith(prototype, 'process', expect.any(Object));
+        const consumeSpec = get(messageShim, 'recordSubscribedConsume.mock.calls[0][2]');
+        console.log('consumeSpec',consumeSpec);
+
+        expect(consumeSpec).toEqual({ consumer: 'LAST', messageHandler: expect.any(Function) })
+
+        const { messageHandler } = consumeSpec;
+
+        const job = {
+            queue: {name: 'queueName'},
+            body: 'body',
+            data: {
+                headers: {
+                    queueName: 'queueNameInHeader'
+                }
+            }
+        };
+
+        const recordedMessage = messageHandler(messageShim, null, null, [job]);
+
+        expect(recordedMessage).toEqual({
+            destinationName: 'queueNameInHeader',
+            destinationType: 'QUEUE',
+            headers: job.data.headers
+        })
+    });
+
+});
