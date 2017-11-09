@@ -5,7 +5,6 @@ import instrumentRedisTransport from '../src';
 let messageShim;
 
 describe('test instrument newrelic', () => {
-
     beforeEach(() => {
         messageShim = {
             setLibrary: jest.fn(),
