@@ -38,7 +38,8 @@ function start() {
 }
 
 function shutdown() {
-    server.close();
+  server.httpServer.close();
+  server.close();
 }
 
 const PUBLISH_ACTIONS = {

@@ -35,6 +35,7 @@ afterAll(() => {
   console.error('PROC.KILL');
   shutdown();
   redisClient.defaultConnection.quit();
+  redisClient.closeAll();
 });
 
 describe('call server', () => {
