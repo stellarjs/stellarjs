@@ -2,7 +2,6 @@
  * Created by arolave on 07/06/2017.
  */
 import Promise from 'bluebird';
-import child_process from 'child_process';
 import RedisClient from '@stellarjs/transport-redis/lib-es6/config-redisclient';
 import { StellarError } from '@stellarjs/core';
 import _ from 'lodash';
@@ -17,11 +16,13 @@ const clearRedis = () => {
   throw new Error('Redis not in test mode');
 };
 
-let proc;
+let shutdown = null;
 beforeAll((done) => {
   clearRedis()
     .then(() => {
-      proc = child_process.fork(`${__dirname}/examples/index`);
+      const pinger = require('./examples');
+      pinger.start();
+      shutdown = pinger.shutdown;
     })
     .delay(3500)
     .then(() => {
@@ -32,7 +33,7 @@ beforeAll((done) => {
 
 afterAll(() => {
   console.error('PROC.KILL');
-  proc.kill('SIGINT');
+  shutdown();
   redisClient.defaultConnection.quit();
 });
 
@@ -55,7 +56,7 @@ describe('call server', () => {
       });
   });
 
-    it('on other error reconnect automatically', (done) => {
+  it('on other error reconnect automatically', (done) => {
     const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket
       .connect('localhost:8091', {
