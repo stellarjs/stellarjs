@@ -38,11 +38,11 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/transport-redis": "0.8.0",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-better-mutation": "^1.1.2",
-    "@stellarjs/transport-redis": "0.8.0",
     "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
