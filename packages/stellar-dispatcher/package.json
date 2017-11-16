@@ -1,0 +1,58 @@
+{
+  "name": "@stellarjs/stellar-dispatcher",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "lib-es6/index.js",
+  "src": [
+    "src/**/*"
+  ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js",
+      "!src/index.browser.js"
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/redux-stellar",
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/redux-stellar.xml",
+    "usePathForSuiteName": "true"
+  },
+  "scripts": {
+    "ci": "yarn run lint:ci && yarn run test-coverage",
+    "clean": "rimraf lib lib-es6",
+    "compile": "yarn run compile:es6",
+    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublish": "yarn run compile",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/redux-stellar.xml src"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-better-mutation": "^1.1.2",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-lodash": "2.4.4",
+    "eslint-plugin-promise": "3.5.0",
+    "jest": "^20.0.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "uuid": "^3.1.0"
+  }
+}
