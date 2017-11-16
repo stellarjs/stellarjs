@@ -1,0 +1,50 @@
+{
+  "name": "@stellarjs/stellar-dispatcher",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "lib-es6/index.js",
+  "src": [
+    "src/**/*"
+  ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js",
+      "!src/index.browser.js"
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/redux-stellar",
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/redux-stellar.xml",
+    "usePathForSuiteName": "true"
+  },
+  "scripts": {
+    "ci": "yarn run lint:ci && yarn run test-coverage",
+    "clean": "rimraf lib lib-es6",
+    "compile": "yarn run compile:es6 && yarn run compile:umd",
+    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:umd": "webpack -p",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublish": "yarn run compile",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/redux-stellar.xml src"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "uuid": "^3.1.0"
+  }
+}
