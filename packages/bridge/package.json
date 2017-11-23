@@ -63,7 +63,7 @@
     "@stellarjs/core": "^0.8.0",
     "@stellarjs/transport-redis": "^0.8.0",
     "@stellarjs/transport-socket": "^0.8.0",
-    "bluebird": "3.4.7",
+    "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4"
   }
