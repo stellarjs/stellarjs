@@ -23,6 +23,7 @@ dump/
 **/lib-es6/
 .logs/
 .artifacts/
+packages/**/yarn.lock
 
 *.DS_Store
 *.swp

@@ -61,7 +61,7 @@
   "dependencies": {
     "@stellarjs/core": "^0.8.0",
     "@stellarjs/transport-socket": "^0.8.0",
-    "bluebird": "3.4.7",
+    "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "qs": "^6.5.0",
     "tough-cookie": "^2.3.2"
