@@ -42,7 +42,7 @@
     "@stellarjs/transport-memory": "^0.8.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
-    "bluebird": "3.4.7",
+    "bluebird": "^3.4.7",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-better-mutation": "^1.1.2",
