@@ -1,4 +1,4 @@
-import ITransport from '../src/ITransport';
+import ITransport from '../src/iTransport';
 
 describe('ITransport tests', () => {
   it('Has no supported features', () => {
