@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/transport-interface",
+  "name": "@stellarjs/transport-queue",
   "version": "0.8.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -52,5 +52,11 @@
     "jest": "^20.0.4",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
+  },
+  "dependencies": {
+    "@stellarjs/transport-interface": "^0.8.1",
+    "bluebird": "^3.5.1",
+    "lodash": "^4.17.4",
+    "uuid": "^3.1.0"
   }
 }
