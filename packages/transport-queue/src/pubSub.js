@@ -1,6 +1,8 @@
 import forEach from 'lodash/forEach';
+import map from 'lodash/map';
 import includes from 'lodash/includes';
 import isEmpty from 'lodash/isEmpty';
+import Promise from 'bluebird';
 import uuid from 'uuid/v4';
 import Core from './core';
 
@@ -9,19 +11,24 @@ export default class PubSub extends Core {
     super(log, generateId, enqueue, process);
     this.getSubscribers = getSubscribers;
     this.registerSubscriber = registerSubscriber;
+    this.messageHandlers = {};
   }
 
   publish(stellarId, channel, payload) {
-    const subscribersQueueNames = this.getSubscribers(channel);
-    forEach(subscribersQueueNames, queueName => this._getNextId(queueName)
-      .then(queueMessageId => this._enqueue(queueName, payload, queueMessageId)));
-    return stellarId;
+    const promises = this.getSubscribers(channel).then((subscribersQueueNames) =>
+      map(subscribersQueueNames, queueName => this._getNextId(queueName)
+        .then(queueMessageId => this._enqueue(queueName, payload, queueMessageId))));
+
+    // Returns a promise which is Waiting for all enqueues to finish, and then returns the given message id
+    return Promise.all(promises).then(() => stellarId);
+
   }
 
   subscribeGroup(groupID, channel, messageHandler) { // eslint-disable-line no-unused-vars
-    const subscriptionInbox = this._subscriptionInbox(channel);
+    const subscriptionInbox = this._subscriptionInbox(groupID);
     return this._registerSubscription(channel, subscriptionInbox, (job) => {
-      const message = includes(['raw', 'jobData'], options.responseType) ? job.data : job.data.body; // TODO: ask andres
+      // const message = includes(['raw', 'jobData'], options.responseType) ? job.data : job.data.body; // TODO: ask andres
+      const message = job.data.body; // TODO: ask andres
       return messageHandler(message, channel);
     })
       .then((unsubscribe) => {
@@ -30,12 +37,8 @@ export default class PubSub extends Core {
       });
   }
 
-  _subscriptionInbox(channel) {
-    if (!this.subscriptionInbox) {
-      this.subscriptionInbox = `stlr:s:${channel}:subscriptionInbox`;
-    }
-
-    return this.subscriptionInbox;
+  _subscriptionInbox(groupID) {
+    return `stlr:s:${groupID}:subscriptionInbox`;
   }
 
   _addHandler(channel, subscription, messageHandler) {

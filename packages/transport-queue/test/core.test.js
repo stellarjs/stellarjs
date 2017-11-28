@@ -1,109 +1,173 @@
 import _ from 'lodash';
+import Promise from 'bluebird';
 import Core from '../src/core';
-import { generateIdMock, enqueueMock, processMock, triggerProcess, clearProcessCallbacks } from '../mocks/core.mocks';
+import CoreMock from '../mocks/core.mocks';
 
 function expectGetNextId(instance, queueName) {
-  expect(instance._getNextId(queueName)).resolves.toBe(`${queueName}:1`);
+  return new Promise((resolve, reject) => {
+    instance._getNextId(queueName).then((id) => {
+      expect(id).toBe(`${queueName}:1`);
+      return resolve(id);
+    }).catch(error => reject(error));
+  });
+}
+
+function expectGetMultipleNextIds(instance, done, queueNamesArray) {
+  const promiseArray = _.map(queueNamesArray, queueName => expectGetNextId(instance, queueName));
+  const combinedPromise = Promise.all(promiseArray);
+  combinedPromise.then(done);
+}
+
+function expectEnqueue(instance, queueName, payload, messageId) {
+  return new Promise((resolve, reject) => {
+    instance._enqueue(queueName, payload, messageId).then((result) => {
+      expect(result).toBe(result);
+      return resolve(result);
+    }).catch(error => reject(error));
+  });
+}
+
+function expectMultipleEnqueues(instance, done, params) {
+  const promiseArray = _.map(params, current => expectEnqueue(instance, current.queueName, current.payload, current.messageId));
+  const combinedPromise = Promise.all(promiseArray);
+  combinedPromise.then(done);
+}
+
+function expectProcess(instance, triggerProcess, done, messagesPerQueue, queues) {
+  const callbackArray = _.map(queues, queueName => ({
+    queueName,
+    callback: jest.fn()
+  }));
+  const processPromiseArray = _.map(callbackArray, current => instance._process(current.queueName, current.callback));
+  const combinedProcessPromise = Promise.all(processPromiseArray);
+  combinedProcessPromise.then(() => {
+    for (let i=0; i < messagesPerQueue; i++) {
+      _.forEach(queues, triggerProcess);
+    }
+
+    _.forEach(callbackArray, current => {
+      expect(current.callback).toHaveBeenCalledTimes(messagesPerQueue);
+      expect(current.callback).toHaveBeenLastCalledWith(current.queueName);
+    });
+
+    done();
+  });
 }
 
 describe('Core tests', () => {
-  it('constructed', () => {
+  it('Constructed', () => {
     const instance = new Core(console, _.noop, _.noop, _.noop);
     expect(typeof instance).toBe('object');
   });
 
-  it('Failed to generate ID when no id generator set', () => {
+  it('Failed to generate ID - no idGenerator', () => {
+    const instance = new Core(console, _.noop, _.noop, _.noop);
+
+    expect(() => instance._getNextId('abc')).toThrow();
+  });
+
+  it('Generates ID', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, coreMock.generateIdMock.bind(coreMock), _.noop, _.noop);
+    const queueName = 'generate-one-id';
+    expectGetNextId(instance, queueName).then(done);
+  });
+
+  it('Generates two IDs', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, coreMock.generateIdMock.bind(coreMock), _.noop, _.noop);
+    const queueName = 'generate-two-ids';
+
+    expectGetMultipleNextIds(instance, done, [queueName, queueName]);
+  });
+
+  it('Generates multiple IDs on multiple queues', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, coreMock.generateIdMock.bind(coreMock), _.noop, _.noop);
+    const queueName1 = 'generate-multiple-ids-1';
+    const queueName2 = 'generate-multiple-ids-2';
+    const queueName3 = 'generate-multiple-ids-3';
+    expectGetMultipleNextIds(instance, done,
+      [queueName1, queueName2, queueName3, queueName1, queueName1, queueName2, queueName2, queueName3, queueName3]);
+  });
+
+  it('Failed to enqueue - no enqueue function', () => {
     const instance = new Core(console, _.noop, _.noop, _.noop);
     expect(() => {
-      instance._getNextId('abc');
+      instance._enqueue('abc', undefined, 1);
     }).toThrow();
   });
 
-  it('Generates ID', () => {
-    const instance = new Core(console, generateIdMock, _.noop, _.noop);
-    const queueName = 'abc';
-    expectGetNextId(instance, queueName);
+  it('Enqueue single message', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, coreMock.enqueueMock.bind(coreMock), _.noop);
+    const queueName = 'enqueue-one-message';
+    const messageId = 'enqueue-id-1';
+    expectEnqueue(instance, queueName, undefined, messageId).then(done);
   });
 
-  it('Generates two IDs', () => {
-    const instance = new Core(console, generateIdMock, _.noop, _.noop);
-    const queueName = 'abc';
-    expectGetNextId(instance, queueName);
-    expectGetNextId(instance, queueName);
+  it('Enqueue multiple messages', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, coreMock.enqueueMock.bind(coreMock), _.noop);
+    const queueName = 'enqueue-multiple-messages';
+    const payload = undefined;
+    const messageIdPrefix = 'enqueue-multiple-id-';
+    expectMultipleEnqueues(instance, done, [
+      {queueName, payload, messageId: `${messageIdPrefix}1`},
+      {queueName, payload, messageId: `${messageIdPrefix}2`},
+      {queueName, payload, messageId: `${messageIdPrefix}3`},
+    ]);
   });
 
-  it('Generates multiple IDs on multiple queues', () => {
-    const instance = new Core(console, generateIdMock, _.noop, _.noop);
-    const queueName1 = 'abc';
-    const queueName2 = 'def';
-    const queueName3 = 'ghi';
-    expectGetNextId(instance, queueName1);
-    expectGetNextId(instance, queueName2);
-    expectGetNextId(instance, queueName3);
-    expectGetNextId(instance, queueName1);
-    expectGetNextId(instance, queueName1);
-    expectGetNextId(instance, queueName2);
-    expectGetNextId(instance, queueName2);
-    expectGetNextId(instance, queueName3);
-    expectGetNextId(instance, queueName3);
+  it('Enqueue multiple messages on multiple queues', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, coreMock.enqueueMock.bind(coreMock), _.noop);
+    const queueNamePrefix = 'enqueue-multiple-messages-multiple=queues-';
+    const payload = undefined;
+    const messageIdPrefix = 'enqueue-multiple-queues-id-';
+    expectMultipleEnqueues(instance, done, [
+      {queueName: `${queueNamePrefix}1`, payload, messageId: `${messageIdPrefix}1`},
+      {queueName: `${queueNamePrefix}2`, payload, messageId: `${messageIdPrefix}2`},
+      {queueName: `${queueNamePrefix}3`, payload, messageId: `${messageIdPrefix}3`},
+      {queueName: `${queueNamePrefix}1`, payload, messageId: `${messageIdPrefix}1`},
+      {queueName: `${queueNamePrefix}1`, payload, messageId: `${messageIdPrefix}2`},
+      {queueName: `${queueNamePrefix}2`, payload, messageId: `${messageIdPrefix}3`},
+      {queueName: `${queueNamePrefix}2`, payload, messageId: `${messageIdPrefix}1`},
+      {queueName: `${queueNamePrefix}3`, payload, messageId: `${messageIdPrefix}2`},
+      {queueName: `${queueNamePrefix}3`, payload, messageId: `${messageIdPrefix}3`},
+    ]);
   });
 
-  it('Enqueue', () => {
-    const instance = new Core(console, _.noop, enqueueMock, _.noop);
-    expect(instance._enqueue('ok', undefined, 1)).resolves.toBe(1);
+  it('Enqueue - fail', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, coreMock.enqueueMock.bind(coreMock), _.noop);
+    expectEnqueue(instance, undefined, undefined, undefined).catch(done);
   });
 
-  it('Enqueue - fail', () => {
-    const instance = new Core(console, _.noop, enqueueMock, _.noop);
-    expect(instance._enqueue('not ok', undefined, 1)).rejects.toBe(1);
+  it('Failed to process - no process function', () => {
+    const instance = new Core(console, _.noop, _.noop, undefined);
+    expect(() => {
+      instance._process('abc', _.noop);
+    }).toThrow();
   });
 
-  it('Process single message', () => {
-    const instance = new Core(console, _.noop, _.noop, processMock);
-    const queueName = 'abc';
-    const callback = jest.fn();
-    clearProcessCallbacks();
-    instance._process(queueName, callback);
-    triggerProcess(queueName);
-    expect(callback).toHaveBeenCalledWith(queueName);
+  it('Process single message', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, _.noop, coreMock.processMock.bind(coreMock));
+    expectProcess(instance, coreMock.triggerProcess.bind(coreMock), done, 1, ['process-one-message']);
   });
 
-  it('Process multiple messages', () => {
-    const instance = new Core(console, _.noop, _.noop, processMock);
-    const queueName = 'def';
-    const callback = jest.fn();
-    clearProcessCallbacks();
-    instance._process(queueName, callback);
-    triggerProcess(queueName);
-    triggerProcess(queueName);
-    triggerProcess(queueName);
-    expect(callback).toHaveBeenCalledTimes(3);
-    expect(callback).toHaveBeenLastCalledWith(queueName);
+  it('Process multiple messages', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, _.noop, coreMock.processMock.bind(coreMock));
+    expectProcess(instance, coreMock.triggerProcess.bind(coreMock), done, 3, ['process-multiple-messages']);
   });
 
-  it('Process multiple messages on multiple queues', () => {
-    const instance = new Core(console, _.noop, _.noop, processMock);
-    const queueName1 = 'ghi';
-    const queueName2 = 'jkl';
-    const queueName3 = 'mno';
-    const callback1 = jest.fn();
-    const callback2 = jest.fn();
-    const callback3 = jest.fn();
-    clearProcessCallbacks();
-    instance._process(queueName1, callback1);
-    instance._process(queueName2, callback2);
-    instance._process(queueName3, callback3);
-    triggerProcess(queueName3);
-    triggerProcess(queueName2);
-    triggerProcess(queueName1);
-    triggerProcess(queueName2);
-    triggerProcess(queueName3);
-    triggerProcess(queueName3);
-    expect(callback1).toHaveBeenCalledTimes(1);
-    expect(callback1).toHaveBeenLastCalledWith(queueName1);
-    expect(callback2).toHaveBeenCalledTimes(2);
-    expect(callback2).toHaveBeenLastCalledWith(queueName2);
-    expect(callback3).toHaveBeenCalledTimes(3);
-    expect(callback3).toHaveBeenLastCalledWith(queueName3);
+  it('Process multiple messages on multiple queues', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, _.noop, coreMock.processMock.bind(coreMock));
+    const queueNamePrefix = 'process-multiple-messages-multiple-queues-';
+    expectProcess(instance, coreMock.triggerProcess.bind(coreMock), done, 3,
+      [`${queueNamePrefix}1`, `${queueNamePrefix}2`, `${queueNamePrefix}3`]);
   });
 });

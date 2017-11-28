@@ -1,26 +1,38 @@
+import _ from 'lodash';
 import Promise from 'bluebird';
 
-export function generateIdMock(queueName) {
-  return Promise.resolve(1);
-}
+export default class CoreMock {
+  constructor(){
+    this.callbacks = {};
+  }
 
-export function enqueueMock(queueName, payload, queueMessageId) {
-  if (queueName === "ok")
+  generateIdMock(queueName) {
+    return Promise.resolve(1);
+  }
+
+  enqueueMock(queueName, payload, queueMessageId) {
+    if (_.isNil(queueName)) {
+      return Promise.reject(queueMessageId);
+    }
+
+    if (this.callbacks[queueName]) {
+      this.callbacks[queueName](payload);
+    }
+
     return Promise.resolve(queueMessageId);
+  }
 
-  return Promise.reject(queueMessageId)
-}
+  processMock(queueName, callback) {
+    this.callbacks[queueName] = callback;
+    return Promise.resolve();
+  }
 
-let callbacks = {};
-let processLastCallback = undefined;
-export function processMock(queueName, callback) {
-  callbacks[queueName] = () => callback(queueName);
-}
+  stopProcessing(queueName) {
+    delete this.queues[queueName];
+    return Promise.resolve(true);
+  }
 
-export function triggerProcess(queueName) {
-  callbacks[queueName]();
-}
-
-  export function clearProcessCallbacks() {
-  callbacks = {};
+  triggerProcess(queueName) {
+    this.callbacks[queueName](queueName);
+  }
 }

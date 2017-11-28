@@ -15,45 +15,10 @@ describe('ITransport tests', () => {
     expect(value).toEqual(expectedResult);
   });
 
-  it('"publish" throws exception', () => {
-    const transport = new QueueTransport(undefined);
-    expect(() => {
-      transport.publish();
-    }).toThrow();
-  });
-
   it('"subscribe" throws exception', () => {
     const transport = new QueueTransport(undefined);
     expect(() => {
       transport.subscribe();
     }).toThrow();
   });
-
-  it('"subscribeGroup" throws exception', () => {
-    const transport = new QueueTransport(undefined);
-    expect(() => {
-      transport.subscribeGroup();
-    }).toThrow();
-  });
-
-  it('"request" throws exception', () => {
-    const transport = new QueueTransport(undefined);
-    expect(() => {
-      transport.request();
-    }).toThrow();
-  });
-
-  it('"fireAndForget" throws exception', () => {
-    const transport = new QueueTransport(undefined);
-    expect(() => {
-      transport.fireAndForget();
-    }).toThrow();
-  });
-
-  it('"addHandler" throws exception', () => {
-    const transport = new QueueTransport(undefined);
-    expect(() => {
-      transport.addHandler();
-    }).toThrow();
-  })
 });

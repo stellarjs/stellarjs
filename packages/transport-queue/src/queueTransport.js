@@ -21,11 +21,11 @@ export default class QueueTransport extends ITransport {
   }
 
   publish(stellarId, channel, payload) {
-    return this.pubSub.publish(stellarId, channel, payload);
+    return super.publish(stellarId, channel, payload);
   }
 
-  subscribe(channel, messageHandler) { // eslint-disable-line class-methods-use-this
-    super.subscribe(channel, messageHandler);
+  subscribe(channel, messageHandler) {
+    return this.pubSub.subscribe(channel, messageHandler);
   }
 
   subscribeGroup(groupID, channel, messageHandler) {
