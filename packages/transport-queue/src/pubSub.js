@@ -1,6 +1,6 @@
 import forEach from 'lodash/forEach';
 import map from 'lodash/map';
-import includes from 'lodash/includes';
+import defaultsDeep from 'lodash/defaultsDeep';
 import isEmpty from 'lodash/isEmpty';
 import Promise from 'bluebird';
 import uuid from 'uuid/v4';
@@ -15,9 +15,11 @@ export default class PubSub extends Core {
   }
 
   publish(stellarId, channel, payload) {
+    const extendedPayload = defaultsDeep({ data: { headers: { channel } }}, payload);
+
     const promises = this.getSubscribers(channel).then((subscribersQueueNames) =>
       map(subscribersQueueNames, queueName => this._getNextId(queueName)
-        .then(queueMessageId => this._enqueue(queueName, payload, queueMessageId))));
+        .then(queueMessageId => this._enqueue(queueName, extendedPayload, queueMessageId))));
 
     // Returns a promise which is Waiting for all enqueues to finish, and then returns the given message id
     return Promise.all(promises).then(() => stellarId);

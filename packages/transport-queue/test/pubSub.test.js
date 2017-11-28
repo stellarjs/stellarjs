@@ -36,6 +36,61 @@ function expectSubscribeGroupMultiple(instance, done, params) {
   combinedPromise.then(done);
 }
 
+function expectPublish(instance, stellarMessageId, channel, body) {
+  const payload = { data: { body } };
+
+  return new Promise((resolve, reject) => {
+    instance.publish(stellarMessageId, channel, payload).then(messageId => {
+      expect(messageId).toBe(stellarMessageId);
+      return resolve(messageId);
+    }).catch(error => reject(error));
+  });
+}
+
+function expectPublishMultiple(instance, done, messagesPerChannel, channels) {
+  const groupIdPrefix = 'group-id-';
+  const stellarMessageIdPrefix = 'message-id-';
+  const bodyMessagePrefix = 'body-message-';
+
+  const channelsArray = _.map(channels, channel => ({
+    channel,
+    groupId: `${groupIdPrefix}${channel}`,
+    callback: jest.fn()
+  }));
+
+  const buildParam = (channel, id) => ({
+    channel,
+    stellarMessageId: `${stellarMessageIdPrefix}${channel}-${id}`,
+    body: { messsage: `${bodyMessagePrefix}${channel}-${id}` },
+    callback: _.find(channelsArray, current => (current.channel === channel)).callback
+  });
+
+  const subscribePromiseArray = _.map(channelsArray, current =>
+    expectSubscribeGroup(instance, current.groupId, current.channel, current.callback));
+  const combinedSubscribePromise = Promise.all(subscribePromiseArray);
+
+  combinedSubscribePromise.then(() => {
+    let publishPromiseArray = [];
+    for (let i=1; i <= messagesPerChannel; i++) {
+      const currentPublishPromiseArray = _.map(channels, (channel)=> {
+        const params = buildParam(channel, i);
+        return expectPublish(instance, params.stellarMessageId, channel, params.body).then(() => {
+          expect(params.callback).toHaveBeenCalledWith(params.body, channel);
+        });
+      });
+      publishPromiseArray = _.concat(publishPromiseArray, currentPublishPromiseArray);
+    }
+
+    const combinedPublishPromise = Promise.all(publishPromiseArray);
+    combinedPublishPromise.then(()=> {
+      _.forEach(channelsArray, current => {
+        expect(current.callback).toHaveBeenCalledTimes(messagesPerChannel);
+      });
+      done();
+    });
+  });
+}
+
 describe('PubSub tests', () => {
   it('Constructed', () => {
     const instance = createInstance(_.noop, _.noop);
@@ -76,24 +131,23 @@ describe('PubSub tests', () => {
 
   it('Publish single message', (done) => {
     const instance = createInstanceFullMocks();
-    const channel = 'pub1';
-    const groupId = 'pub-group-id-1';
-    const stellarMessageId = 'pub1-message';
-    const payload = {
-      data: {
-        headers: {channel},
-        body: {messsage: 'message1'}
-      }
-    };
+    const channel = 'pub';
+    const groupId = 'pub-group-id';
+    const stellarMessageId = 'pub-message';
+    const body = { messsage: 'pub-message' };
     const callback = jest.fn();
     expectSubscribeGroup(instance, groupId, channel, callback).then(() =>{
-      instance.publish(stellarMessageId, channel, payload).then((messageId) => {
-        expect(messageId).toBe(stellarMessageId);
+      expectPublish(instance, stellarMessageId, channel, body).then(() => {
         expect(callback).toHaveBeenCalledTimes(1);
-        expect(callback).toHaveBeenLastCalledWith(payload.data.body, channel);
+        expect(callback).toHaveBeenLastCalledWith(body, channel);
         done();
       });
     });
   });
 
+  it('Publish multiple messages on one channel', (done) => {
+    const instance = createInstanceFullMocks();
+    const channel = 'pub-multiple-one-channel';
+    expectPublishMultiple(instance, done, 4, [channel]);
+  });
 });
