@@ -11,7 +11,6 @@ import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
 import split from 'lodash/split';
-import keys from 'lodash/keys';
 
 import { StellarError } from '@stellarjs/core';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
