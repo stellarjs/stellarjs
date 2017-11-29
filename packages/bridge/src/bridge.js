@@ -305,7 +305,7 @@ function init({
     const initialSession = startSession(log, stellarRequest.source, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
       .then((session) => {
-        log.info(`${session.logPrefix} Connected`, { session });
+        log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
         socket.on('close', () => onClose(session));
         socket.on('message', str => onMessage(str, session));
