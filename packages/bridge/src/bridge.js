@@ -287,7 +287,7 @@ function init({
   }
 
   function onClose(session) {
-    instrumentation.numOfConnectedClients(Date.now(), size(keys(server.clients)));
+    instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
         last(stopper)();
@@ -304,7 +304,7 @@ function init({
   }
 
   function onConnection(socket) {
-    instrumentation.numOfConnectedClients(Date.now(), size(keys(server.clients)));
+    instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
     const startTime = Date.now();
 
