@@ -11,6 +11,7 @@ import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
 import split from 'lodash/split';
+import keys from 'lodash/keys';
 
 import { StellarError } from '@stellarjs/core';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
@@ -256,6 +257,9 @@ function init({
                     log.info(`${session.logPrefix} Connection init in ${elapsed}ms`);
                   },
                   sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
+                  numOfConnectedClients(elapsed, count) {
+                    log.info(`number of connected clients ${count}`);
+                  }
                 },
                 middlewares = [] }) {
   const stellarRequest = createStellarRequest(stellarFactory, middlewares);
@@ -283,6 +287,7 @@ function init({
   }
 
   function onClose(session) {
+    instrumentation.numOfConnectedClients(Date.now(), size(keys(server.clients)));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
         last(stopper)();
@@ -299,6 +304,7 @@ function init({
   }
 
   function onConnection(socket) {
+    instrumentation.numOfConnectedClients(Date.now(), size(keys(server.clients)));
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
     const startTime = Date.now();
 
