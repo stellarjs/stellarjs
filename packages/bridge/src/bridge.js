@@ -259,7 +259,7 @@ function init({
                   sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
                   numOfConnectedClients(elapsed, count) {
                     log.info(`number of connected clients ${count}`);
-                  }
+                  },
                 },
                 middlewares = [] }) {
   const stellarRequest = createStellarRequest(stellarFactory, middlewares);
