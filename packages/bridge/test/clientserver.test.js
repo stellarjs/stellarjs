@@ -17,10 +17,13 @@ const clearRedis = () => {
 };
 
 let shutdown = null;
+let instrumentation = null;
 beforeAll((done) => {
   clearRedis()
     .then(() => {
       const pinger = require('./examples');
+      instrumentation = require('./examples').instrumentation;
+      instrumentation.numOfConnectedClients = jest.fn()
       pinger.start();
       shutdown = pinger.shutdown;
     })
@@ -29,6 +32,10 @@ beforeAll((done) => {
       console.info('beforeAll done');
       done();
     });
+});
+
+afterEach(() => {
+    instrumentation.numOfConnectedClients.mockClear();
 });
 
 afterAll(() => {
@@ -76,6 +83,47 @@ describe('call server', () => {
         done();
       });
   });
+
+    it('instrumentation numOfConnectedClients should work on connection error', (done) => {
+        const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
+        stellarSocket
+            .connect('localhost:8091', {
+                secure: false,
+                userId: '4',
+                token: '123',
+                tokenType: 'API',
+                eioConfig: { upgrade: false },
+            })
+            .catch(Error, (e) => {
+               done();
+            }).delay(1000)
+            .then(() => {
+                expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number),1], [expect.any(Number),0]]);
+            });
+    });
+
+
+    it('instrumentation numOfConnectedClients should work', (done) => {
+        const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
+        stellarSocket.connect('localhost:8091', {
+            secure: false,
+            userId: '123',
+            token: '123',
+            tokenType: 'API',
+            eioConfig: { upgrade: false },
+            params: {
+                extraParam: 1,
+            },
+        })
+        .then(() => {
+            stellarSocket.close();
+        })
+        .delay(1000)
+            .then(() => {
+                expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number),1], [expect.any(Number),0]]);
+                done();
+            })
+    });
 
   it('request response should work', (done) => {
     const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();

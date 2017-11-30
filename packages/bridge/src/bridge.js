@@ -256,6 +256,7 @@ function init({
                     log.info(`${session.logPrefix} Connection init in ${elapsed}ms`);
                   },
                   sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
+                  // will be called on close and open with the current engine io status
                   numOfConnectedClients(elapsed, count) {
                     log.info(`number of connected clients ${count}`);
                   },
