@@ -12,10 +12,27 @@ import { boot } from '../../src';
 const log = console;
 const stellarFactory = defaultStellarFactory(log);
 
+
+export const instrumentation = {
+    startTransaction(txName, session, cb) {
+        cb();
+    },
+    done(e) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
+    sessionStarted(elapsed, session) { // eslint-disable-line no-unused-vars
+        // newrelic.recordMetric('Custom/Bridge/appConnection', );
+        log.info(`${session.logPrefix} Connection init in ${elapsed}ms`);
+    },
+    sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
+    numOfConnectedClients(elapsed, count) {
+        log.info(`number of connected clients ${count}`);
+    },
+};
+
 let server = null;
 function start() {
     server = boot({
                       stellarFactory,
+                      instrumentation,
                       newSessionHandlers: [
                           ({ log, socket, session }) => {
                               const request = socket.request;
