@@ -1,9 +1,10 @@
 export default class Core {
-  constructor(log, generateId, enqueue, process) {
+  constructor(log, generateId, enqueue, process, stopProcessing) {
     this.log = log;
     this.generateId = generateId;
     this.enqueue = enqueue;
     this.process = process;
+    this.stopProcessing = stopProcessing;
   }
 
   _getNextId(queueName) {
@@ -11,18 +12,22 @@ export default class Core {
   }
 
   _enqueue(queueName, payload, queueMessageId) {
-    this.log.info(`@QueueTransport.enqueue`, { queueName, payload });
+    this.log.info(`@QueueTransport.enqueue`, {queueName, payload});
     return this.enqueue(queueName, payload, queueMessageId)
       .catch((e) => {
-        this.log.error(e, `@QueueTransport.enqueue`, { queueName, payload });
+        this.log.error(e, `@QueueTransport.enqueue`, {queueName, payload});
         throw e;
       });
   }
 
   _process(inbox, callback) {
     return this.process(inbox, (job) => {
-      this.log.info(`@QueueTransport.process`, { inbox, obj: job.data });
+      this.log.info(`@QueueTransport.process`, {inbox, obj: job.data});
       return callback(job);
     });
+  }
+
+  _stopProcessing(inbox) {
+    return this.stopProcessing(inbox);
   }
 }

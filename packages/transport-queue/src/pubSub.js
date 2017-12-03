@@ -2,16 +2,18 @@ import forEach from 'lodash/forEach';
 import map from 'lodash/map';
 import defaultsDeep from 'lodash/defaultsDeep';
 import isEmpty from 'lodash/isEmpty';
+import isNil from 'lodash/isNil';
 import Promise from 'bluebird';
 import uuid from 'uuid/v4';
 import Core from './core';
 
 export default class PubSub extends Core {
-  constructor(log, generateId, enqueue, process, getSubscribers, registerSubscriber) {
-    super(log, generateId, enqueue, process);
+  constructor(log, generateId, enqueue, process, stopProcessing, getSubscribers, registerSubscriber) {
+    super(log, generateId, enqueue, process, stopProcessing);
     this.getSubscribers = getSubscribers;
     this.registerSubscriber = registerSubscriber;
     this.messageHandlers = {};
+    this.registeredSubscriptionInboxes = {};
   }
 
   publish(stellarId, channel, payload) {
@@ -61,6 +63,7 @@ export default class PubSub extends Core {
 
     return this.registerSubscriber(channel, subscriptionInbox)
       .then(deregisterSubscriber => () => {
+        this.registeredSubscriptionInboxes[subscriptionInbox] -= 1;
         this._removeHandler(channel, subscription);
         if (isEmpty(this.messageHandlers[channel])) {
           return deregisterSubscriber();
@@ -70,12 +73,19 @@ export default class PubSub extends Core {
   }
 
   _processSubscriptions(subscriptionInbox) {
-    if (!this.isProcessingSubscriptions) {
-      this.isProcessingSubscriptions = true;
-      this.log.info(`@QueueTransport: Starting subscriptions`, { inbox: subscriptionInbox });
-      this._process(subscriptionInbox, (job) => {
-        forEach(this.messageHandlers[job.data.headers.channel], fn => fn(job));
-      });
+    if (isNil(this.registeredSubscriptionInboxes[subscriptionInbox])) {
+      this.registeredSubscriptionInboxes[subscriptionInbox] = 0;
     }
+
+    this.registeredSubscriptionInboxes[subscriptionInbox] += 1;
+
+    if (this.registeredSubscriptionInboxes[subscriptionInbox] > 1) {
+      return;
+    }
+
+    this.log.info(`@QueueTransport: Starting subscriptions`, { inbox: subscriptionInbox });
+    this._process(subscriptionInbox, (job) => {
+      forEach(this.messageHandlers[job.data.headers.channel], fn => fn(job));
+    });
   }
 }

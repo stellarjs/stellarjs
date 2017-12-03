@@ -10,6 +10,7 @@ function createInstance(getSubscribers, registerSubscriber) {
     coreMock.generateIdMock.bind(coreMock),
     coreMock.enqueueMock.bind(coreMock),
     coreMock.processMock.bind(coreMock),
+    coreMock.stopProcessingMock.bind(coreMock),
     getSubscribers,
     registerSubscriber
   );
@@ -69,14 +70,15 @@ function expectPublishMultiple(instance, done, messagesPerChannel, channels) {
     expectSubscribeGroup(instance, current.groupId, current.channel, current.callback));
   const combinedSubscribePromise = Promise.all(subscribePromiseArray);
 
+  let expectedResults = [];
+
   combinedSubscribePromise.then(() => {
     let publishPromiseArray = [];
     for (let i=1; i <= messagesPerChannel; i++) {
       const currentPublishPromiseArray = _.map(channels, (channel)=> {
         const params = buildParam(channel, i);
-        return expectPublish(instance, params.stellarMessageId, channel, params.body).then(() => {
-          expect(params.callback).toHaveBeenCalledWith(params.body, channel);
-        });
+        expectedResults.push(params);
+        return expectPublish(instance, params.stellarMessageId, params.channel, params.body);
       });
       publishPromiseArray = _.concat(publishPromiseArray, currentPublishPromiseArray);
     }
@@ -84,7 +86,15 @@ function expectPublishMultiple(instance, done, messagesPerChannel, channels) {
     const combinedPublishPromise = Promise.all(publishPromiseArray);
     combinedPublishPromise.then(()=> {
       _.forEach(channelsArray, current => {
+        // console.log(`~~~~~~~~~~~~~~~~~~~~~~~ ${current.channel}`);
+        // if (channels[1] === current.channel) return;
         expect(current.callback).toHaveBeenCalledTimes(messagesPerChannel);
+      });
+
+      _.forEach(expectedResults, current => {
+        // console.log(`~~~~~~~~~~~~~~~~~~~~~~~2 ${current.channel}`);
+        // if (channels[1] === current.channel) return;
+        expect(current.callback).toHaveBeenCalledWith(current.body, current.channel);
       });
       done();
     });
@@ -132,22 +142,22 @@ describe('PubSub tests', () => {
   it('Publish single message', (done) => {
     const instance = createInstanceFullMocks();
     const channel = 'pub';
-    const groupId = 'pub-group-id';
-    const stellarMessageId = 'pub-message';
-    const body = { messsage: 'pub-message' };
-    const callback = jest.fn();
-    expectSubscribeGroup(instance, groupId, channel, callback).then(() =>{
-      expectPublish(instance, stellarMessageId, channel, body).then(() => {
-        expect(callback).toHaveBeenCalledTimes(1);
-        expect(callback).toHaveBeenLastCalledWith(body, channel);
-        done();
-      });
-    });
+    expectPublishMultiple(instance, done, 1, [channel]);
   });
 
   it('Publish multiple messages on one channel', (done) => {
     const instance = createInstanceFullMocks();
     const channel = 'pub-multiple-one-channel';
     expectPublishMultiple(instance, done, 4, [channel]);
+  });
+
+  it.only('Publish multiple messages on multiple channels', (done) => {
+    const instance = createInstanceFullMocks();
+    const channelPrefix = 'pub-multiple-channels-';
+    expectPublishMultiple(instance, done, 1, [
+      `${channelPrefix}1`,
+      `${channelPrefix}2`,
+      // `${channelPrefix}3`,
+    ]);
   });
 });

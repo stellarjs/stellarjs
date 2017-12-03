@@ -27,7 +27,7 @@ export default class CoreMock {
     return Promise.resolve();
   }
 
-  stopProcessing(queueName) {
+    stopProcessingMock(queueName) {
     delete this.queues[queueName];
     return Promise.resolve(true);
   }
