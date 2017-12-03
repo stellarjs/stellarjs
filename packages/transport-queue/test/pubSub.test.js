@@ -151,7 +151,7 @@ describe('PubSub tests', () => {
     expectPublishMultiple(instance, done, 4, [channel]);
   });
 
-  it.only('Publish multiple messages on multiple channels', (done) => {
+  it('Publish multiple messages on multiple channels', (done) => {
     const instance = createInstanceFullMocks();
     const channelPrefix = 'pub-multiple-channels-';
     expectPublishMultiple(instance, done, 1, [

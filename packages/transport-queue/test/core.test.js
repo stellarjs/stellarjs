@@ -54,6 +54,22 @@ function expectProcess(instance, triggerProcess, done, messagesPerQueue, queues)
   });
 }
 
+function expectStopProcessing(instance, triggerProcess, done, queueName) {
+  const callback = jest.fn();
+  const processPromise = instance._process(queueName, callback);
+  processPromise.then(() => {
+    triggerProcess(queueName);
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenLastCalledWith(queueName);
+
+    instance._stopProcessing(queueName);
+    triggerProcess(queueName);
+    expect(callback).toHaveBeenCalledTimes(1); // expect not to be called again after stop processing call
+
+    done();
+  });
+}
+
 describe('Core tests', () => {
   it('Constructed', () => {
     const instance = new Core(console, _.noop, _.noop, _.noop);
@@ -169,5 +185,11 @@ describe('Core tests', () => {
     const queueNamePrefix = 'process-multiple-messages-multiple-queues-';
     expectProcess(instance, coreMock.triggerProcess.bind(coreMock), done, 3,
       [`${queueNamePrefix}1`, `${queueNamePrefix}2`, `${queueNamePrefix}3`]);
+  });
+
+  it('Stop processing', (done) => {
+    const coreMock = new CoreMock();
+    const instance = new Core(console, _.noop, _.noop, coreMock.processMock.bind(coreMock), coreMock.stopProcessingMock.bind(coreMock));
+    expectStopProcessing(instance, coreMock.triggerProcess.bind(coreMock), done, 'stop-process');
   });
 });

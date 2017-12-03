@@ -27,12 +27,14 @@ export default class CoreMock {
     return Promise.resolve();
   }
 
-    stopProcessingMock(queueName) {
-    delete this.queues[queueName];
+  stopProcessingMock(queueName) {
+    delete this.callbacks[queueName];
     return Promise.resolve(true);
   }
 
   triggerProcess(queueName) {
-    this.callbacks[queueName](queueName);
+    if (!_.isNil(this.callbacks[queueName])) {
+      this.callbacks[queueName](queueName);
+    }
   }
 }
