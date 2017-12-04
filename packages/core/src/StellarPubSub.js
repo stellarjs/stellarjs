@@ -18,13 +18,18 @@ export default class StellarPubSub extends StellarCore {
     super(transport, source, log);
     this.service = service;
     this.messageHandlers = {};
+    this.setInbox();
+  }
+
+  setInbox() {
+    this.subscriptionInbox = this.service
+        ? `stlr:s:${this.service}:subscriptionInbox`
+        : `stlr:n:${this.source}:subscriptionInbox`;
   }
 
   setSource(source) {
     super.setSource(source);
-    this.subscriptionInbox = this.service
-            ? `stlr:s:${this.service}:subscriptionInbox`
-            : `stlr:n:${this.source}:subscriptionInbox`;
+    this.setInbox();
   }
 
   publish(channel, body, options = {}) {
