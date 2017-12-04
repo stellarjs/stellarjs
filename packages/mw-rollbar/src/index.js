@@ -5,6 +5,11 @@ import map from 'lodash/map';
 import Promise from 'bluebird';
 import rollbar from 'rollbar';
 
+function isErrorLocal(err) {
+    const headers = get(err, '__stellarResponse.headers');
+    return get(headers, 'errorSource') === get(headers, 'source');
+}
+
 export function rollbarMiddlewareConfigurer({ ignoredErrorTypes } = {}) {
     /* reimplementation of rollbar.errorHandler() for promise based middleware */
   return function (req, next) {
@@ -24,7 +29,7 @@ export function rollbarMiddlewareConfigurer({ ignoredErrorTypes } = {}) {
                   return reject(err);
                 }
 
-                if (err instanceof Error || isError(err)) {
+                if ((err instanceof Error || isError(err)) && isErrorLocal(err)) {
                   return rollbar.handleError(err, req, cb);
                 }
 
