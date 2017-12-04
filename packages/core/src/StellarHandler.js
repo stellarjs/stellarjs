@@ -153,7 +153,7 @@ though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
           .then(() => logComplete(response, e));
 
       function callHandler(jd) {
-        return Promise.try(() => handler(jd))
+        return Promise.try(() => handler(jd));
       }
 
       const allMiddlewares = [].concat(this.handlerChain, { fn: callHandler });

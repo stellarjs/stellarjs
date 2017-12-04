@@ -6,8 +6,8 @@ import Promise from 'bluebird';
 import rollbar from 'rollbar';
 
 function isErrorLocal(err) {
-    const headers = get(err, '__stellarResponse.headers');
-    return get(headers, 'errorSource') === get(headers, 'source');
+  const headers = get(err, '__stellarResponse.headers');
+  return get(headers, 'errorSource') === get(headers, 'source');
 }
 
 export function rollbarMiddlewareConfigurer({ ignoredErrorTypes } = {}) {
