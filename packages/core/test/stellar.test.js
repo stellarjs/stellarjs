@@ -18,7 +18,11 @@ const getStellarHandler = (queueName, body = { text: 'hi' }) => {
 };
 const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
   const transport = new MockTransport({ headers: { channel, type: 'publish' }, body });
-  return new StellarPubSub(transport, 'test', console, 1000);
+  return new StellarPubSub(transport, 'test', console);
+};
+const getAppPubSub = (channel, body = { text: 'hi' }) => {
+    const transport = new MockTransport({ headers: { channel, type: 'publish' }, body });
+    return new StellarPubSub(transport, 'test', console, 'APP');
 };
 
 describe('mock request response', () => {
@@ -788,6 +792,16 @@ describe('handler loaders', () => {
 
 describe('mock pubsub', () => {
   const channel = 'testpubsub:channel';
+  it('should have a node level inbox', () => {
+    const defaultPubSub = getDefaultPubSub(channel);
+    expect(defaultPubSub.subscriptionInbox).toEqual('stlr:n:test:subscriptionInbox');
+  });
+
+  it('should have a App level inbox', () => {
+    const appPubSub = getAppPubSub(channel);
+    expect(appPubSub.subscriptionInbox).toEqual('stlr:s:APP:subscriptionInbox');
+  });
+
   it('fake subscribe handler', (done) => {
     const defaultPubSub = getDefaultPubSub(channel);
 
