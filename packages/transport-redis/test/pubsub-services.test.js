@@ -88,27 +88,4 @@ describe('full integration pub/sub app', () => {
           //     done();
           // });
     });
-
-    // it('test pub sub 3 subscribers', (done) => {
-    //     const stellarSubs = [
-    //         new StellarPubSub(redisTransport, 'test1', log, 'S1'),
-    //         new StellarPubSub(redisTransport, 'test2', log, 'S2'),
-    //         new StellarPubSub(redisTransport, 'test3', log, 'S3'),
-    //     ];
-    //
-    //     const doneBy = [];
-    //     Promise
-    //       .all(stellarSubs)
-    //       .map(ss => ss.subscribe('test:channel', (message) => {
-    //           doneBy.push(ss.service);
-    //           log.info(`message received by ${ss.service}`);
-    //           expect(message).toEqual({ text: 'hello world' });
-    //       }))
-    //       .map(() => stellar.publish('test:channel', { text: 'hello world' }))
-    //       .delay(500)
-    //       .then(() => {
-    //           expect(doneBy.sort()).toEqual(['S1', 'S2', 'S3']);
-    //           done();
-    //       });
-    // });
 });
