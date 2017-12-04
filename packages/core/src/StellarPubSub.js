@@ -22,7 +22,7 @@ export default class StellarPubSub extends StellarCore {
   }
 
   setInbox() {
-      this.subscriptionInbox = this.service
+    this.subscriptionInbox = this.service
         ? `stlr:s:${this.service}:subscriptionInbox`
         : `stlr:n:${this.source}:subscriptionInbox`;
   }
