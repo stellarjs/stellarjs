@@ -2,8 +2,9 @@
  * Created by arolave on 25/09/2016.
  */
 import assign from 'lodash/assign';
-import head from 'lodash/head';
+import merge from 'lodash/merge';
 import get from 'lodash/get';
+import head from 'lodash/head';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
@@ -80,14 +81,17 @@ class StellarCore {
   }
 
   _prepareResponse(jobData, val) {
-    function buildBody(headers) {
+    const buildBody = (headers) => {
       if (val instanceof Error) {
-        assign(headers, { errorType: val.constructor.name });
+        if (!val.__stellarResponse) {
+          assign(headers, { errorType: val.constructor.name, errorSource: this.source });
+        }
+
         return pick(val, ['errors', 'message']);
       }
 
       return val;
-    }
+    };
 
     return this
       .getNextId(jobData.headers.respondTo)
@@ -112,12 +116,12 @@ class StellarCore {
   }
 
   _handlerRejection(jobData, error) {
-    if (error.__stellarResponse != null || !includes(['request', 'reactive'], jobData.headers.type)) {
+    if (get(error, '__stellarResponse.source') === this.source || !includes(['request', 'reactive'], jobData.headers.type)) {
       return Promise.reject(error);
     }
 
     return this._prepareResponse(jobData, error).then((response) => {
-      assign(error, { __stellarResponse: response });
+      merge(error, { __stellarResponse: response });
       return Promise.reject(error);
     });
   }
