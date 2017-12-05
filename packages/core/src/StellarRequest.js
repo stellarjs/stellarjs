@@ -34,7 +34,7 @@ export default class StellarRequest extends StellarCore {
     }
 
     if (source) {
-      this.startResponseHandler();  // TODO if transrt supports responses
+      this.startResponseHandler();  // TODO if transport supports responses
     }
   }
 
