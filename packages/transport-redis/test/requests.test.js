@@ -28,7 +28,7 @@ beforeEach((done) => {
       });
 });
 
-describe('full integration req/response', () => {
+fdescribe('full integration req/response', () => {
   it('test request response', (done) => {
     stellarHandler.handleRequest('testservice:resource:get', ({ body }) => ({ text: `${body.text} worlds` }));
 
@@ -124,7 +124,7 @@ describe('full integration req/response', () => {
       });
   });
 
-    it('test request timeout', (done) => {
+    fit('test request timeout', (done) => {
         const q = redisTransport._getQueue('stlr:n:test:inbox');
 
         stellarHandler.handleRequest('testservice:resource:get', ({ body }) => {
