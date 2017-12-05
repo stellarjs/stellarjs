@@ -111,7 +111,7 @@ export default class StellarRequest extends StellarCore {
             .then(responseData => reject(prepErrorResponse(responseData, error)));
       };
 
-      const timeout = options.requestTimeout || requestHeaders.requestTimeout || this.requestTimeout;
+      const timeout = requestHeaders.requestTimeout || this.requestTimeout;
       if (this.requestTimeout && !options.requestOnly) {
         return setTimeout(() => handleRequestTimeout(headers, jobData, reject), timeout);
       }
