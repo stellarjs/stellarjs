@@ -30,7 +30,7 @@
     "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "test": "jest --runInBand --forceExit",
-    "test:coverage": "jest --coverage --runInBand",
+    "test:coverage": "jest --coverage --runInBand --forceExit",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
