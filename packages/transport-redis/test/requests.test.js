@@ -28,7 +28,7 @@ beforeEach((done) => {
       });
 });
 
-fdescribe('full integration req/response', () => {
+describe('full integration req/response', () => {
   it('test request response', (done) => {
     stellarHandler.handleRequest('testservice:resource:get', ({ body }) => ({ text: `${body.text} worlds` }));
 
