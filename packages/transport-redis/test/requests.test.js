@@ -124,7 +124,7 @@ fdescribe('full integration req/response', () => {
       });
   });
 
-    fit('test request timeout', (done) => {
+    it('test request timeout', (done) => {
         const q = redisTransport._getQueue('stlr:n:test:inbox');
 
         stellarHandler.handleRequest('testservice:resource:get', ({ body }) => {
