@@ -146,7 +146,7 @@ describe('call server', () => {
       });
   });
 
-  fit('custom timeout should extend normal timeout', (done) => {
+  it('custom timeout should extend normal timeout', (done) => {
     const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket.connect('localhost:8091', {
       secure: false,
