@@ -26,21 +26,21 @@ class RedisTransport {
   }
 
   buildBullConfig() {
-      const client = this.redis.newConnection();
-      const subscriber = this.redis.newConnection();
-      
-      return {
-          createClient: (type) => {
-              switch(type){
-                  case 'client':
-                      return client;
-                  case 'subscriber':
-                      return subscriber;
-                  default:
-                      return this.redis.newConnection();
-              }
-          }
-      };
+    const client = this.redis.newConnection();
+    const subscriber = this.redis.newConnection();
+
+    return {
+      createClient: (type) => {
+        switch (type) {
+          case 'client':
+            return client;
+          case 'subscriber':
+            return subscriber;
+          default:
+            return this.redis.newConnection();
+        }
+      },
+    };
   }
 
   close() {
@@ -80,7 +80,7 @@ class RedisTransport {
   }
 
   enqueue(queueName, obj) {
-    const opts = assign({jobId: get(obj, 'headers.id') }, BULL_OPTIONS);
+    const opts = assign({ jobId: get(obj, 'headers.id') }, BULL_OPTIONS);
     return this._getQueue(queueName).add(obj, opts);
   }
 
@@ -161,13 +161,13 @@ class RedisTransport {
       });
   }
 
-  _getQueueForClean(qName) {
-    return Promise
-      .resolve(new Queue(qName, { redis: redisConfig }))
-      .disposer(q => q.close());
-  }
-
   _removeUnusedQueues(inboxStyle) {
+    function getQueueForClean(qName) {
+      return Promise
+          .resolve(new Queue(qName, { redis: redisConfig }))
+          .disposer(q => q.close());
+    }
+
     const cleanOldJobs = q => Promise.all(
       map(['completed', 'wait', 'active', 'failed'], jobState => this._doClean(q, TWO_WEEKS, jobState))
     );
@@ -177,7 +177,7 @@ class RedisTransport {
     };
 
     const emptyQueue = qName => Promise
-      .using(this._getQueueForClean(qName),
+      .using(getQueueForClean(qName),
              q => Promise.all([q.empty(), cleanOldJobs(q), delId(q.name)])
       )
       .catch(e => this.log.warn(e, `Unable to clean queue`));
