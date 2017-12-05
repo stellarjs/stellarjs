@@ -16,9 +16,9 @@ class RedisClient {
   constructor(log) {
     this.id = uuid.v4();
     this.log = log;
+
     assign(this, {
       defaultConnection: this.newConnection(),
-      bullConfig: { redis: { opts: { createClient: this.newConnection.bind(this) } } },
     });
   }
 

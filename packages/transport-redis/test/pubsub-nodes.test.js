@@ -10,7 +10,7 @@ import { closeRedis, log } from './helpers';
 let redisTransport;
 let stellar;
 
-beforeAll((done) => {
+beforeEach((done) => {
   redisTransport = new RedisTransport(log);
 
   Promise
@@ -21,12 +21,10 @@ beforeAll((done) => {
     });
 });
 
-afterAll((done) => {
-  closeRedis(redisTransport).then(() => done())
-});
-
 afterEach((done) => {
-  stellar.reset().then(() => done());
+    stellar.reset()
+      .then(() => closeRedis(redisTransport))
+      .then(done);
 });
 
 describe('full integration pub/sub per inbox', () => {
