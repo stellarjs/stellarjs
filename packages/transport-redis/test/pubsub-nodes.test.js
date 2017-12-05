@@ -94,21 +94,24 @@ describe('full integration pub/sub per inbox', () => {
     const handler = i => (message) => {
       expect(message).toEqual({ text: `hello world ${i}` });
       doneBy.push(1);
-      if (doneBy.length === 4) {
-        done();
-      }
     };
 
-    Promise.all([
-                  sub.subscribe(`test:channel1`, handler(1)),
-                  sub.subscribe(`test:channel1`, handler(1)),
-                  sub.subscribe(`test:channel2`, handler(2)),
-                  sub.subscribe(`test:channel3`, handler(3)),
-                ])
+    Promise
+      .all([
+        sub.subscribe(`test:channel1`, handler(1)),
+        sub.subscribe(`test:channel1`, handler(1)),
+        sub.subscribe(`test:channel2`, handler(2)),
+        sub.subscribe(`test:channel3`, handler(3)),
+      ])
       .then(() => {
         stellar.publish('test:channel1', { text: 'hello world 1' });
         stellar.publish('test:channel2', { text: 'hello world 2' });
         stellar.publish('test:channel3', { text: 'hello world 3' });
+      })
+      .delay(500)
+      .then(() => {
+        expect(doneBy).toHaveLength(4);
+        done();
       });
   });
 });
