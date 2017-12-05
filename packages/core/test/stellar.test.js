@@ -56,7 +56,7 @@ describe('mock request response', () => {
 
     it('Custom timeouts should apply', (done) => {
         const stellarRequest = getStellarRequest();
-        const result = stellarRequest.update('testservice:timeout', { text: 'toot' }, { requestTimeout: 50 });
+        const result = stellarRequest.update('testservice:timeout', { text: 'toot' }, { headers: { requestTimeout: 50 } });
         expect(result.then).toBeInstanceOf(Function);
 
         result.then(() => {
