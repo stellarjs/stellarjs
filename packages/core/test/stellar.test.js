@@ -360,7 +360,8 @@ describe('middlewares', () => {
             source: stellarHandler.source,
             timestamp: expect.any(Number),
             type: 'response',
-            errorType: 'StellarError'
+            errorType: 'StellarError',
+            errorSource: 'test'
         });
       // expect(job.data.headers.id).toEqual('');
       // expect(job.data.headers).not.toHaveProperty('respondTo');
@@ -399,7 +400,8 @@ describe('middlewares', () => {
             source: stellarHandler.source,
             timestamp: expect.any(Number),
             type: 'response',
-            errorType: 'Error'
+            errorType: 'Error',
+            errorSource: 'test'
         });
       expect(job.data.body).toEqual({ message: 'boo hoo' });
       done();
@@ -451,7 +453,10 @@ describe('middlewares', () => {
 
     Promise.delay(200).then(() => {
       expect(mwRequest.body).toEqual({ text: 'hi' });
-      expect(mwError).toEqual({ errors: { general: ['simple validation error'] }, message: 'simple validation error' });
+      expect(mwError).toEqual(
+        {
+          errors: { general: ['simple validation error'] },
+          message: 'simple validation error' });
       done();
     });
   });
@@ -546,6 +551,7 @@ describe('mock handler', () => {
               timestamp: expect.any(Number),
               type: 'response',
               errorType: 'Error',
+              errorSource: 'test'
           });
 
       expect(job.data.body).toEqual({ message: 'blah' });
@@ -579,7 +585,8 @@ describe('mock handler', () => {
             source: stellarHandler.source,
             timestamp: expect.any(Number),
             type: 'response',
-            errorType: 'StellarError'
+            errorType: 'StellarError',
+            errorSource: 'test'
         });
 
       expect(job.data.body.errors).toEqual({ x: ['blah'] });
@@ -587,13 +594,13 @@ describe('mock handler', () => {
     });
   });
 
-  it('if an stellar error is rethrown, send a error response', (done) => {
+  it('if an error is rethrown, send a error response', (done) => {
       const stellarHandler = getStellarHandler('testservice:resource:create');
 
       stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
           expect(request.body.text).toEqual('hi');
           const error = new Error('blah');
-          error.__stellarResponse = { headers: { val: 'boohoo' }, body: {} };
+          error.__stellarResponse = { headers: { val: 'boohoo', source: 'somewhere', errorType: 'Error', errorSource: 'somewhere' }, body: {} };
           throw error;
       });
 
@@ -603,11 +610,11 @@ describe('mock handler', () => {
           const job = _.last(queue);
 
           expect(queue).toHaveLength(1);
-          // expect(job.data.headers.id).toEqual('myQueue:2');
-          // expect(job.data.headers).not.toHaveProperty('respondTo');
-          // expect(job.data.headers).toHaveProperty('source'); // eslint-disable-line
-          // expect(job.data.headers.errorType).toEqual('Error');
           expect(job.data.body).toEqual({ message: 'blah' });
+          expect(job.data.headers).toEqual(
+            {errorSource: "somewhere", errorType: "Error", id: "myQueue:2", queueName: "myQueue",
+                requestId: "stlr:n:testservice:inbox:1", source: "test", timestamp: expect.any(Number), type: "response",
+                val: "boohoo"});
           done();
       });
   });

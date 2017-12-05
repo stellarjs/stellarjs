@@ -153,14 +153,7 @@ though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
           .then(() => logComplete(response, e));
 
       function callHandler(jd) {
-        return Promise.try(() => handler(jd))
-          .catch((e) => {
-            if (e.__stellarResponse) {
-              delete e.__stellarResponse;
-            }
-
-            return Promise.reject(e);
-          });
+        return Promise.try(() => handler(jd));
       }
 
       const allMiddlewares = [].concat(this.handlerChain, { fn: callHandler });

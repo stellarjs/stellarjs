@@ -4,23 +4,43 @@
 import Queue from 'bull';
 import assign from 'lodash/assign';
 import difference from 'lodash/difference';
+import get from 'lodash/get';
 import map from 'lodash/map';
 import size from 'lodash/size';
 import split from 'lodash/split';
 import Promise from 'bluebird';
 
 import RedisClient from './config-redisclient';
-import Enqueuer from './Enqueuer';
+import redisConfig from './config-redis';
 import { MINUTE_1, DEFAULT_INTERVAL, JOB_TIMEOUT, TWO_WEEKS } from './intervals';
 
-const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 1000;
+const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 100;
+const BULL_OPTIONS = { attempts: 1, removeOnComplete: true, removeOnFail: true, timeout: JOB_TIMEOUT };
 
 class RedisTransport {
   constructor(log) {
     this.log = log;
     this.queues = {};
     this.redis = new RedisClient(log);
-    this.bullConfig = assign({}, this.redis.bullConfig);
+    this.bullConfig = this.buildBullConfig();
+  }
+
+  buildBullConfig() {
+    const client = this.redis.newConnection();
+    const subscriber = this.redis.newConnection();
+
+    return {
+      createClient: (type) => {
+        switch (type) {
+          case 'client':
+            return client;
+          case 'subscriber':
+            return subscriber;
+          default:
+            return this.redis.newConnection();
+        }
+      },
+    };
   }
 
   close() {
@@ -60,7 +80,8 @@ class RedisTransport {
   }
 
   enqueue(queueName, obj) {
-    return this._getEnqueuer(queueName).add(obj, { removeOnComplete: true, timeout: JOB_TIMEOUT });
+    const opts = assign({ jobId: get(obj, 'headers.id') }, BULL_OPTIONS);
+    return this._getQueue(queueName).add(obj, opts);
   }
 
   process(queueName, callback) {
@@ -92,11 +113,6 @@ class RedisTransport {
     }
 
     return this.queues[queueName];
-  }
-
-  _getEnqueuer(queueName) {
-    this._setTempResource(RedisTransport._queueKey(), queueName); // sets temporary
-    return new Enqueuer(queueName, { client: this.redis.defaultConnection });
   }
 
   _doCleanQueueResources(resourceKey, queueNames) {
@@ -145,13 +161,13 @@ class RedisTransport {
       });
   }
 
-  _getQueueForClean(qName) {
-    return Promise
-      .resolve(new Queue(qName, this.redis.bullConfig))
-      .disposer(q => q.close());
-  }
-
   _removeUnusedQueues(inboxStyle) {
+    function getQueueForClean(qName) {
+      return Promise
+          .resolve(new Queue(qName, { redis: redisConfig }))
+          .disposer(q => q.close());
+    }
+
     const cleanOldJobs = q => Promise.all(
       map(['completed', 'wait', 'active', 'failed'], jobState => this._doClean(q, TWO_WEEKS, jobState))
     );
@@ -161,7 +177,7 @@ class RedisTransport {
     };
 
     const emptyQueue = qName => Promise
-      .using(this._getQueueForClean(qName),
+      .using(getQueueForClean(qName),
              q => Promise.all([q.empty(), cleanOldJobs(q), delId(q.name)])
       )
       .catch(e => this.log.warn(e, `Unable to clean queue`));

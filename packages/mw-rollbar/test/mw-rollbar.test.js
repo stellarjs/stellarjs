@@ -7,10 +7,44 @@ import rollbar from 'rollbar';
 import middleware from '../src';
 import { rollbarMiddlewareConfigurer } from '../src'
 import { StellarError } from '@stellarjs/core';
+import { StellarHandler, StellarRequest } from '@stellarjs/core';
+import { MemoryTransport } from '@stellarjs/transport-memory';
 
 describe('Rollbar middleware', () => {
+  
   beforeEach(() => {
       jest.clearAllMocks();
+  });
+
+  it('Should only report the first occurence of an error', (done) => {
+      const memoryTransport = new MemoryTransport(console);
+      const request = new StellarRequest(memoryTransport, 'origin', console, 1000);
+      const oneHandler = new StellarHandler(memoryTransport, 'testserviceOne', console);
+      oneHandler.use('.*', middleware);
+      const twoHandler = new StellarHandler(memoryTransport, 'testserviceTwo', console);
+      twoHandler.use('.*', middleware);
+
+      oneHandler.get('testserviceOne:resource', ({ body }) => {
+          const testserviceRequest = new StellarRequest(memoryTransport, 'testserviceOne', console, 1000);
+          return testserviceRequest
+            .get('testserviceTwo:resource')
+            .catch(e => e)
+            .delay(200)
+            .then((e) => Promise.reject(e));
+      });
+
+      twoHandler.get('testserviceTwo:resource', ({ body }) => {
+          throw new Error('its broke');
+      });
+
+      request.get('testserviceOne:resource')
+        .catch((e) => console.info('received expected error'))
+        .then(() => {
+            console.log(JSON.stringify(rollbar.handleError.mock.calls));
+            expect(rollbar.handleError).toBeCalled();
+            expect(rollbar.handleError.mock.calls).toHaveLength(1);
+        })
+        .then(() => done());
   });
 
     it('Should pass request w/o queue to the next midddleware ', (done) => {
