@@ -18,7 +18,7 @@ import StellarPubSub from './StellarPubSub';
 export default class StellarRequest extends StellarCore {
   constructor(transport, source, log, requestTimeout, pubsub) {
     super(transport, source, log);
-    this.requestTimeout = requestTimeout;
+    this.requestTimeout = 2000; //requestTimeout;
     this.inflightRequests = {};
     if (pubsub) {
       this.pubsub = pubsub;
@@ -34,7 +34,7 @@ export default class StellarRequest extends StellarCore {
     }
 
     if (source) {
-      this.startResponseHandler();  // TODO if transport supports responses
+      this.startResponseHandler();  // TODO if transrt supports responses
     }
   }
 
@@ -111,8 +111,9 @@ export default class StellarRequest extends StellarCore {
             .then(responseData => reject(prepErrorResponse(responseData, error)));
       };
 
+      const timeout = options.requestTimeout || this.requestTimeout;
       if (this.requestTimeout && !options.requestOnly) {
-        return setTimeout(() => handleRequestTimeout(headers, jobData, reject), this.requestTimeout);
+        return setTimeout(() => handleRequestTimeout(headers, jobData, reject), timeout);
       }
 
       return undefined;
@@ -152,8 +153,11 @@ export default class StellarRequest extends StellarCore {
 
     return this.sourceSemaphore
       .then(() => this.getNextId(inbox))
-      .then(id => defaultsDeep({ respondTo: this.responseInbox, id, queueName }, requestHeaders, { traceId: id }))
-      .then(headers => this._executeMiddlewares(allMiddlewares, { headers, body }, options))
+      .then(id => defaultsDeep({ respondTo: this.responseInbox, id, queueName }, requestHeaders, { traceId: id, requestTimeout: options.requestTimeout }))
+      .then(headers => {
+        debugger
+        return this._executeMiddlewares(allMiddlewares, { headers, body }, options)
+      })
       .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
         if (e.__stellarResponse == null) {

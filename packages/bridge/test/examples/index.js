@@ -72,6 +72,8 @@ function kongEveryHalfSecond() {
 
 const handler = stellarFactory.stellarHandler();
 handler.get('sampleService:ping', () => ({ text: `pong` }));
+
+handler.get('sampleService:timeout', () => setTimeout(4000).then(() => ({ text: `pong` })));
 handler.get('sampleService:pingError', () => {
     throw new Error('pongError');
 });

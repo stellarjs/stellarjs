@@ -146,6 +146,26 @@ describe('call server', () => {
       });
   });
 
+  fit('custom timeout should expire', (done) => {
+    const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
+    stellarSocket.connect('localhost:8091', {
+      secure: false,
+      userId: '123',
+      token: '123',
+      tokenType: 'API',
+      eioConfig: { upgrade: false },
+      params: {
+        extraParam: 1,
+      },
+    })
+        .then(() => stellarSocket.stellar.update('timeout', {}, { requestTimeout: 5500 }))
+        .then(() => {
+            // fail(`Timeout should have expired.`);
+            done()
+        })
+        // .catch(done);
+  }, 100000);
+
   it('should getReactive calls', (done) => {
     let reactiveResolve;
     let stopper;
