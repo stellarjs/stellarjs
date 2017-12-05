@@ -158,7 +158,7 @@ describe('call server', () => {
         extraParam: 1,
       },
     })
-      .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { requestTimeout: 30500 }))
+      .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { requestTimeout: 32 * 1000 }))
       .then(() => {
         done();
       });
