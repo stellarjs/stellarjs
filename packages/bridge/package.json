@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/bridge",
-  "version": "0.8.7",
+  "version": "0.9.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@stellarjs/core": "^0.8.3",
-    "@stellarjs/transport-redis": "^0.8.3",
+    "@stellarjs/transport-redis": "^0.9.0",
     "@stellarjs/transport-socket": "^0.8.3",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
