@@ -23,4 +23,4 @@ rollbar.reportMessageWithPayloadData = jest.fn((message, payload, req, cb) => {
     }
 });
 
-export default rollbar;
+module.exports = rollbar;

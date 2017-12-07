@@ -5,7 +5,6 @@
 import Promise from 'bluebird';
 import rollbar from 'rollbar';
 import middleware from '../src';
-import { rollbarMiddlewareConfigurer } from '../src'
 import { StellarError } from '@stellarjs/core';
 import { StellarHandler, StellarRequest } from '@stellarjs/core';
 import { MemoryTransport } from '@stellarjs/transport-memory';
@@ -20,9 +19,9 @@ describe('Rollbar middleware', () => {
       const memoryTransport = new MemoryTransport(console);
       const request = new StellarRequest(memoryTransport, 'origin', console, 1000);
       const oneHandler = new StellarHandler(memoryTransport, 'testserviceOne', console);
-      oneHandler.use('.*', middleware);
+      oneHandler.use('.*', middleware());
       const twoHandler = new StellarHandler(memoryTransport, 'testserviceTwo', console);
-      twoHandler.use('.*', middleware);
+      twoHandler.use('.*', middleware());
 
       oneHandler.get('testserviceOne:resource', ({ body }) => {
           const testserviceRequest = new StellarRequest(memoryTransport, 'testserviceOne', console, 1000);
@@ -52,7 +51,7 @@ describe('Rollbar middleware', () => {
         const val = 'noop';
         const next = () => Promise.resolve(val);
 
-        middleware(req, next)
+        middleware()(req, next)
           .then((res) => {
               expect(res).toEqual(val);
               expect(rollbar.handleError).not.toBeCalled();
@@ -68,7 +67,7 @@ describe('Rollbar middleware', () => {
         const val = 'Boohoo';
         const next = () => Promise.resolve(val);
 
-        middleware(req, () => Promise.reject(new Error('Boohoo')))
+        middleware()(req, () => Promise.reject(new Error('Boohoo')))
           .catch((err) => {
               expect(err.message).toEqual(val);
               expect(rollbar.handleError).toBeCalled();
@@ -84,7 +83,7 @@ describe('Rollbar middleware', () => {
         const val = 'Boohoo';
         const next = () => Promise.resolve(val);
 
-        middleware(req, () => Promise.reject(new StellarError('Boohoo')))
+        middleware()(req, () => Promise.reject(new StellarError('Boohoo')))
           .catch((err) => {
               expect(err.message).toEqual(val);
               expect(rollbar.handleError).toBeCalled();
@@ -99,7 +98,7 @@ describe('Rollbar middleware', () => {
         const req = {};
         const val = 'Boohoo';
         const next = () => Promise.resolve(val);
-        const mw = rollbarMiddlewareConfigurer({ ignoredErrorTypes: [StellarError] });
+        const mw = middleware({ ignoredErrorTypes: [StellarError] });
         mw(req, () => Promise.reject(new StellarError('Boohoo')))
           .catch((err) => {
               expect(err.message).toEqual(val);
