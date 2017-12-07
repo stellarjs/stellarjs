@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/metrics",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -38,8 +38,8 @@
     "usePathForSuiteName": "true"
   },
   "devDependencies": {
-    "@stellarjs/core": "^0.8.3",
-    "@stellarjs/transport-memory": "^0.8.2",
+    "@stellarjs/core": "^0.8.4",
+    "@stellarjs/transport-memory": "^0.8.3",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "bluebird": "^3.4.7",
