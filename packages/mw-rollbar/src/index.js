@@ -10,8 +10,8 @@ function isLocalError(err) {
 }
 
 function rollbarMiddlewareConfigurer({ rollbar, ignoredErrorTypes } = {}) {
-  const rb = rollbar || require('rollbar');
-  
+  const rb = rollbar || require('rollbar'); // eslint-disable-line global-require
+
   /* reimplementation of rollbar.errorHandler() for promise based middleware */
   return function (req, next, options, log) {
     return new Promise((resolve, reject) => {
