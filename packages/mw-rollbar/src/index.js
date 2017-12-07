@@ -3,23 +3,24 @@ import includes from 'lodash/includes';
 import isError from 'lodash/isError';
 import map from 'lodash/map';
 import Promise from 'bluebird';
-import rollbar from 'rollbar';
 
 function isLocalError(err) {
   const headers = get(err, '__stellarResponse.headers');
   return get(headers, 'errorSource') === get(headers, 'source');
 }
 
-export function rollbarMiddlewareConfigurer({ ignoredErrorTypes } = {}) {
-    /* reimplementation of rollbar.errorHandler() for promise based middleware */
-  return function (req, next) {
+function rollbarMiddlewareConfigurer({ rollbar, ignoredErrorTypes } = {}) {
+  const rb = rollbar || require('rollbar');
+  
+  /* reimplementation of rollbar.errorHandler() for promise based middleware */
+  return function (req, next, options, log) {
     return new Promise((resolve, reject) => {
       next()
               .then(response => resolve(response))
               .catch((err) => {
                 function cb(rollbarErr) {
                   if (rollbarErr) {
-                    this.log.warn(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
+                    log.warn(`Error reporting to rollbar, ignoring: ${rollbarErr}`);
                   }
 
                   reject(err);
@@ -30,13 +31,13 @@ export function rollbarMiddlewareConfigurer({ ignoredErrorTypes } = {}) {
                 }
 
                 if ((err instanceof Error || isError(err)) && isLocalError(err)) {
-                  return rollbar.handleError(err, req, cb);
+                  return rb.handleError(err, req, cb);
                 }
 
-                return rollbar.reportMessage(`Error: ${err}`, 'error', req, cb);
+                return rb.reportMessage(`Error: ${err}`, 'error', req, cb);
               });
     });
   };
 }
 
-export default rollbarMiddlewareConfigurer();
+export default rollbarMiddlewareConfigurer;
