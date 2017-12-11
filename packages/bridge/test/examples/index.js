@@ -4,6 +4,7 @@
 import { stellarAppPubSub, stellarHandler, StellarError } from '@stellarjs/core';
 import url from 'url';
 import omit from 'lodash/omit';
+import Promise from 'bluebird';
 
 
 import defaultStellarFactory from '../../src/defaultStellarFactory';
@@ -72,6 +73,8 @@ function kongEveryHalfSecond() {
 
 const handler = stellarFactory.stellarHandler();
 handler.get('sampleService:ping', () => ({ text: `pong` }));
+
+handler.update('sampleService:timeout', () => Promise.delay(31 * 1000).then(() => ({ text: `pong` })));
 handler.get('sampleService:pingError', () => {
     throw new Error('pongError');
 });
