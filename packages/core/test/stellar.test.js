@@ -221,7 +221,11 @@ describe('no-timeout behaviour on mock request response', () => {
 describe('middlewares', () => {
   it('use request mw', (done) => {
     const stellarRequest = getStellarRequest();
-    stellarRequest.use('.*', (jobData, next) => {
+    let mwOptions;
+    let mwLogger;
+    stellarRequest.use('.*', (jobData, next, options, log) => {
+        mwOptions = options;
+        mwLogger = log;
       _.assign(jobData.headers, { userId: 1 });
       return next();
     });
@@ -253,6 +257,8 @@ describe('middlewares', () => {
       // expect(job.data.headers.respondTo).toEqual(StellarCore.getNodeInbox(stellarRequest.source));
       // expect(job.data.headers.source).toEqual(stellarRequest.source);
       expect(job.data.body).toEqual({ text: 'toot' });
+      expect(mwOptions).toEqual({});
+      expect(mwLogger).toBe(console);
       done();
     });
   });

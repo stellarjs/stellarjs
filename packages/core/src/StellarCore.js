@@ -146,7 +146,7 @@ class StellarCore {
       if (handlers[i].pattern === undefined ||
         match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
         return Promise
-          .try(() => handlers[i].fn(jobData, next, options))
+          .try(() => handlers[i].fn(jobData, next, options, this.log))
           .then(result => this._handlerResult(jobData, result))
           .catch(error => this._handlerRejection(jobData, error));
       }
