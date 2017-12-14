@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/instrument-newrelic",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
