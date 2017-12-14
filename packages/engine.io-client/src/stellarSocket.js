@@ -32,8 +32,7 @@ function stellarSocketFactory(eio, log = console) {
     state: 'disconnected',
     connectedOnce: false,
     userId: null,
-    operationId: null,
-    sessionId: null,
+    headers: null,
     stellar: stellarRequest(stellarRequestOptions),
     tryToReconnect: true,
 
