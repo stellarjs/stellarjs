@@ -163,7 +163,6 @@ function stellarSocketFactory(eio, log = console) {
             this.state = 'connected';
             this.stellar.transport.setSocket(socketAttempt);
             this.socket = socketAttempt;
-
             this.userId = jam.userId;
             this.headers = jam.headers;
 
