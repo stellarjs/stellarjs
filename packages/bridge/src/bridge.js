@@ -321,8 +321,7 @@ function init({
           messageType: 'connected',
           message: 'connected to stellar bridge',
           userId: session.authenticatedUserId,
-          sessionId: session.sessionId,
-        };
+          sessionId: session.sessionId };
         return socket.send(JSON.stringify(hiMessage));
       })
       .catch((e) => {
