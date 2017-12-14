@@ -13,7 +13,7 @@ function triggerOpen(instance) {
   .delay(50)
   .then(() => {
     instance.send('open');
-    instance.send('message', JSON.stringify({ messageType: 'connected', headers: { bla:'bla '} }));
+    instance.send('message', JSON.stringify({ messageType: 'connected' }));
   });
 }
 
@@ -167,22 +167,5 @@ describe('engine-io client', () => {
             expect(realSocketA.id).not.toEqual(realSocketB.id);
             done();
           });
-    });
-
-    it('exposes hi message headers on stellarSocket', (done) => {
-        const stellarSocketA = stellarSocketFactory(eio);
-        stellarSocketA.connect('localhost:8091', {
-            secure: false,
-            userId: '123',
-            token: '123',
-            tokenType: 'API',
-            eioConfig: {upgrade: false},
-            params: {
-                extraParam: 1,
-            },
-        }).then(() => {
-            expect(stellarSocketA.headers).toEqual({bla: 'bla '});
-            done();
-        })
     });
 });

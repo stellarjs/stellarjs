@@ -162,7 +162,6 @@ function stellarSocketFactory(eio, log = console) {
             this.stellar.transport.setSocket(socketAttempt);
             this.socket = socketAttempt;
             this.userId = jam.userId;
-
             this.trigger('open');
             if (this.connectedOnce) {
               this.trigger('reconnected');
