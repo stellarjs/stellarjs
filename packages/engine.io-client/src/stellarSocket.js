@@ -32,6 +32,7 @@ function stellarSocketFactory(eio, log = console) {
     state: 'disconnected',
     connectedOnce: false,
     userId: null,
+    sessionId: null,
     stellar: stellarRequest(stellarRequestOptions),
     tryToReconnect: true,
 
@@ -161,7 +162,8 @@ function stellarSocketFactory(eio, log = console) {
             this.state = 'connected';
             this.stellar.transport.setSocket(socketAttempt);
             this.socket = socketAttempt;
-            this.userId = userId;
+            this.userId = jam.userId;
+            this.sessionId = jam.sessionId;
             this.trigger('open');
             if (this.connectedOnce) {
               this.trigger('reconnected');
