@@ -3,7 +3,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/stellarjs/stellar"
+    "url": "https://github.com/stellarjs/stellarjs"
   },
   "license": "MIT",
   "scripts": {

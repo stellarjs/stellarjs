@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-redis",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -39,7 +39,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": "stellarjs/stellar",
+  "repository": "stellarjs/stellarjs",
   "keywords": [
     "microservices",
     "es6",
@@ -65,7 +65,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.8.3",
+    "@stellarjs/core": "^0.9.1",
     "bluebird": "^3.4.7",
     "bull": "3.3.6",
     "ioredis": "^2.4.0",

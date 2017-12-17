@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-socket",
-  "version": "0.8.3",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -41,7 +41,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": "stellarjs/stellar",
+  "repository": "stellarjs/stellarjs",
   "keywords": [
     "microservices",
     "es6",
@@ -66,7 +66,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.8.3",
+    "@stellarjs/core": "^0.9.1",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4"
   }

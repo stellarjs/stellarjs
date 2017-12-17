@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-memory",
-  "version": "0.8.2",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -50,7 +50,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.8.3",
+    "@stellarjs/core": "^0.9.1",
     "bluebird": "^3.4.7"
   }
 }
