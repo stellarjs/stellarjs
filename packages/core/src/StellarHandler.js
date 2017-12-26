@@ -15,6 +15,10 @@ import Promise from 'bluebird';
 
 import StellarCore from './StellarCore';
 
+function cleanError(e) {
+  return omitBy(e, (val, key) => key === '__stellarResponse' || isFunction(val));
+}
+
 export default class StellarHandler extends StellarCore {
   constructor(transport, nodeName, log) {
     super(transport, nodeName, log);
@@ -30,18 +34,18 @@ export default class StellarHandler extends StellarCore {
 
     StellarHandler.isProcessing.add(serviceInbox);
     this.log.info(`@StellarHandler: Starting processing`, { inbox: serviceInbox });
-    this._process(serviceInbox, ({ data }) => {
-      return this
+    this._process(serviceInbox, ({ data }) =>
+      this
         ._executeMiddlewares(this.allMiddlewares, data)
         .then(response => this._enqueue(data.headers.respondTo, response))
         .catch((e) => {
-          this.log.error(omitBy(e, (val, key) => key === '__stellarResponse' || isFunction(val)), '@StellarHandler ERROR');
+          this.log.error(cleanError(e), '@StellarHandler ERROR');
           if (e.__stellarResponse != null) {
             return this._enqueue(data.headers.respondTo, e.__stellarResponse);
           }
           throw e;
-        });
-    });
+        })
+    );
   }
 
   reset() {
