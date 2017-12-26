@@ -18,7 +18,7 @@
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
     "prebootstrap": "yarn",
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna run prepublish && lerna run prepare",
     "publish": "lerna publish --registry=https://registry.npmjs.org/",
     "publish:canary": "lerna publish --canary",
     "pretest": "lerna run lint",
