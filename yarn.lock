@@ -8,15 +8,6 @@
   dependencies:
     nan "^2.4.0"
 
-"@stellarjs/core@^0.8.3":
-  version "0.8.6"
-  resolved "https://registry.yarnpkg.com/@stellarjs/core/-/core-0.8.6.tgz#6e1b6dbc1490c2ead8420523046d24b5b7ef002f"
-  dependencies:
-    bluebird "^3.4.7"
-    lodash "^4.17.4"
-    safe-json-stringify "^1.0.4"
-    uuid "^3.1.0"
-
 JSONStream@^1.0.4:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/JSONStream/-/JSONStream-1.3.2.tgz#c102371b6ec3a7cf3b847ca00c20bb0fce4c6dea"
@@ -3864,12 +3855,6 @@ nan@^2.3.0, nan@^2.4.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.8.0.tgz#ed715f3fe9de02b57a5e6252d90a96675e1f085a"
 
-nats@^0.7.24:
-  version "0.7.24"
-  resolved "https://registry.yarnpkg.com/nats/-/nats-0.7.24.tgz#7d27687c2dbd8aa6058a990fee6cf5c1bdc87628"
-  dependencies:
-    nuid ">=0.6.8"
-
 natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
@@ -3984,10 +3969,6 @@ npmlog@^4.0.2, npmlog@^4.1.2:
     console-control-strings "~1.1.0"
     gauge "~2.7.3"
     set-blocking "~2.0.0"
-
-nuid@>=0.6.8:
-  version "0.6.14"
-  resolved "https://registry.yarnpkg.com/nuid/-/nuid-0.6.14.tgz#a225c8b720e46c563ad8d13641368669f6c25b48"
 
 number-is-nan@^1.0.0:
   version "1.0.1"
