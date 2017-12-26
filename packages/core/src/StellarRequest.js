@@ -81,7 +81,6 @@ export default class StellarRequest extends StellarCore {
     reject(prepErrorResponse(responseData, error));
   }
 
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars
   startRequestTimer(jobData, reject, options) {
     const requestTimeout = jobData.headers.requestTimeout || this.requestTimeout;
     if (requestTimeout && !options.requestOnly) {
