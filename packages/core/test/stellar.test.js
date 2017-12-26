@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Promise from 'bluebird';
 import StellarCore from '../src/StellarCore';
 import StellarPubSub from '../src/StellarPubSub';
-import StellarRequest from '../src/StellarRequest';
+import { responseHandler, default as StellarRequest } from '../src/StellarRequest';
 import StellarHandler from '../src/StellarHandler';
 import { StellarError } from '../src/StellarError';
 import { MockTransport } from './mocks';
@@ -39,7 +39,6 @@ describe('mock request response', () => {
           expect(queue).toHaveLength(1);
           expect(job.data.headers).toEqual(
             {
-                action: undefined,
                 id: 'stlr:s:testservice:inbox:1',
                 traceId: 'stlr:s:testservice:inbox:1',
                 queueName: 'testservice:resource:create',
@@ -99,8 +98,10 @@ describe('mock request response', () => {
         });
 
         // expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response' }, body: { text: 'world' } } });
+      responseHandler(
+        { data: { headers: { type: 'response' }, body: { text: 'world' } } },
+        stellarRequest.inflightRequests[job.data.headers.id]
+      );
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -128,8 +129,9 @@ describe('mock request response', () => {
         });
 
         // expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response' }, body: [{ text: 'world' }] } });
+      responseHandler(
+        { data: { headers: { type: 'response' }, body: [{ text: 'world' }] } },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(r => expect(r).toEqual([{ text: 'world' }]))
@@ -145,9 +147,9 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response', errorType: 'Error' }, body: { message: 'blah' } } }
-      );
+      responseHandler(
+        { data: { headers: { type: 'response', errorType: 'Error' }, body: { message: 'blah' } } },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(() => fail('error'))
@@ -166,14 +168,15 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id](
+
+      responseHandler(
         {
           data: {
             headers: { type: 'response', errorType: 'StellarError' },
             body: { message: 'blah', errors: { x: ['shit'] } },
           },
-        }
-      );
+        },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(() => fail('fail'))
@@ -194,8 +197,9 @@ describe('no-timeout behaviour on mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response' }, body: { text: 'world' } } });
+      responseHandler(
+        { data: { headers: { type: 'response' }, body: { text: 'world' } } },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -240,7 +244,6 @@ describe('middlewares', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
             userId: 1,
             id: 'stlr:s:testservice:inbox:1',
             traceId: 'stlr:s:testservice:inbox:1',
@@ -290,7 +293,6 @@ describe('middlewares', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
             id: 'stlr:s:testservice:inbox:1',
             traceId: 'stlr:s:testservice:inbox:1',
             queueName: 'testservice:resource:get',
@@ -840,6 +842,26 @@ describe('mock pubsub', () => {
       5
     );
   });
+
+    it('fake should run subscriber middleware', (done) => {
+        const defaultPubSub = getDefaultPubSub(channel);
+        let mwCounter = 0;
+        defaultPubSub.use(/.*/, (jobData, next, options, log) => {
+            mwCounter++;
+            return next();
+        });
+
+        defaultPubSub.subscribe(channel, (message) => {
+            expect(message.text).toEqual('hi');
+            expect(mwCounter).toBe(1);
+            done();
+        });
+
+        setTimeout(
+          () => defaultPubSub.transport.triggerJob(defaultPubSub.transport.job, defaultPubSub.subscriptionInbox),
+          5
+        );
+    });
 
   it('send fake publish - should send none', () => {
     const defaultPubSub = getDefaultPubSub(channel);

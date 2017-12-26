@@ -138,7 +138,7 @@ describe('full integration req/response', () => {
           .then(() => fail())
           .catch(e => {
             expect(e.constructor.name).toEqual('StellarError');
-            expect(e.message).toEqual('Timeout error: No response to job stlr:s:testservice:inbox:1 in 1000ms');
+            expect(e.message).toMatch(/Timeout error\: No response to job [a-f0-9\-]* in 1000ms/);
             return q.getFailedCount()
           })
           .then((qCount) => {

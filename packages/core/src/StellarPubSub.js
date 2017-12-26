@@ -2,9 +2,9 @@
  * Created by arolave on 02/10/2016.
  */
 import assign from 'lodash/assign';
-import forEach from 'lodash/forEach';
 import includes from 'lodash/includes';
 import isEmpty from 'lodash/isEmpty';
+import map from 'lodash/map';
 
 import Promise from 'bluebird';
 
@@ -12,12 +12,11 @@ import uuid from 'uuid/v4';
 
 import StellarCore from './StellarCore';
 
-// TODO make service & source tracing information
 export default class StellarPubSub extends StellarCore {
   constructor(transport, source, log, service) {
     super(transport, source, log);
     this.service = service;
-    this.messageHandlers = {};
+    this.subscriberRegistry = {};
     this.setInbox();
   }
 
@@ -32,53 +31,64 @@ export default class StellarPubSub extends StellarCore {
     this.setInbox();
   }
 
-  publish(channel, body, options = {}) {
-    const allMiddlewares = [].concat(this.handlerChain, {
-      fn: ({ headers }) => this.transport.getSubscribers(channel)
-        .each(queueName => this.getNextId(queueName).then((id) => {
-          const finalHeaders = assign({ id }, headers);
-          return this._enqueue(queueName, { headers: finalHeaders, body });
-        })),
+  setMiddlewares() {
+    const me = this;
+    this.publisherMiddlewares = [].concat(this.handlerChain, {
+      fn: ({ headers, body }) => me.transport.getSubscribers(headers.channel)
+            .each((queueName) => {
+              const id = me.getNextId(queueName);
+              const finalHeaders = assign({ id }, headers);
+              return this._enqueue(queueName, { headers: finalHeaders, body });
+            }),
     });
-
-    const headers = assign(this._getHeaders(options), { type: 'publish', service: this.service, channel });
-    return this._executeMiddlewares(allMiddlewares, { headers, body });
+    this.subscriberMiddlewares = [].concat(me.handlerChain, {
+      fn: ({ headers, body }) => {
+        const subscriptions = me.subscriberRegistry[headers.channel];
+        return map(subscriptions, ({ messageHandler, responseType }) => {
+          const message = includes(['raw', 'jobData'], responseType) ? { headers, body } : body;
+          return messageHandler(message);
+        });
+      },
+    });
   }
 
-  _addHandler(channel, subscription, messageHandler) {
-    if (!this.messageHandlers[channel]) {
-      this.messageHandlers[channel] = {};
+  publish(channel, body, options = {}) {
+    const headers = this._getHeaders(options.headers, { type: 'publish', service: this.service, channel });
+    return this._executeMiddlewares(this.publisherMiddlewares, { headers, body });
+  }
+
+  _addHandler(channel, subscription, messageHandler, { responseType }) {
+    if (!this.subscriberRegistry[channel]) {
+      this.subscriberRegistry[channel] = {};
     }
 
-    this.messageHandlers[channel][subscription] = messageHandler;
+    this.subscriberRegistry[channel][subscription] = { messageHandler, responseType };
   }
 
   _removeHandler(channel, subscription) {
-    delete this.messageHandlers[channel][subscription];
+    delete this.subscriberRegistry[channel][subscription];
   }
 
-  registerSubscription(channel, messageHandler) {
+  registerSubscription(channel, messageHandler, options) {
     const subscription = uuid();
-    this._addHandler(channel, subscription, messageHandler);
+    this._addHandler(channel, subscription, messageHandler, options);
 
-    return this.sourceSemaphore
-            .then(() => this.transport.registerSubscriber(channel, this.subscriptionInbox))
-            .then(deregisterSubscriber => () => {
-              this._removeHandler(channel, subscription);
-              if (isEmpty(this.messageHandlers[channel])) {
-                return deregisterSubscriber();
-              }
-              return Promise.resolve(true);
-            });
+    return this.transport
+      .registerSubscriber(channel, this.subscriptionInbox)
+      .then(deregisterSubscriber => () => {
+        this._removeHandler(channel, subscription);
+        if (isEmpty(this.subscriberRegistry[channel])) {
+          return deregisterSubscriber();
+        }
+        return Promise.resolve(true);
+      });
   }
 
   _processSubscriptions() {
     if (!this.isProcessingSubscriptions) {
       this.isProcessingSubscriptions = true;
       this.log.info(`@StellarPubSub: Starting subscriptions`, { inbox: this.subscriptionInbox });
-      this._process(this.subscriptionInbox, (job) => {
-        forEach(this.messageHandlers[job.data.headers.channel], fn => fn(job));
-      });
+      this._process(this.subscriptionInbox, job => this._executeMiddlewares(this.subscriberMiddlewares, job.data));
     }
   }
 
@@ -92,16 +102,11 @@ export default class StellarPubSub extends StellarCore {
   }
 
   subscribe(channel, messageHandler, options = {}) {
-        // TODO add separate middleware chain for subscriptions
     return this
-            .registerSubscription(channel, (job) => {
-                // this.log.info(`messageHandler ${job.jobId}`);
-              const message = includes(['raw', 'jobData'], options.responseType) ? job.data : job.data.body;
-              return messageHandler(message, channel);
-            })
-            .then((unsubscribe) => {
-              this._processSubscriptions();
-              return unsubscribe;
-            });
+      .registerSubscription(channel, messageHandler, options)
+      .then((unsubscribe) => {
+        this._processSubscriptions();
+        return unsubscribe;
+      });
   }
 }

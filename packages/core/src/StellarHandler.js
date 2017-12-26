@@ -32,15 +32,38 @@ export default class StellarHandler extends StellarCore {
     StellarHandler.isProcessing.add(serviceInbox);
     this.log.info(`@StellarHandler: Starting processing`, { inbox: serviceInbox });
     this._process(serviceInbox, (job) => {
-      const handler = this.messageHandlers[job.data.headers.queueName];
-      if (!handler) {
-        this.log.error(
-          `No handler for ${job.data.headers.queueName} endpoint registered on this microservice, 
-though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
-        throw new Error(`No handler for ${job.data.headers.queueName}`);
-      }
+      const jobData = job.data;
 
-      return this.messageHandlers[job.data.headers.queueName](job);
+      const logComplete = (result, e) => {
+        if (!e) {
+          return result;
+        } else if (e instanceof StellarError) {
+          // eslint-disable-next-line max-len
+          this.log.warn(`@StellarHandler error`, { requestId: jobData.headers.id, errorMessageKeys: e.messageKeys() });
+        } else {
+          this.log.error(omit(e, '__stellarResponse'));
+          // eslint-disable-next-line max-len
+          this.log.error(`@StellarHandler error`, { requestId: jobData.headers.id, errorMessage: e.message });
+        }
+
+        return result;
+      };
+
+      const sendResponse = (response, e) =>
+            this._enqueue(jobData.headers.respondTo, response)
+              .then(() => logComplete(response, e));
+
+      return this
+            ._executeMiddlewares(this.allMiddlewares, jobData)
+            .then(response => sendResponse(response))
+            .catch((e) => {
+              if (e.__stellarResponse != null) {
+                return sendResponse(e.__stellarResponse, e);
+              }
+
+              this.log.error(e, `@StellarHandler Unexpected error`, { requestId: jobData.headers.id });
+              throw e;
+            });
     });
   }
 
@@ -49,10 +72,7 @@ though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
     StellarHandler.isProcessing.clear();
     return Promise.all(map(
       processingArray,
-      (serviceInbox) => {
-        this.log.info(`@StellarHandler.reset`, { inbox: serviceInbox });
-        return this._stopProcessing(serviceInbox);
-      }
+      serviceInbox => this._stopProcessing(serviceInbox)
     ));
   }
 
@@ -64,12 +84,6 @@ though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
 
     StellarHandler.isProcessing.delete(serviceInbox);
     return this._stopProcessing(serviceInbox);
-  }
-
-  _addHandler(url, messageHandler) {
-    this.messageHandlers[url] = messageHandler;
-    this._startProcessing(url);
-    return this;
   }
 
   _handleLoader(url, method, value) {
@@ -125,51 +139,27 @@ though it processes the ${serviceInbox} queue`, { inbox: serviceInbox });
     return this.handleRequest(`${url}:${lowerCase(method)}`, handler);
   }
 
-  handleRequest(url, handler) {
-    this.log.info(`@StellarHandler adding handler`, { url });
+  setMiddlewares() {
+    const me = this;
+    this.allMiddlewares = this.handlerChain.concat({ fn({ headers, body }) {
+      const handler = me.messageHandlers[headers.queueName];
+      if (!handler) {
+        const serviceInbox = StellarCore.getServiceInbox(headers.queueName);
 
-    return this._addHandler(url, (job) => {
-      const startTime = Date.now();
-      const jobData = job.data;
-
-      const logComplete = (result, e) => {
-        const executionTime = Date.now() - startTime;
-        if (!e) {
-          this.log.info(`@StellarHandler processed in ${executionTime}ms`, { requestId: jobData.headers.id });
-        } else if (e instanceof StellarError) {
-          // eslint-disable-next-line max-len
-          this.log.warn(`@StellarHandler error in ${executionTime}ms`, { requestId: jobData.headers.id, errorMessageKeys: e.messageKeys() });
-        } else {
-          this.log.error(omit(e, '__stellarResponse'));
-          // eslint-disable-next-line max-len
-          this.log.error(`@StellarHandler error in ${executionTime}ms`, { requestId: jobData.headers.id, errorMessage: e.message });
-        }
-
-        return result;
-      };
-
-      const sendResponse = (response, e) =>
-        this._enqueue(jobData.headers.respondTo, response)
-          .then(() => logComplete(response, e));
-
-      function callHandler(jd) {
-        return Promise.try(() => handler(jd));
+        me.log.error(
+              `No handler for ${headers.queueName} endpoint registered on this microservice, though it processes the ${
+serviceInbox} queue`, { inbox: serviceInbox });
+        throw new Error(`No handler for ${headers.queueName}`);
       }
 
-      const allMiddlewares = [].concat(this.handlerChain, { fn: callHandler });
+      return handler({ headers, body });
+    } });
+  }
 
-      return this
-        ._executeMiddlewares(allMiddlewares, jobData)
-        .then(response => sendResponse(response))
-        .catch((e) => {
-          if (e.__stellarResponse != null) {
-            return sendResponse(e.__stellarResponse, e);
-          }
-
-          this.log.error(e, `@StellarHandler Unexpected error`, { requestId: jobData.headers.id });
-          throw e;
-        });
-    });
+  handleRequest(url, handler) {
+    this.messageHandlers[url] = handler;
+    this._startProcessing(url);
+    return this;
   }
 }
 

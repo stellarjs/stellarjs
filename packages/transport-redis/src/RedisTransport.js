@@ -9,6 +9,7 @@ import map from 'lodash/map';
 import size from 'lodash/size';
 import split from 'lodash/split';
 import Promise from 'bluebird';
+import uuidv1 from 'uuid/v1';
 
 import RedisClient from './config-redisclient';
 import redisConfig from './config-redis';
@@ -75,8 +76,9 @@ class RedisTransport {
     return this._doRegistration(RedisTransport._queueKey(), queueName);
   }
 
-  generateId(queueName) {
-    return this.redis.defaultConnection.incr(`stlr:${queueName}:id`);
+  // eslint-disable-next-line class-methods-use-this
+  generateId() {
+    return uuidv1();
   }
 
   enqueue(queueName, obj) {
