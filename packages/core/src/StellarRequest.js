@@ -174,9 +174,7 @@ export default class StellarRequest extends StellarCore {
     return this._executeMiddlewares(this.allMiddlewares, { headers, body }, options)
       .then(jobData => (includes(['raw', 'jobData'], options.responseType) ? jobData : jobData.body))
       .catch((e) => {
-        if (e.__stellarResponse == null) {
-          this.log.error(e, `@StellarRequest: Unexpected error`);
-        } else if (options.responseType === 'raw') {
+        if (e.__stellarResponse != null && options.responseType === 'raw') {
           return e.__stellarResponse;
         }
 
