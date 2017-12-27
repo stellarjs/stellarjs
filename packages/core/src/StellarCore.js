@@ -43,8 +43,8 @@ class StellarCore {
     return `stlr:n:${nodeName}:inbox`;
   }
 
-  setMiddlewares() {
-    throw new Error('setMiddlewares must be implemented'); // eslint-disable-line class-methods-use-this
+  setMiddlewares() { // eslint-disable-line class-methods-use-this
+    throw new Error('setMiddlewares must be implemented');
   }
 
   configure(transport) {
