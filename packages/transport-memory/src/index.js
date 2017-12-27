@@ -5,7 +5,7 @@ import Promise from 'bluebird';
 
 // standardise object to have json data spec
 function standardiseObject(obj) {
-  return JSON.parse(JSON.stringify(obj));
+  return obj;
 }
 
 class MemoryTransport {
@@ -27,7 +27,7 @@ class MemoryTransport {
   generateId(queueName) {
     this.setQueue(queueName);
     this.queues[queueName].currentId += 1;
-    return Promise.resolve(this.queues[queueName].currentId);
+    return `${queueName}:${this.queues[queueName].currentId}`;
   }
 
   getSubscribers(channel) {
@@ -56,9 +56,7 @@ class MemoryTransport {
 
   enqueue(queueName, data) {
     const job = { data };
-    setTimeout(() => {
-      this.queues[queueName].callback(standardiseObject(job));
-    });
+    this.queues[queueName].callback(standardiseObject(job));
 
     return Promise.resolve(job);
   }

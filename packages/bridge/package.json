@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/bridge",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -27,7 +27,7 @@
     "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib-es6",
     "compile": "yarn run compile:es6",
-    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest --forceExit",
     "test:coverage": "jest --coverage --forceExit",
@@ -40,7 +40,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/engine.io-client": "^0.8.1",
+    "@stellarjs/engine.io-client": "^0.9.2",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "engine.io": "3.1.0",
@@ -60,10 +60,11 @@
     "engine.io": "2-3"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.8.0",
-    "@stellarjs/transport-redis": "^0.8.0",
-    "@stellarjs/transport-socket": "^0.8.0",
-    "bluebird": "3.4.7",
+    "@stellarjs/core": "^0.9.1",
+    "@stellarjs/transport-redis": "^0.9.1",
+    "@stellarjs/transport-socket": "^0.9.1",
+    "@stellarjs/mw-log-trace": "^0.9.1",
+    "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4"
   }

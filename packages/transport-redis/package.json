@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-redis",
-  "version": "0.8.0",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -28,9 +28,9 @@
     "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6",
-    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "test": "jest --runInBand --forceExit",
-    "test:coverage": "jest --runInBand --coverage --forceExit",
+    "test:coverage": "jest --coverage --runInBand --forceExit",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -39,12 +39,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": "stellarjs/stellar",
+  "repository": "stellarjs/stellarjs",
   "keywords": [
     "microservices",
     "es6",
     "stellar",
-    "stellarjs"
+    "stellarjs",
+    "redis"
   ],
   "author": "Andres Olave",
   "contributors": [],
@@ -65,9 +66,9 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.8.0",
-    "bluebird": "3.4.7",
-    "bull": "https://github.com/sloops77/bull/archive/a5135def39ae0957a682c21df362b1f67dc93c3a.tar.gz",
+    "@stellarjs/core": "^0.9.1",
+    "bluebird": "^3.4.7",
+    "bull": "3.3.6",
     "ioredis": "^2.4.0",
     "lodash": "^4.17.4",
     "redis-exclusive-task": "^0.1.0",

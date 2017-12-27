@@ -2,8 +2,9 @@
  * Created by arolave on 25/09/2016.
  */
 import assign from 'lodash/assign';
-import head from 'lodash/head';
+import merge from 'lodash/merge';
 import get from 'lodash/get';
+import head from 'lodash/head';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
@@ -13,10 +14,6 @@ class StellarCore {
     this.handlerChain = [];
     this.configure(transport);
     this.log = log;
-    this.sourceSemaphore = new Promise((resolve) => {
-      this.sourceResolver = resolve;
-      return resolve;
-    });
     this.setSource(source);
   }
 
@@ -26,8 +23,12 @@ class StellarCore {
     }
 
     this.source = source;
-    this.sourceResolver(source);
-    this.log.info(`@StellarCore.setSource`, { source });
+    this.setMiddlewares();
+  }
+
+  use(pattern, fn) {
+    this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
+    this.setMiddlewares();
   }
 
   static getServiceName(queueName) {
@@ -42,16 +43,16 @@ class StellarCore {
     return `stlr:n:${nodeName}:inbox`;
   }
 
+  setMiddlewares() { // eslint-disable-line class-methods-use-this
+    throw new Error('setMiddlewares must be implemented');
+  }
+
   configure(transport) {
     this.transport = transport;
   }
 
-  use(pattern, fn) {
-    this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
-  }
-
   getNextId(inbox) {
-    return this.transport.generateId(inbox).then(id => `${inbox}:${id}`);
+    return this.transport.generateId(inbox);
   }
 
   /**
@@ -68,40 +69,41 @@ class StellarCore {
    * @param options
    * @private
    */
-  _getHeaders(options = {}) {
+  _getHeaders(headers, overrides, defaults) {
     return assign(
       {
         timestamp: Date.now(),
         source: this.source,
       },
-      options.headers,
-      { action: options.action }
+      defaults,
+      headers,
+      overrides
     );
   }
 
   _prepareResponse(jobData, val) {
-    function buildBody(headers) {
+    const buildBody = (headers) => {
       if (val instanceof Error) {
-        assign(headers, { errorType: val.constructor.name });
+        if (!val.__stellarResponse) {
+          assign(headers, { errorType: val.constructor.name, errorSource: this.source });
+        }
+
         return pick(val, ['errors', 'message']);
       }
 
       return val;
-    }
+    };
 
-    return this
-      .getNextId(jobData.headers.respondTo)
-      .then((id) => {
-        const headers = assign(this._getHeaders(), {
-          id,
-          type: 'response',
-          requestId: jobData.headers.id,
-          traceId: jobData.headers.traceId,
-          queueName: jobData.headers.respondTo,
-        });
+    const id = this.getNextId(jobData.headers.respondTo);
+    const headers = this._getHeaders({
+      id,
+      type: 'response',
+      requestId: jobData.headers.id,
+      traceId: jobData.headers.traceId,
+      queueName: jobData.headers.respondTo,
+    });
 
-        return { headers, body: buildBody(headers) };
-      });
+    return { headers, body: buildBody(headers) };
   }
 
   _handlerResult(jobData, result) {
@@ -112,14 +114,13 @@ class StellarCore {
   }
 
   _handlerRejection(jobData, error) {
-    if (error.__stellarResponse != null || !includes(['request', 'reactive'], jobData.headers.type)) {
-      return Promise.reject(error);
+    if (get(error, '__stellarResponse.source') === this.source || !includes(['request', 'reactive'], jobData.headers.type)) {
+      throw error;
     }
 
-    return this._prepareResponse(jobData, error).then((response) => {
-      assign(error, { __stellarResponse: response });
-      return Promise.reject(error);
-    });
+    const response = this._prepareResponse(jobData, error);
+    merge(error, { __stellarResponse: response });
+    throw error;
   }
 
   _executeMiddlewares(handlers, jobData, options = {}) {
@@ -142,7 +143,7 @@ class StellarCore {
       if (handlers[i].pattern === undefined ||
         match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
         return Promise
-          .try(() => handlers[i].fn(jobData, next, options))
+          .try(() => handlers[i].fn(jobData, next, options, this.log))
           .then(result => this._handlerResult(jobData, result))
           .catch(error => this._handlerRejection(jobData, error));
       }
@@ -154,20 +155,11 @@ class StellarCore {
   }
 
   _enqueue(queueName, obj) {
-    this.log.info(`@StellarCore.enqueue`, { queueName, obj });
-    return this.transport
-      .enqueue(queueName, obj)
-      .catch((e) => {
-        this.log.error(e, `@StellarCore.enqueue`, { queueName, obj });
-        throw e;
-      });
+    return this.transport.enqueue(queueName, obj);
   }
 
   _process(inbox, callback) {
-    return this.transport.process(inbox, (job) => {
-      this.log.info(`@StellarCore.process`, { inbox, obj: job.data });
-      return callback(job);
-    });
+    return this.transport.process(inbox, job => callback(job));
   }
 
   _stopProcessing(inbox) {

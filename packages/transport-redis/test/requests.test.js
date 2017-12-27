@@ -11,23 +11,21 @@ let redisTransport;
 let stellarRequest;
 let stellarHandler;
 
-beforeAll((done) => {
-  redisTransport = new RedisTransport(log); //[new RedisTransport(log), new RedisTransport(log)];
-  Promise
-    .delay(1000)
-    .then(() => {
-      stellarRequest = new StellarRequest(redisTransport, 'test', log, 1000);
-      stellarHandler = new StellarHandler(redisTransport, 'test', log, 'testservice');
-      done();
-    });
-});
-
-afterAll((done) => {
-    closeRedis(redisTransport).then(() => done())
+afterEach((done) => {
+    stellarHandler.reset()
+      .then(() => closeRedis(redisTransport))
+      .then(done);
 });
 
 beforeEach((done) => {
-  stellarHandler.reset().then(() => done());
+    redisTransport = new RedisTransport(log); //[new RedisTransport(log), new RedisTransport(log)];
+    Promise
+      .delay(1000)
+      .then(() => {
+          stellarRequest = new StellarRequest(redisTransport, 'test', log, 1000);
+          stellarHandler = new StellarHandler(redisTransport, 'test', log, 'testservice');
+          done();
+      });
 });
 
 describe('full integration req/response', () => {
@@ -125,4 +123,34 @@ describe('full integration req/response', () => {
         done();
       });
   });
+
+    it('test request timeout', (done) => {
+        const q = redisTransport._getQueue('stlr:n:test:inbox');
+
+        stellarHandler.handleRequest('testservice:resource:get', ({ body }) => {
+            return Promise
+              .delay(1000)
+              .then(() => ({ text: `${body.text} worlds` }));
+        });
+
+        stellarRequest
+          .get('testservice:resource', { text: 'hello' }, { requestTimeout: 500 })
+          .then(() => fail())
+          .catch(e => {
+            expect(e.constructor.name).toEqual('StellarError');
+            expect(e.message).toMatch(/Timeout error\: No response to job [a-f0-9\-]* in 1000ms/);
+            return q.getFailedCount()
+          })
+          .then((qCount) => {
+              expect(qCount).toBe(0);
+          })
+          .delay(1000)
+          .then(() => {
+            return q.getFailedCount();
+          })
+          .then((jobCounts) => {
+              expect(jobCounts).toBe(0);
+          })
+          .then(done)
+    });
 });

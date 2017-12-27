@@ -16,8 +16,9 @@ class MockTransport {
     this.callbacks = {};
   }
 
-  generateId(queueName) {
-    return Promise.resolve(this.jobCounter++);
+  generateId(inbox) {
+    const count = this.jobCounter++;
+    return `${inbox}:${count}`;
   }
 
   getSubscribers(channel) {
@@ -52,9 +53,9 @@ class MockTransport {
       this.queues[queueName].push({ data });
       
       if (this.inMemory) {
-        console.info(queueName)
-          console.info(_.keys(this.callbacks));
-        this.callbacks[queueName]({ data })
+        console.info(queueName);
+        console.info(_.keys(this.callbacks));
+        this.callbacks[queueName]({ data });
       }
       resolve(_.last(this.queues[queueName]));
     });
@@ -78,16 +79,14 @@ class MockTransport {
   }
 
   getNextId(inbox) {
-    return this.generateId(inbox).then(id => `${inbox}:${id}`);
+    return this.generateId(inbox);
   }
 
   triggerJob(job) {
-    this.getNextId(StellarCore.getNodeInbox('testservice'))
-      .then((id) => {
-        _.set(job, 'data.headers.id', id);
-        console.info(`triggerJob ${JSON.stringify(job)}`);
-        _(this.callbacks).values().first()(job);
-      });
+    const id = this.getNextId(StellarCore.getNodeInbox('testservice'));
+    _.set(job, 'data.headers.id', id);
+    console.info(`triggerJob ${JSON.stringify(job)}`);
+    _(this.callbacks).values().first()(job);
   }
 }
 

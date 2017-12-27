@@ -14,10 +14,13 @@ import split from 'lodash/split';
 
 import { StellarError } from '@stellarjs/core';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
+import { mwLogTraceFactory } from '@stellarjs/mw-log-trace';
 
 function createStellarRequest(stellarFactory, middlewares) {
   const sourceOverride = `bridge-${stellarFactory.source}`;
   const stellarRequest = stellarFactory.stellarRequest({ sourceOverride });
+  const mwLogTrace = mwLogTraceFactory('HEADERS');
+  stellarRequest.use(/.*/, mwLogTrace);
   forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
   return stellarRequest;
   // TODO customize
@@ -109,7 +112,7 @@ function sendResponse(log, session, command, jobDataResp) {
 
   const headers = defaults({ requestId, queueName, source: session.source }, jobDataResp.headers);
   const obj = { headers, body: jobDataResp.body };
-  log.info(`${session.logPrefix}.clientEnqueue`, { queueName, obj });
+  log.info(`${session.logPrefix} BRIDGE RESPONSE`, { queueName, obj });
   return session.client.enqueue(queueName, obj);
 }
 
@@ -119,7 +122,7 @@ function bridgeReactive(log, session, requestHeaders) {
     const headers = defaults({ channel, queueName, source: session.source }, subscriptionData.headers);
     const obj = { headers, body: subscriptionData.body };
 
-    log.info(`${session.logPrefix}.clientEnqueue`, { channel, queueName, obj });
+    log.info(`${session.logPrefix} BRIDGE REACTIVE`, { channel, queueName, obj });
     return session.client.enqueue(queueName, obj);
   };
 }
@@ -132,8 +135,8 @@ function handleMessage(log, stellarRequest, session, command) {
       return stellarRequest
         ._doQueueRequest(requestHeaders.queueName,
                          command.data.body,
-                         defaults({ source: session.source }, requestHeaders),
-                         { session, responseType: 'raw' })
+                         { type: 'request' },
+                         { responseType: 'raw', headers: defaults({ source: session.source }, requestHeaders) })
         .then(response => sendResponse(log, session, command, response));
     }
     case 'stopReactive': {
@@ -145,34 +148,25 @@ function handleMessage(log, stellarRequest, session, command) {
       return Promise.resolve(false);
     }
     case 'reactive': {
-      if (session.reactiveStoppers[requestHeaders.channel]) {
+      const stopper = head(session.reactiveStoppers[requestHeaders.channel]);
+      if (stopper) {
         const message = `Multiple subscriptions to same channel (${
-          requestHeaders.channel}) not supported. First subscription sent ${
-          head(session.reactiveStoppers[requestHeaders.channel])}`;
+          requestHeaders.channel}) not supported. First subscription sent ${stopper}`;
 
-        return stellarRequest
-          ._prepareResponse(command.data, new StellarError(message))
-          .then((errorResponse) => {
-            log.warn(session.logPrefix, message);
-
-            return sendResponse(
-              log,
-              session,
-              command,
-              errorResponse
-            );
-          });
+        log.warn(session.logPrefix, message);
+        const errorResponse = stellarRequest._prepareResponse(command.data, new StellarError(message));
+        return sendResponse(log, session, command, errorResponse);
       }
 
-      const options = { session, responseType: 'raw' };
+      const options = { responseType: 'raw', headers: defaults({ source: session.source }, requestHeaders) };
       const reactiveRequest = {
         results: stellarRequest._doQueueRequest(requestHeaders.queueName,
                                                  command.data.body,
-                                                 defaults({ source: session.source }, requestHeaders),
+                                                { type: 'reactive', channel: requestHeaders.channel },
                                                  options),
         onStop: stellarRequest.pubsub.subscribe(requestHeaders.channel,
                                                  bridgeReactive(log, session, requestHeaders),
-                                                 options),
+                                                 pick(options, 'responseType')),
       };
 
       session.registerStopper(requestHeaders.channel, reactiveRequest.onStop, requestHeaders.id);
@@ -256,6 +250,10 @@ function init({
                     log.info(`${session.logPrefix} Connection init in ${elapsed}ms`);
                   },
                   sessionFailed(elapsed, session) {}, // eslint-disable-line no-unused-vars, lodash/prefer-noop
+                  // will be called on close and open with the current engine io status
+                  numOfConnectedClients(elapsed, count) {
+                    log.info(`number of connected clients ${count}`);
+                  },
                 },
                 middlewares = [] }) {
   const stellarRequest = createStellarRequest(stellarFactory, middlewares);
@@ -283,6 +281,7 @@ function init({
   }
 
   function onClose(session) {
+    instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
         last(stopper)();
@@ -299,13 +298,14 @@ function init({
   }
 
   function onConnection(socket) {
+    instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
     const startTime = Date.now();
 
     const initialSession = startSession(log, stellarRequest.source, socket);
     callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
       .then((session) => {
-        log.info(`${session.logPrefix} Connected`, { session });
+        log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
         socket.on('close', () => onClose(session));
         socket.on('message', str => onMessage(str, session));

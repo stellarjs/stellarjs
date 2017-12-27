@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/core",
-  "version": "0.8.0",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -11,7 +11,7 @@
     "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6 && yarn run compile:umd",
-    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -23,7 +23,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": "stellarjs/stellar",
+  "repository": "stellarjs/stellarjs",
   "keywords": [
     "microservices",
     "es6",
@@ -67,7 +67,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "bluebird": "3.4.7",
+    "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4",
     "uuid": "^3.1.0"

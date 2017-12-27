@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/redux-stellar",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -29,7 +29,7 @@
     "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6 && yarn run compile:umd",
-    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/engine.io-client": "^0.8.1",
+    "@stellarjs/engine.io-client": "^0.9.2",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "eslint": "^3.19.0",
@@ -56,12 +56,12 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.8.0",
+    "@stellarjs/core": "^0.9.1",
     "lodash": "^4.17.4",
     "uuid": "^3.1.0"
   },
   "peerDependencies": {
-    "@stellarjs/engine.io-client": "^0.8.1",
+    "@stellarjs/engine.io-client": "^0.9.2",
     "redux-promise-middleware": "^4.3.0"
   }
 }

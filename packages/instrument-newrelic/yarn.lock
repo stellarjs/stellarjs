@@ -2,12 +2,6 @@
 # yarn lockfile v1
 
 
-"@stellarjs/instrument-newrelic@0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@stellarjs/instrument-newrelic/-/instrument-newrelic-0.8.0.tgz#f96f46d0320bbb73d0610cc922c70cb16f81c6b3"
-  dependencies:
-    lodash "^4.17.4"
-
 abab@^1.0.3:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/abab/-/abab-1.0.4.tgz#5faad9c2c07f60dd76770f71cf025b62a63cfd4e"

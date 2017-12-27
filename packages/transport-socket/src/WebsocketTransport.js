@@ -4,6 +4,7 @@
 import get from 'lodash/get';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
+import uuid from 'uuid/v4';
 
 class WebsocketTransport {
   constructor(socket, log, sendingOnly) {
@@ -57,7 +58,7 @@ class WebsocketTransport {
 
   // eslint-disable-next-line class-methods-use-this
   generateId() {
-    return Promise.resolve(`${Date.now() - WebsocketTransport.START_2016}:${Math.floor(Math.random() * 10000)}`);
+    return uuid();
   }
 
   enqueue(queueName, data) {

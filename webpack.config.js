@@ -29,9 +29,13 @@ function webpackConfig(context) {
             options: {
               babelrc: false,
               presets: [
-                ['es2015', { modules: false }],
+                  ["env", {
+                      targets: {
+                          browsers: ["> 2%"]
+                      }
+                  }]
               ],
-              plugins: ['transform-object-rest-spread'],
+              plugins: ["transform-object-rest-spread"]
             },
           },
         },
