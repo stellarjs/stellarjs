@@ -44,7 +44,7 @@ class StellarCore {
   }
 
   setMiddlewares() {
-    throw new Error("setMiddlewares must be implemented");
+    throw new Error('setMiddlewares must be implemented'); // eslint-disable-line class-methods-use-this
   }
 
   configure(transport) {
