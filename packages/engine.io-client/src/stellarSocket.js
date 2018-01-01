@@ -185,7 +185,7 @@ function stellarSocketFactory(eio, log = console) {
             this.state = 'disconnected';
             this.socket = null;
             if (this.tryToReconnect) {
-              this._reconnect(url, { userId, token, secure, params });
+              this._reconnect(url, { userId, token, secure, params, tokenType, eioConfig });
             }
           }
         });
