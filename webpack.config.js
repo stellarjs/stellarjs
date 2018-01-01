@@ -28,7 +28,7 @@ function webpackConfig(context) {
             loader: 'babel-loader',
             options: {
               babelrc: false,
-              presets: ["env"],
+              presets: [["env", { "modules": false, "loose": true }]],
               plugins: ["transform-object-rest-spread"]
             },
           },
