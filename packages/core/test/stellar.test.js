@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Promise from 'bluebird';
 import StellarCore from '../src/StellarCore';
 import StellarPubSub from '../src/StellarPubSub';
-import StellarRequest from '../src/StellarRequest';
+import { responseHandler, default as StellarRequest } from '../src/StellarRequest';
 import StellarHandler from '../src/StellarHandler';
 import { StellarError } from '../src/StellarError';
 import { MockTransport } from './mocks';
@@ -21,8 +21,8 @@ const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
   return new StellarPubSub(transport, 'test', console);
 };
 const getAppPubSub = (channel, body = { text: 'hi' }) => {
-    const transport = new MockTransport({ headers: { channel, type: 'publish' }, body });
-    return new StellarPubSub(transport, 'test', console, 'APP');
+  const transport = new MockTransport({ headers: { channel, type: 'publish' }, body });
+  return new StellarPubSub(transport, 'test', console, 'APP');
 };
 
 describe('mock request response', () => {
@@ -31,40 +31,39 @@ describe('mock request response', () => {
     const result = stellarRequest.create('testservice:resource', { text: 'toot' });
     Promise.delay(50)
       .then(() => {
-          expect(result.then).toBeInstanceOf(Function);
-          const qName = StellarCore.getServiceInbox('testservice');
-          const queue = stellarRequest.transport.queues[qName];
-          const job = _.last(queue);
+        expect(result.then).toBeInstanceOf(Function);
+        const qName = StellarCore.getServiceInbox('testservice');
+        const queue = stellarRequest.transport.queues[qName];
+        const job = _.last(queue);
 
-          expect(queue).toHaveLength(1);
-          expect(job.data.headers).toEqual(
-            {
-                action: undefined,
-                id: 'stlr:s:testservice:inbox:1',
-                traceId: 'stlr:s:testservice:inbox:1',
-                queueName: 'testservice:resource:create',
-                respondTo: StellarCore.getNodeInbox(stellarRequest.source),
-                source: stellarRequest.source,
-                timestamp: expect.any(Number),
-                type: 'request',
-            });
+        expect(queue).toHaveLength(1);
+        expect(job.data.headers).toEqual(
+          {
+            id: 'stlr:s:testservice:inbox:1',
+            traceId: 'stlr:s:testservice:inbox:1',
+            queueName: 'testservice:resource:create',
+            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+            source: stellarRequest.source,
+            timestamp: expect.any(Number),
+            type: 'request',
+          });
 
-          expect(job.data.body).toEqual({ text: 'toot' });
-          done();
-      }) ;
+        expect(job.data.body).toEqual({ text: 'toot' });
+        done();
+      });
   });
 
-    it('Custom timeouts should apply', (done) => {
-        const stellarRequest = getStellarRequest();
-        const result = stellarRequest.update('testservice:timeout', { text: 'toot' }, { headers: { requestTimeout: 50 } });
-        expect(result.then).toBeInstanceOf(Function);
+  it('Custom timeouts should apply', (done) => {
+    const stellarRequest = getStellarRequest();
+    const result = stellarRequest.update('testservice:timeout', { text: 'toot' }, { headers: { requestTimeout: 50 } });
+    expect(result.then).toBeInstanceOf(Function);
 
-        result.then(() => {
-            fail('should have timed out');
-        }).catch(StellarError, (e) => {
-            done();
-        });
-    }, 100);
+    result.then(() => {
+      fail('should have timed out');
+    }).catch(StellarError, (e) => {
+      done();
+    });
+  }, 100);
 
   it('send request run that doesnt respond in time', (done) => {
     const stellarRequest = getStellarRequest();
@@ -88,19 +87,21 @@ describe('mock request response', () => {
       const job = _.last(queue);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'stlr:s:testservice:inbox:1',
-            traceId: 'stlr:s:testservice:inbox:1',
-            queueName: 'testservice:resource:create',
-            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
-            source: stellarRequest.source,
-            timestamp: expect.any(Number),
-            type: 'request',
+          action: undefined,
+          id: 'stlr:s:testservice:inbox:1',
+          traceId: 'stlr:s:testservice:inbox:1',
+          queueName: 'testservice:resource:create',
+          respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+          source: stellarRequest.source,
+          timestamp: expect.any(Number),
+          type: 'request',
         });
 
         // expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response' }, body: { text: 'world' } } });
+      responseHandler(
+        { data: { headers: { type: 'response' }, body: { text: 'world' } } },
+        stellarRequest.inflightRequests[job.data.headers.id]
+      );
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -117,19 +118,20 @@ describe('mock request response', () => {
       const job = _.last(queue);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'stlr:s:testservice:inbox:1',
-            traceId: 'stlr:s:testservice:inbox:1',
-            queueName: 'testservice:resource:create',
-            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
-            source: stellarRequest.source,
-            timestamp: expect.any(Number),
-            type: 'request',
+          action: undefined,
+          id: 'stlr:s:testservice:inbox:1',
+          traceId: 'stlr:s:testservice:inbox:1',
+          queueName: 'testservice:resource:create',
+          respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+          source: stellarRequest.source,
+          timestamp: expect.any(Number),
+          type: 'request',
         });
 
         // expect(job.data.headers.id).toEqual(`stlr:s:testservice:inbox:1`);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response' }, body: [{ text: 'world' }] } });
+      responseHandler(
+        { data: { headers: { type: 'response' }, body: [{ text: 'world' }] } },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(r => expect(r).toEqual([{ text: 'world' }]))
@@ -145,9 +147,9 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response', errorType: 'Error' }, body: { message: 'blah' } } }
-      );
+      responseHandler(
+        { data: { headers: { type: 'response', errorType: 'Error' }, body: { message: 'blah' } } },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(() => fail('error'))
@@ -166,14 +168,15 @@ describe('mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id](
+
+      responseHandler(
         {
           data: {
             headers: { type: 'response', errorType: 'StellarError' },
             body: { message: 'blah', errors: { x: ['shit'] } },
           },
-        }
-      );
+        },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(() => fail('fail'))
@@ -194,8 +197,9 @@ describe('no-timeout behaviour on mock request response', () => {
       const qName = StellarCore.getServiceInbox('testservice');
       const queue = stellarRequest.transport.queues[qName];
       const job = _.last(queue);
-      stellarRequest.inflightRequests[job.data.headers.id](
-        { data: { headers: { type: 'response' }, body: { text: 'world' } } });
+      responseHandler(
+        { data: { headers: { type: 'response' }, body: { text: 'world' } } },
+        stellarRequest.inflightRequests[job.data.headers.id]);
 
       result
         .then(r => expect(r).toEqual({ text: 'world' }))
@@ -224,8 +228,8 @@ describe('middlewares', () => {
     let mwOptions;
     let mwLogger;
     stellarRequest.use('.*', (jobData, next, options, log) => {
-        mwOptions = options;
-        mwLogger = log;
+      mwOptions = options;
+      mwLogger = log;
       _.assign(jobData.headers, { userId: 1 });
       return next();
     });
@@ -240,15 +244,14 @@ describe('middlewares', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            userId: 1,
-            id: 'stlr:s:testservice:inbox:1',
-            traceId: 'stlr:s:testservice:inbox:1',
-            queueName: 'testservice:resource:get',
-            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
-            source: stellarRequest.source,
-            timestamp: expect.any(Number),
-            type: 'request',
+          userId: 1,
+          id: 'stlr:s:testservice:inbox:1',
+          traceId: 'stlr:s:testservice:inbox:1',
+          queueName: 'testservice:resource:get',
+          respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+          source: stellarRequest.source,
+          timestamp: expect.any(Number),
+          type: 'request',
         });
 
       // expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
@@ -290,14 +293,13 @@ describe('middlewares', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'stlr:s:testservice:inbox:1',
-            traceId: 'stlr:s:testservice:inbox:1',
-            queueName: 'testservice:resource:get',
-            respondTo: StellarCore.getNodeInbox(stellarRequest.source),
-            source: stellarRequest.source,
-            timestamp: expect.any(Number),
-            type: 'request',
+          id: 'stlr:s:testservice:inbox:1',
+          traceId: 'stlr:s:testservice:inbox:1',
+          queueName: 'testservice:resource:get',
+          respondTo: StellarCore.getNodeInbox(stellarRequest.source),
+          source: stellarRequest.source,
+          timestamp: expect.any(Number),
+          type: 'request',
         });
       // expect(job.data.headers.id).toEqual('stlr:s:testservice:inbox:1');
       // expect(job.data.headers.queueName).toEqual('testservice:resource:get');
@@ -342,7 +344,7 @@ describe('middlewares', () => {
   it('reject error from handler mw ', (done) => {
     const stellarHandler = getStellarHandler('testservice:resource:create');
 
-    stellarHandler.use('.*', (jobData) => Promise.reject(new StellarError('boo hoo')));
+    stellarHandler.use('.*', jobData => Promise.reject(new StellarError('boo hoo')));
 
     stellarHandler.handleMethod('testservice:resource', 'create', () => {
       fail('shouldnt be called');
@@ -358,16 +360,16 @@ describe('middlewares', () => {
 
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
-            errorType: 'StellarError',
-            errorSource: 'test'
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
+          errorType: 'StellarError',
+          errorSource: 'test',
         });
       // expect(job.data.headers.id).toEqual('');
       // expect(job.data.headers).not.toHaveProperty('respondTo');
@@ -398,16 +400,16 @@ describe('middlewares', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
-            errorType: 'Error',
-            errorSource: 'test'
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
+          errorType: 'Error',
+          errorSource: 'test',
         });
       expect(job.data.body).toEqual({ message: 'boo hoo' });
       done();
@@ -485,14 +487,14 @@ describe('mock handler', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
         });
 
       expect(job.data.body).toEqual({ text: 'world' });
@@ -516,16 +518,16 @@ describe('mock handler', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
         });
-      
+
       expect(job.data.body).toEqual([{ text: 'world' }]);
       done();
     });
@@ -546,19 +548,19 @@ describe('mock handler', () => {
       const job = _.last(queue);
 
       expect(queue).toHaveLength(1);
-        expect(job.data.headers).toEqual(
-          {
-              action: undefined,
-              id: 'myQueue:2',
-              requestId: 'stlr:n:testservice:inbox:1',
-              traceId: undefined,
-              queueName: 'myQueue',
-              source: stellarHandler.source,
-              timestamp: expect.any(Number),
-              type: 'response',
-              errorType: 'Error',
-              errorSource: 'test'
-          });
+      expect(job.data.headers).toEqual(
+        {
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
+          errorType: 'Error',
+          errorSource: 'test',
+        });
 
       expect(job.data.body).toEqual({ message: 'blah' });
       done();
@@ -583,16 +585,16 @@ describe('mock handler', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
-            errorType: 'StellarError',
-            errorSource: 'test'
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
+          errorType: 'StellarError',
+          errorSource: 'test',
         });
 
       expect(job.data.body.errors).toEqual({ x: ['blah'] });
@@ -601,28 +603,34 @@ describe('mock handler', () => {
   });
 
   it('if an error is rethrown, send a error response', (done) => {
-      const stellarHandler = getStellarHandler('testservice:resource:create');
+    const stellarHandler = getStellarHandler('testservice:resource:create');
 
-      stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
-          expect(request.body.text).toEqual('hi');
-          const error = new Error('blah');
-          error.__stellarResponse = { headers: { val: 'boohoo', source: 'somewhere', errorType: 'Error', errorSource: 'somewhere' }, body: {} };
-          throw error;
-      });
+    stellarHandler.handleMethod('testservice:resource', 'create', (request) => {
+      expect(request.body.text).toEqual('hi');
+      const error = new Error('blah');
+      error.__stellarResponse = { headers: { val: 'boohoo', source: 'somewhere', errorType: 'Error', errorSource: 'somewhere' }, body: {} };
+      throw error;
+    });
 
-      Promise.delay(200).then(() => {
-          const qName = 'myQueue';
-          const queue = stellarHandler.transport.queues[qName];
-          const job = _.last(queue);
+    Promise.delay(200).then(() => {
+      const qName = 'myQueue';
+      const queue = stellarHandler.transport.queues[qName];
+      const job = _.last(queue);
 
-          expect(queue).toHaveLength(1);
-          expect(job.data.body).toEqual({ message: 'blah' });
-          expect(job.data.headers).toEqual(
-            {errorSource: "somewhere", errorType: "Error", id: "myQueue:2", queueName: "myQueue",
-                requestId: "stlr:n:testservice:inbox:1", source: "test", timestamp: expect.any(Number), type: "response",
-                val: "boohoo"});
-          done();
-      });
+      expect(queue).toHaveLength(1);
+      expect(job.data.body).toEqual({ message: 'blah' });
+      expect(job.data.headers).toEqual(
+        { errorSource: 'somewhere',
+          errorType: 'Error',
+          id: 'myQueue:2',
+          queueName: 'myQueue',
+          requestId: 'stlr:n:testservice:inbox:1',
+          source: 'test',
+          timestamp: expect.any(Number),
+          type: 'response',
+          val: 'boohoo' });
+      done();
+    });
   });
 });
 
@@ -644,14 +652,14 @@ describe('handler loaders', () => {
          expect(queue).toHaveLength(1);
          expect(job.data.headers).toEqual(
            {
-               action: undefined,
-               id: 'myQueue:2',
-               requestId: 'stlr:n:testservice:inbox:1',
-               traceId: undefined,
-               queueName: 'myQueue',
-               source: stellarHandler.source,
-               timestamp: expect.any(Number),
-               type: 'response',
+             action: undefined,
+             id: 'myQueue:2',
+             requestId: 'stlr:n:testservice:inbox:1',
+             traceId: undefined,
+             queueName: 'myQueue',
+             source: stellarHandler.source,
+             timestamp: expect.any(Number),
+             type: 'response',
            });
          done();
        });
@@ -680,14 +688,14 @@ describe('handler loaders', () => {
          expect(queue).toHaveLength(1);
          expect(job.data.headers).toEqual(
            {
-               action: undefined,
-               id: 'myQueue:2',
-               requestId: 'stlr:n:testservice:inbox:1',
-               traceId: undefined,
-               queueName: 'myQueue',
-               source: stellarHandler.source,
-               timestamp: expect.any(Number),
-               type: 'response',
+             action: undefined,
+             id: 'myQueue:2',
+             requestId: 'stlr:n:testservice:inbox:1',
+             traceId: undefined,
+             queueName: 'myQueue',
+             source: stellarHandler.source,
+             timestamp: expect.any(Number),
+             type: 'response',
            });
          expect(job.data.body).toEqual({ text: 'world' });
          expect(middlewareRun).toEqual(true);
@@ -699,7 +707,7 @@ describe('handler loaders', () => {
       'should send a response with the result and call both middlewares',
      (done) => {
        const stellarHandler = getStellarHandler('testservice:resource:create');
-         
+
        let middleware1Run = false;
        let middleware2Run = false;
        stellarHandler._handleLoader('testservice:resource', 'create', [(headers, body) => {
@@ -721,14 +729,14 @@ describe('handler loaders', () => {
          expect(queue).toHaveLength(1);
          expect(job.data.headers).toEqual(
            {
-               action: undefined,
-               id: 'myQueue:2',
-               requestId: 'stlr:n:testservice:inbox:1',
-               traceId: undefined,
-               queueName: 'myQueue',
-               source: stellarHandler.source,
-               timestamp: expect.any(Number),
-               type: 'response',
+             action: undefined,
+             id: 'myQueue:2',
+             requestId: 'stlr:n:testservice:inbox:1',
+             traceId: undefined,
+             queueName: 'myQueue',
+             source: stellarHandler.source,
+             timestamp: expect.any(Number),
+             type: 'response',
            });
          expect(job.data.body).toEqual({ text: 'world' });
          expect(middleware1Run).toEqual(true);
@@ -768,14 +776,14 @@ describe('handler loaders', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
         });
       expect(job.data.body).toEqual({ text: 'world' });
       done();
@@ -800,14 +808,14 @@ describe('handler loaders', () => {
       expect(queue).toHaveLength(1);
       expect(job.data.headers).toEqual(
         {
-            action: undefined,
-            id: 'myQueue:2',
-            requestId: 'stlr:n:testservice:inbox:1',
-            traceId: undefined,
-            queueName: 'myQueue',
-            source: stellarHandler.source,
-            timestamp: expect.any(Number),
-            type: 'response',
+          action: undefined,
+          id: 'myQueue:2',
+          requestId: 'stlr:n:testservice:inbox:1',
+          traceId: undefined,
+          queueName: 'myQueue',
+          source: stellarHandler.source,
+          timestamp: expect.any(Number),
+          type: 'response',
         });
       expect(job.data.body).toEqual({ text: 'world' });
       done();
@@ -839,6 +847,26 @@ describe('mock pubsub', () => {
       () => defaultPubSub.transport.triggerJob(defaultPubSub.transport.job, defaultPubSub.subscriptionInbox),
       5
     );
+  });
+
+  it('fake should run subscriber middleware', (done) => {
+    const defaultPubSub = getDefaultPubSub(channel);
+    let mwCounter = 0;
+    defaultPubSub.use(/.*/, (jobData, next, options, log) => {
+      mwCounter++;
+      return next();
+    });
+
+    defaultPubSub.subscribe(channel, (message) => {
+      expect(message.text).toEqual('hi');
+      expect(mwCounter).toBe(1);
+      done();
+    });
+
+    setTimeout(
+          () => defaultPubSub.transport.triggerJob(defaultPubSub.transport.job, defaultPubSub.subscriptionInbox),
+          5
+        );
   });
 
   it('send fake publish - should send none', () => {

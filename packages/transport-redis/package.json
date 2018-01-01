@@ -28,7 +28,7 @@
     "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6",
-    "compile:es6": "babel ./src  --out-dir ./lib-es6",
+    "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "test": "jest --runInBand --forceExit",
     "test:coverage": "jest --coverage --runInBand --forceExit",
     "prepublish": "yarn run compile",
@@ -44,7 +44,8 @@
     "microservices",
     "es6",
     "stellar",
-    "stellarjs"
+    "stellarjs",
+    "redis"
   ],
   "author": "Andres Olave",
   "contributors": [],

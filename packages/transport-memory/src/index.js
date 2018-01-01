@@ -27,7 +27,7 @@ class MemoryTransport {
   generateId(queueName) {
     this.setQueue(queueName);
     this.queues[queueName].currentId += 1;
-    return Promise.resolve(this.queues[queueName].currentId);
+    return `${queueName}:${this.queues[queueName].currentId}`;
   }
 
   getSubscribers(channel) {
@@ -56,9 +56,7 @@ class MemoryTransport {
 
   enqueue(queueName, data) {
     const job = { data };
-    setTimeout(() => {
-      this.queues[queueName].callback(standardiseObject(job));
-    });
+    this.queues[queueName].callback(standardiseObject(job));
 
     return Promise.resolve(job);
   }
