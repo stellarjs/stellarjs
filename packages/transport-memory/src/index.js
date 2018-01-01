@@ -5,7 +5,7 @@ import Promise from 'bluebird';
 
 // standardise object to have json data spec
 function standardiseObject(obj) {
-  return obj;
+  return JSON.parse(JSON.stringify(obj));
 }
 
 class MemoryTransport {

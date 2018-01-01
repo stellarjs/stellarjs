@@ -51,7 +51,7 @@ class MockTransport {
         this.queues[queueName] = [];
       }
       this.queues[queueName].push({ data });
-      
+
       if (this.inMemory) {
         console.info(queueName);
         console.info(_.keys(this.callbacks));
@@ -67,7 +67,7 @@ class MockTransport {
 
     if (this.autoProcess) {
       setTimeout(() => {
-        this.triggerJob(this.job)
+        this.triggerJob(this.job);
       });
     }
     return new Promise.resolve();

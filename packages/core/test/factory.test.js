@@ -11,7 +11,7 @@ import { default as env } from '../src/source-generators/env';
 describe('factory generation', () => {
   let configureStellar;
   beforeEach(() => {
-    configureStellar = preconfigure({defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env }});
+    configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env } });
   });
 
   it('set externalSource generation', () => {
@@ -35,25 +35,25 @@ describe('factory generation', () => {
   });
 
   it('a stellarRequests with same source should fail', (done) => {
-      let requestObj;
-      let handler;
-      const { stellarHandler, stellarRequest } = configureStellar(
+    let requestObj;
+    let handler;
+    const { stellarHandler, stellarRequest } = configureStellar(
         { log: console, transportFactory: () => new MockTransport({}, { inMemory: true }), sourceGenerator: 'uuid' });
-      Promise.delay(50)
+    Promise.delay(50)
         .then(() => {
-            handler = stellarHandler();
-            handler.create('testservice:resource', () => ({ text: 'ooo' }));
+          handler = stellarHandler();
+          handler.create('testservice:resource', () => ({ text: 'ooo' }));
 
-            requestObj = stellarRequest();
+          requestObj = stellarRequest();
 
-            console.log('request obj created')
-            const newRequestObj = stellarRequest();
-            fail('shouldnt get this far');
+          console.log('request obj created');
+          const newRequestObj = stellarRequest();
+          fail('shouldnt get this far');
         })
         .catch((e) => {
-            expect(requestObj.requestTimeout).toBe(30000);
-            expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
-            return handler.reset();
+          expect(requestObj.requestTimeout).toBe(30000);
+          expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
+          return handler.reset();
         }).then(() => done());
   });
 
@@ -63,7 +63,7 @@ describe('factory generation', () => {
     Promise.delay(50)
       .then(() => {
         handler = stellarHandler();
-        handler.create('testservice:resource', () => ({ text: 'ooo'}) );
+        handler.create('testservice:resource', () => ({ text: 'ooo' }));
 
         const requestObj = stellarRequest();
         expect(requestObj.requestTimeout).toBe(30000);
@@ -80,10 +80,10 @@ describe('factory generation', () => {
       })
       .all()
       .then((responses) => {
-        expect(responses).toEqual([{"text": "ooo"}, {"text": "ooo"}]);
+        expect(responses).toEqual([{ text: 'ooo' }, { text: 'ooo' }]);
         return handler.reset();
       })
-      .then(done)
+      .then(done);
   });
 
   it('set browser generation', (done) => {
@@ -112,5 +112,4 @@ describe('factory generation', () => {
         done();
       });
   });
-
 });

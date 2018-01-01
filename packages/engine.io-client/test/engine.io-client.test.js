@@ -19,39 +19,39 @@ function triggerOpen(instance) {
 
 
 function triggerError(instance) {
-    return Promise
+  return Promise
       .delay(50)
       .then(() => {
-          instance.send('error', 'Terrible XHR Error');
+        instance.send('error', 'Terrible XHR Error');
       });
 }
 
 function mockEio(trigger) {
-    return  {
-        Socket: jest.fn(() => {
-            const socketInstance = {
-                listeners: {},
-                on(event, fn) {
-                    if (!socketInstance.listeners[event]) {
-                        socketInstance.listeners[event] = [];
-                    }
-                    socketInstance.listeners[event].push(fn);
-                },
-                send(event, ...args) {
-                    _.forEach(socketInstance.listeners[event], function(fn) {
-                        fn(args);
-                    });
-                },
-                close: jest.fn(),
-                id: uuid(),
-            };
+  return {
+    Socket: jest.fn(() => {
+      const socketInstance = {
+        listeners: {},
+        on(event, fn) {
+          if (!socketInstance.listeners[event]) {
+            socketInstance.listeners[event] = [];
+          }
+          socketInstance.listeners[event].push(fn);
+        },
+        send(event, ...args) {
+          _.forEach(socketInstance.listeners[event], (fn) => {
+            fn(args);
+          });
+        },
+        close: jest.fn(),
+        id: uuid(),
+      };
 
-            trigger(socketInstance);
+      trigger(socketInstance);
 
-            lastInstance = socketInstance;
-            return socketInstance;
-        }),
-    };
+      lastInstance = socketInstance;
+      return socketInstance;
+    }),
+  };
 }
 
 const successEio = mockEio(triggerOpen);
@@ -145,72 +145,72 @@ describe('engine-io client', () => {
       });
   });
 
-    it('should throw an error if the connect fails', (done) => {
-        const stellarSocket = stellarSocketFactory(errorEio);
-        const triggers = {};
+  it('should throw an error if the connect fails', (done) => {
+    const stellarSocket = stellarSocketFactory(errorEio);
+    const triggers = {};
 
-        stellarSocket.on('open', () => {
-            triggers.open = Date.now();
-        });
-        stellarSocket.on('reconnected', () => {
-            triggers.reconnect = Date.now();
-        });
-        stellarSocket.on('close', () => {
-            triggers.close = Date.now();
-        });
-        stellarSocket.on('error', () => {
-            triggers.error = Date.now();
-        });
+    stellarSocket.on('open', () => {
+      triggers.open = Date.now();
+    });
+    stellarSocket.on('reconnected', () => {
+      triggers.reconnect = Date.now();
+    });
+    stellarSocket.on('close', () => {
+      triggers.close = Date.now();
+    });
+    stellarSocket.on('error', () => {
+      triggers.error = Date.now();
+    });
 
-        stellarSocket
+    stellarSocket
           .connect('myurl', { tryToReconnect: false })
           .then(() => {
-              expect(triggers.error).toBeTruthy();
-              expect(triggers.open).toBeFalsy();
-              expect(triggers.reconnect).toBeFalsy();
-              expect(triggers.close).toBeFalsy();
+            expect(triggers.error).toBeTruthy();
+            expect(triggers.open).toBeFalsy();
+            expect(triggers.reconnect).toBeFalsy();
+            expect(triggers.close).toBeFalsy();
           })
           .catch((e) => {
             expect(e).toEqual('Connect failed');
             done();
           });
-    });
+  });
 
-    it('two calls to connect should return two connections', (done) => {
-        const stellarSocketA = stellarSocketFactory(successEio);
-        let stellarSocketB;
+  it('two calls to connect should return two connections', (done) => {
+    const stellarSocketA = stellarSocketFactory(successEio);
+    let stellarSocketB;
 
-        const context = {};
-        stellarSocketA.connect('localhost:8091', {
-            secure: false,
-            userId: '123',
-            token: '123',
-            tokenType: 'API',
-            eioConfig: { upgrade: false },
-            params: {
-                extraParam: 1,
-            },
-        }).then((socketA) => {
-            _.assign(context, { socketA });
-            stellarSocketB = stellarSocketFactory(successEio);
-            return stellarSocketB.connect('localhost:8091', {
-                secure: false,
-                userId: 'ABC',
-                token: 'ABC',
-                tokenType: 'API',
-                eioConfig: { upgrade: false },
-                params: {
-                    extraParam: 1,
-                },
-                newInstance: true
-            });
-        }).then((socketB) => {
-            expect(stellarSocketA.socket.id).not.toEqual(stellarSocketB.socket.id);
-            return [context.socketA.transport.socket, socketB.transport.socket];
-        }).all()
+    const context = {};
+    stellarSocketA.connect('localhost:8091', {
+      secure: false,
+      userId: '123',
+      token: '123',
+      tokenType: 'API',
+      eioConfig: { upgrade: false },
+      params: {
+        extraParam: 1,
+      },
+    }).then((socketA) => {
+      _.assign(context, { socketA });
+      stellarSocketB = stellarSocketFactory(successEio);
+      return stellarSocketB.connect('localhost:8091', {
+        secure: false,
+        userId: 'ABC',
+        token: 'ABC',
+        tokenType: 'API',
+        eioConfig: { upgrade: false },
+        params: {
+          extraParam: 1,
+        },
+        newInstance: true,
+      });
+    }).then((socketB) => {
+      expect(stellarSocketA.socket.id).not.toEqual(stellarSocketB.socket.id);
+      return [context.socketA.transport.socket, socketB.transport.socket];
+    }).all()
           .then(([realSocketA, realSocketB]) => {
             expect(realSocketA.id).not.toEqual(realSocketB.id);
             done();
           });
-    });
+  });
 });
