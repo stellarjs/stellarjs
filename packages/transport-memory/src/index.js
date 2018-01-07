@@ -7,7 +7,7 @@ import { QueueTransport } from '@stellarjs/messaging-queue';
 
 // standardise object to have json data spec
 function standardiseObject(obj) {
-  return obj;
+  return JSON.parse(JSON.stringify(obj));
 }
 
 class MemoryTransport extends QueueTransport {

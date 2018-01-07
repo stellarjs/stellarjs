@@ -46,7 +46,6 @@ describe('factory generation', () => {
         })
         .catch((e) => {
           expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
-            // return handler.reset();
         }).then(() => done());
   });
 
