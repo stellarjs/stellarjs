@@ -11,7 +11,7 @@ function closeRedis(redises) {
     const redisTransports =  _.castArray(redises);
 
     return Promise
-      .all(_.map(redisTransports, redisTransport => redisTransport.close()))
+      .map(redisTransports, redisTransport => redisTransport.close())
       .then(() => {
           context.redisClient = new RedisClient(log);
           if (context.redisClient.defaultConnection.options.db !== 7) {

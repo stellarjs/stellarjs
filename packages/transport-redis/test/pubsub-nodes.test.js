@@ -3,28 +3,27 @@
 import Promise from 'bluebird';
 
 import { StellarPubSub } from '@stellarjs/core';
+import { QueueMessagingAdaptor } from '@stellarjs/messaging-queue';
+
 import RedisTransport from '../src/RedisTransport';
 
 import { closeRedis, log } from './helpers';
 
+const source = 'test';
 let redisTransport;
 let stellar;
+let messaging;
 
-beforeEach((done) => {
+beforeEach(async () => {
   redisTransport = new RedisTransport(log);
 
-  Promise
-    .delay(1000)
-    .then(() => {
-      stellar = new StellarPubSub(redisTransport, 'test', log);
-      done();
-    });
+  messaging = new QueueMessagingAdaptor(redisTransport, source, log);
+  stellar = new StellarPubSub(messaging, source, log);
 });
 
-afterEach((done) => {
-    stellar.reset()
-      .then(() => closeRedis(redisTransport))
-      .then(done);
+afterEach(async () => {
+   await messaging.reset();
+   await closeRedis(redisTransport);
 });
 
 describe('full integration pub/sub per inbox', () => {
@@ -57,7 +56,7 @@ describe('full integration pub/sub per inbox', () => {
         log.log('1. message received');
         fail('should not receive a message');
       })
-      .then(stopper => setTimeout(() => stopper()))
+      .then((stopper) => Promise.delay(50).then(() => stopper()))
       .then(() => stellar.subscribe('test:channel', () => {
         log.log('2. message received');
         setTimeout(done, 1000);
@@ -67,10 +66,10 @@ describe('full integration pub/sub per inbox', () => {
 
   it('test pub sub 3 subscribers', (done) => {
     const stellarSubs = [
-      new StellarPubSub(redisTransport, 'test1', log),
-      new StellarPubSub(redisTransport, 'test2', log),
-      new StellarPubSub(redisTransport, 'test3', log),
-      new StellarPubSub(redisTransport, 'test4', log),
+      new StellarPubSub(messaging, 'test1', log),
+      new StellarPubSub(messaging, 'test2', log),
+      new StellarPubSub(messaging, 'test3', log),
+      new StellarPubSub(messaging, 'test4', log),
     ];
 
     const doneBy = [];
@@ -89,7 +88,7 @@ describe('full integration pub/sub per inbox', () => {
 
 
   it('test channel multiplexing', (done) => {
-    const sub = new StellarPubSub(redisTransport, 'test6', log);
+    const sub = new StellarPubSub(messaging, 'test6', log);
     const doneBy = [];
     const handler = i => (message) => {
       expect(message).toEqual({ text: `hello world ${i}` });

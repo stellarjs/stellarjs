@@ -9,7 +9,7 @@ import map from 'lodash/map';
 import size from 'lodash/size';
 import split from 'lodash/split';
 import Promise from 'bluebird';
-import uuidv1 from 'uuid/v1';
+import { QueueTransport } from '@stellarjs/messaging-queue';
 
 import RedisClient from './config-redisclient';
 import redisConfig from './config-redis';
@@ -18,9 +18,9 @@ import { MINUTE_1, DEFAULT_INTERVAL, JOB_TIMEOUT, TWO_WEEKS } from './intervals'
 const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 100;
 const BULL_OPTIONS = { attempts: 1, removeOnComplete: true, removeOnFail: true, timeout: JOB_TIMEOUT };
 
-class RedisTransport {
+class RedisTransport extends QueueTransport {
   constructor(log) {
-    this.log = log;
+    super(log);
     this.queues = {};
     this.redis = new RedisClient(log);
     this.bullConfig = this.buildBullConfig();
@@ -74,11 +74,6 @@ class RedisTransport {
 
   _registerQueue(queueName) {
     return this._doRegistration(RedisTransport._queueKey(), queueName);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  generateId() {
-    return uuidv1();
   }
 
   enqueue(queueName, obj) {

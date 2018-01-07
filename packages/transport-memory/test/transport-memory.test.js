@@ -4,20 +4,24 @@ import Promise from 'bluebird';
 import {StellarRequest, StellarHandler, StellarError} from '@stellarjs/core';
 
 import { MemoryTransport } from '../src';
+import { QueueMessagingAdaptor } from '../../messaging-queue/lib-es6';
 
 const log = console;
 
 let memoryTransport;
 let stellarRequest;
 let stellarHandler;
+let messaging;
 
 beforeAll((done) => {
     memoryTransport = new MemoryTransport(log);
-    Promise
+    messaging = new QueueMessagingAdaptor(memoryTransport, 'test', log, 1000);
+
+  Promise
       .delay(1000)
       .then(() => {
-          stellarRequest = new StellarRequest(memoryTransport, 'test', log, 1000);
-          stellarHandler = new StellarHandler(memoryTransport, 'test', log, 'testservice');
+          stellarRequest = new StellarRequest(messaging, 'test', log);
+          stellarHandler = new StellarHandler(messaging, 'test', log);
           done();
       });
 });
@@ -26,7 +30,7 @@ afterAll((done) => {
 });
 
 beforeEach((done) => {
-    stellarHandler.reset().then(() => done());
+    messaging.reset().then(() => done());
 });
 
 describe('full integration req/response', () => {
@@ -52,7 +56,7 @@ describe('full integration req/response', () => {
                                                  id: expect.any(String),
                                                  requestId: expect.any(String),
                                                  traceId: result.headers.requestId,
-                                                 queueName: 'stlr:n:test:inbox',
+                                                 queueName: 'stlr:n:test:responseInbox',
                                                  source: 'test',
                                                  timestamp: expect.any(Number),
                                                  type: 'response',

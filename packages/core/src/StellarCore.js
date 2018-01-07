@@ -9,10 +9,22 @@ import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
 
+function getUri(headers) {
+  return headers.queueName || headers.channel;
+}
+
+function match(url, pattern) {
+  if (pattern === undefined) {
+    return true;
+  }
+
+  return url.match(pattern);
+}
+
 class StellarCore {
-  constructor(transport, source, log) {
+  constructor(messagingAdaptor, source, log) {
     this.handlerChain = [];
-    this.configure(transport);
+    this.messagingAdaptor = messagingAdaptor;
     this.log = log;
     this.setSource(source);
   }
@@ -43,17 +55,7 @@ class StellarCore {
     return `stlr:n:${nodeName}:inbox`;
   }
 
-  setMiddlewares() { // eslint-disable-line class-methods-use-this
-    throw new Error('setMiddlewares must be implemented');
-  }
-
-  configure(transport) {
-    this.transport = transport;
-  }
-
-  getNextId(inbox) {
-    return this.transport.generateId(inbox);
-  }
+  setMiddlewares() {} // eslint-disable-line class-methods-use-this
 
   /**
    * headers: {
@@ -69,13 +71,15 @@ class StellarCore {
    * @param options
    * @private
    */
-  _getHeaders(headers, overrides, defaults) {
+  _getHeaders(headers, overrides) {
+    const id = this.messagingAdaptor.generateId();
     return assign(
       {
+        id,
         timestamp: Date.now(),
         source: this.source,
+        traceId: id,
       },
-      defaults,
       headers,
       overrides
     );
@@ -94,9 +98,7 @@ class StellarCore {
       return val;
     };
 
-    const id = this.getNextId(jobData.headers.respondTo);
     const headers = this._getHeaders({
-      id,
       type: 'response',
       requestId: jobData.headers.id,
       traceId: jobData.headers.traceId,
@@ -107,14 +109,18 @@ class StellarCore {
   }
 
   _handlerResult(jobData, result) {
-    if (get(result, 'headers.type') === 'response' || !includes(['request', 'reactive'], jobData.headers.type)) {
+    if (get(result, 'headers.type') === 'response'
+      || !includes(['request', 'reactive'], jobData.headers.type)// ) {
+      || !jobData.headers.queueName) {
       return result;
     }
     return this._prepareResponse(jobData, result);
   }
 
   _handlerRejection(jobData, error) {
-    if (get(error, '__stellarResponse.source') === this.source || !includes(['request', 'reactive'], jobData.headers.type)) {
+    if (get(error, '__stellarResponse.headers.source') === this.source
+      || !includes(['request', 'reactive'], jobData.headers.type)// ) {
+      || !jobData.headers.queueName) {
       throw error;
     }
 
@@ -123,47 +129,33 @@ class StellarCore {
     throw error;
   }
 
-  _executeMiddlewares(handlers, jobData, options = {}) {
-    function match(url, pattern) {
-      return url.match(pattern);
-    }
-    // this.log.info(`@StellarCore.executeMiddlewares: handlers ${_.size(handlers)}`);
+  _executeMiddlewares(handlers) {
+    return (jobData, options = {}) => {
+      // this.log.info(`@StellarCore.executeMiddlewares: handlers ${_.size(handlers)}`);
 
-    const runMw = (i) => {
-      function next() {
-        return runMw(i + 1);
-      }
+      const runMw = (i) => {
+        function next() {
+          return runMw(i + 1);
+        }
 
-      if (handlers.length === i) {
-        this.log.error(`@StellarCore: Final Handler should not call next`, { jobData });
-        return Promise.reject(new Error('Final Handler should not call next'));
-      }
+        if (handlers.length === i) {
+          this.log.error(`@StellarCore: Final Handler should not call next`, { jobData });
+          return Promise.reject(new Error('Final Handler should not call next'));
+        }
 
-      // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
-      if (handlers[i].pattern === undefined ||
-        match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
-        return Promise
-          .try(() => handlers[i].fn(jobData, next, options, this.log))
-          .then(result => this._handlerResult(jobData, result))
-          .catch(error => this._handlerRejection(jobData, error));
-      }
+          // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
+        if (match(getUri(jobData.headers), handlers[i].pattern)) {
+          return Promise
+                .try(() => handlers[i].fn(jobData, next, options, this.log))
+                .then(result => this._handlerResult(jobData, result))
+                .catch(error => this._handlerRejection(jobData, error));
+        }
 
-      return next();
+        return next();
+      };
+
+      return runMw(0);
     };
-
-    return runMw(0);
-  }
-
-  _enqueue(queueName, obj) {
-    return this.transport.enqueue(queueName, obj);
-  }
-
-  _process(inbox, callback) {
-    return this.transport.process(inbox, job => callback(job));
-  }
-
-  _stopProcessing(inbox) {
-    return this.transport.stopProcessing(inbox);
   }
 }
 

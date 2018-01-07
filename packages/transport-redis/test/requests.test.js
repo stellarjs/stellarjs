@@ -2,30 +2,29 @@
 
 import Promise from 'bluebird';
 import {StellarRequest, StellarHandler, StellarError} from '@stellarjs/core';
+import { QueueMessagingAdaptor } from '@stellarjs/messaging-queue';
 
 import RedisTransport from '../src/RedisTransport';
 
 import { closeRedis, log } from './helpers';
 
+const source = 'test';
 let redisTransport;
 let stellarRequest;
 let stellarHandler;
+let messaging;
 
-afterEach((done) => {
-    stellarHandler.reset()
-      .then(() => closeRedis(redisTransport))
-      .then(done);
+afterEach(async () => {
+    await messaging.reset();
+    await closeRedis(redisTransport);
 });
 
-beforeEach((done) => {
+beforeEach(async () => {
     redisTransport = new RedisTransport(log); //[new RedisTransport(log), new RedisTransport(log)];
-    Promise
-      .delay(1000)
-      .then(() => {
-          stellarRequest = new StellarRequest(redisTransport, 'test', log, 1000);
-          stellarHandler = new StellarHandler(redisTransport, 'test', log, 'testservice');
-          done();
-      });
+    await Promise.delay(1000)
+    messaging = new QueueMessagingAdaptor(redisTransport, source, log, 1000);
+    stellarRequest = new StellarRequest(messaging, source, log);
+    stellarHandler = new StellarHandler(messaging, source, log);
 });
 
 describe('full integration req/response', () => {
@@ -51,7 +50,7 @@ describe('full integration req/response', () => {
               id: expect.any(String),
               requestId: expect.any(String),
               traceId: result.headers.requestId,
-              queueName: 'stlr:n:test:inbox',
+              queueName: 'stlr:n:test:responseInbox',
               source: 'test',
               timestamp: expect.any(Number),
               type: 'response',

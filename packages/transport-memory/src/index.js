@@ -3,13 +3,16 @@
  */
 import Promise from 'bluebird';
 
+import { QueueTransport } from '@stellarjs/messaging-queue';
+
 // standardise object to have json data spec
 function standardiseObject(obj) {
   return obj;
 }
 
-class MemoryTransport {
-  constructor() {
+class MemoryTransport extends QueueTransport {
+  constructor(log) {
+    super(log);
     this.queues = {};
     this.subscribers = {};
   }

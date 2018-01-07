@@ -180,7 +180,9 @@ describe('call server', () => {
       .then(() => {
         fail(`Timeout should have expired.`);
       })
-      .catch(done);
+      .catch(() => {
+        done();
+      });
   }, 10000);
 
   it('should getReactive calls', (done) => {

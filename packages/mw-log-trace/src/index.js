@@ -10,7 +10,12 @@ function buildPrefix(obj, start, err) {
 }
 
 function doLogFactory(logTraceDetail) {
-  return function doLog(logger, prefix, metadata) {
+  return function doLog(logger, metadata, start, err) {
+    if (!metadata.headers) {
+      return;
+    }
+
+    const prefix = buildPrefix(metadata, start, err);
     switch (logTraceDetail) {
       case 'FULL':
         logger(prefix, metadata);
@@ -28,16 +33,16 @@ export function mwLogTraceFactory({ logTraceDetail = process.env.STLR_LOG_TRACE_
   const doLog = doLogFactory(logTraceDetail);
 
   return function mwLogTrace(req, next, options, log) {
-    doLog(log.info, buildPrefix(req), req);
+    doLog(log.info, req);
     const start = Date.now();
     return next()
         .then((res) => {
-          doLog(log.info, buildPrefix(res, start), res);
+          doLog(log.info, res, start);
           return res;
         })
         .catch((err) => {
           const res = err.__stellarResponse;
-          doLog(log.error, buildPrefix(res, start, err), res);
+          doLog(log.error, res, start, err);
           throw err;
         });
   };

@@ -1,6 +1,6 @@
 {
-  "name": "@stellarjs/transport-queue",
-  "version": "0.8.1",
+  "name": "@stellarjs/messaging-queue",
+  "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -20,7 +20,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/transport-interface.xml",
+    "output": "../../.artifacts/test_results/messaging-queue.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "babel-jest": "^20.0.3",
+    "babel-jest": "^22.0.4",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-better-mutation": "^1.1.2",
@@ -49,12 +49,12 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^20.0.4",
+    "jest": "^22.0.4",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
   },
   "dependencies": {
-    "@stellarjs/transport-interface": "^0.8.1",
+    "@stellarjs/core": "^0.9.1",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
     "uuid": "^3.1.0"
