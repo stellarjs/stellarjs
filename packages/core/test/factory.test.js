@@ -11,7 +11,7 @@ import { default as env } from '../src/source-generators/env';
 describe('factory generation', () => {
   let configureStellar;
   beforeEach(() => {
-    configureStellar = preconfigure({defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env }});
+    configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env } });
   });
 
   it('set externalSource generation', () => {
@@ -27,25 +27,25 @@ describe('factory generation', () => {
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();
-        requestObj.messagingAdaptor.request.mockReturnValue({ text: 'ooo'});
+        requestObj.messagingAdaptor.request.mockReturnValue({ text: 'ooo' });
         expect(source).toMatch(/^[0-9a-f\-]+$/);
         done();
       });
   });
 
   it('a stellarRequests with same source should fail', (done) => {
-      let requestObj;
-      const { stellarRequest } = configureStellar(
+    let requestObj;
+    const { stellarRequest } = configureStellar(
         { log: console, messagingAdaptorFactory: messagingMockFactory, sourceGenerator: 'uuid' });
-      Promise.delay(50)
+    Promise.delay(50)
         .then(() => {
-            requestObj = stellarRequest();
+          requestObj = stellarRequest();
 
-            const newRequestObj = stellarRequest();
-            fail('shouldnt get this far');
+          const newRequestObj = stellarRequest();
+          fail('shouldnt get this far');
         })
         .catch((e) => {
-            expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
+          expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
             // return handler.reset();
         }).then(() => done());
   });
@@ -55,7 +55,7 @@ describe('factory generation', () => {
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();
-        requestObj.messagingAdaptor.request.mockReturnValue(Promise.resolve({ text: 'ooo'}));
+        requestObj.messagingAdaptor.request.mockReturnValue(Promise.resolve({ text: 'ooo' }));
 
         expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
 
@@ -70,9 +70,9 @@ describe('factory generation', () => {
       })
       .all()
       .then((responses) => {
-        expect(responses).toEqual([{"text": "ooo"}, {"text": "ooo"}]);
+        expect(responses).toEqual([{ text: 'ooo' }, { text: 'ooo' }]);
       })
-      .then(done)
+      .then(done);
   });
 
   it('set browser generation', (done) => {
@@ -99,5 +99,4 @@ describe('factory generation', () => {
         done();
       });
   });
-
 });

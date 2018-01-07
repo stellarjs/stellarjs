@@ -12,7 +12,7 @@ describe('New Relic middleware', () => {
     const req = {};
     const val = 'noop';
     const next = () => Promise.resolve(val);
-    
+
     middleware(req, next)
       .then((res) => {
         expect(res).toEqual(val);
