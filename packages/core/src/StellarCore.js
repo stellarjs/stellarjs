@@ -4,7 +4,6 @@
 import assign from 'lodash/assign';
 import merge from 'lodash/merge';
 import get from 'lodash/get';
-import head from 'lodash/head';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
@@ -41,18 +40,6 @@ class StellarCore {
   use(pattern, fn) {
     this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
     this.setMiddlewares();
-  }
-
-  static getServiceName(queueName) {
-    return head(queueName.split(':')); // eslint-disable-line lodash/prefer-lodash-method
-  }
-
-  static getServiceInbox(queueName) {
-    return `stlr:s:${this.getServiceName(queueName)}:inbox`;
-  }
-
-  static getNodeInbox(nodeName) {
-    return `stlr:n:${nodeName}:inbox`;
   }
 
   setMiddlewares() {} // eslint-disable-line class-methods-use-this

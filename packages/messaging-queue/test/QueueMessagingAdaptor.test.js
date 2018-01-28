@@ -5,15 +5,19 @@ import QueueMessagingAdaptor from '../src/QueueMessagingAdaptor';
 import { StellarError } from '../../core/src/StellarError';
 
 function expectSubscriberRegistry(subscriberRegistry, ...expectedSubscribers) {
-  const subscriberIds = _.map(expectedSubscribers, ({ inbox, channel, numSubscribers }) =>
-    _.keys(_.get(subscriberRegistry, `${inbox}.${channel}`)));
+  const subscriberIds = _.map(expectedSubscribers, ({ channel, numSubscribers }) =>
+    _.keys(_.get(subscriberRegistry, channel)));
 
   const expectedObj = _.reduce(
     expectedSubscribers,
-    (acc, { inbox, channel }, i) => {
+    (acc, { channel }, i) => {
       const subscribers = _(subscriberIds[i]).map(subscriberId => [subscriberId, expect.any(Function)]).fromPairs()
         .value();
-      return _.set(acc, `${inbox}.${channel}`, subscribers);
+
+      if (_.isEmpty(subscribers)) {
+        return acc;
+      }
+      return _.set(acc, channel, subscribers);
     },
     {}
   );
@@ -96,16 +100,16 @@ describe('QueueMessagingAdaptor tests', () => {
 
           expect(mockHandler).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
           clearTransportMocks(instance);
           
-          instance._subscriptionHandler(`stlr:n:source:subscriptionInbox`, message);
+          instance._subscriptionHandler(message);
 
           expect(mockHandler).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance);
       });
@@ -126,18 +130,18 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler2).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
 
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 2 });
 
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 2 });
           clearTransportMocks(instance);
 
-          instance._subscriptionHandler(`stlr:n:source:subscriptionInbox`, message);
+          instance._subscriptionHandler(message);
 
           expect(mockHandler1).toHaveBeenCalled();
           expect(mockHandler2).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 2 });
           expectTransportMocksToHaveBeeenCalled(instance);
       });
@@ -162,7 +166,7 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
 
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel: channel1, numSubscribers: 1 },
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel: channel2, numSubscribers: 1 },
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel: channel3, numSubscribers: 1 },
@@ -184,7 +188,7 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(unsubscribeMock).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
           clearTransportMocks(instance);
@@ -193,7 +197,7 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(unsubscribeMock).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 0 });
       });
   });
@@ -211,7 +215,7 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
 
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    { inbox: `stlr:s:${groupId}:subscriptionInbox`, channel, numSubscribers: 1 });
 
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 },
@@ -236,7 +240,7 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
 
-          expectSubscriberRegistry(instance.subscriberRegistry,
+          expectSubscriberRegistry(instance.registries.subscribers,
                                    {
                                        inbox: `stlr:s:${groupId}:subscriptionInbox`,
                                        channel: `${channelPrefix}1`,
@@ -273,24 +277,24 @@ describe('QueueMessagingAdaptor tests', () => {
       try {
         instance.subscribeGroup(groupId, channel, mockHandler2)
       } catch (error) {
-        expect(error).toEqual(new Error(`Cannot subscribe more that once per url. "${inbox}.${channel}" is already subscribed to`))
+        expect(error).toEqual(new Error(`Cannot have more that once per url in registries.subscribers. "channelName.sub-group-id-1" has already added`))
       }
 
       expect(mockHandler1).not.toHaveBeenCalled();
       expect(mockHandler2).not.toHaveBeenCalled();
       expect(instance.inboxes).toEqual({[inbox]: true});
 
-      expectSubscriberRegistry(instance.subscriberRegistry, { inbox, channel, numSubscribers: 1 });
+      expectSubscriberRegistry(instance.registries.subscribers, { inbox, channel, numSubscribers: 1 });
 
       expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
       clearTransportMocks(instance);
 
-      instance._subscriptionHandler(inbox, message);
+      instance._subscriptionHandler(message);
 
       expect(mockHandler1).toHaveBeenCalled();
       expect(mockHandler2).not.toHaveBeenCalled();
       expect(instance.inboxes).toEqual({[inbox]: true});
-      expectSubscriberRegistry(instance.subscriberRegistry, { inbox, channel, numSubscribers: 1 });
+      expectSubscriberRegistry(instance.registries.subscribers, { inbox, channel, numSubscribers: 1 });
       expectTransportMocksToHaveBeeenCalled(instance);
     });
 
@@ -479,7 +483,7 @@ describe('QueueMessagingAdaptor tests', () => {
               instance,
               { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
             );
-            expect(instance.requestHandlerRegistry).toEqual({ [requestInbox]: { [url]: mockHandler } });
+            expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler } );
             expect(mockHandler).not.toHaveBeenCalled();
 
             instance.transport.process.mock.calls[0][1]({ data: req });
@@ -513,7 +517,7 @@ describe('QueueMessagingAdaptor tests', () => {
           instance,
           { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
         );
-        expect(instance.requestHandlerRegistry).toEqual({ [requestInbox]: { [url]: mockHandler } });
+        expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler });
         expect(mockHandler).not.toHaveBeenCalled();
 
         instance.transport.process.mock.calls[0][1]({ data: req });
@@ -545,7 +549,7 @@ describe('QueueMessagingAdaptor tests', () => {
           instance,
           { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
         );
-        expect(instance.requestHandlerRegistry).toEqual({ [requestInbox]: { [url]: mockHandler } });
+        expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler });
         expect(mockHandler).not.toHaveBeenCalled();
 
         instance.transport.process.mock.calls[0][1]({ data: req });
@@ -570,9 +574,9 @@ describe('QueueMessagingAdaptor tests', () => {
       instance.transport.stopProcessing.mockReturnValue(Promise.resolve(true));
 
       instance.inboxes = { inbox1: true, inbox2: true };
-      instance.subscriberRegistry = { subscriber1: _.noop };
+      instance.registries.subscribers = { subscriber1: _.noop };
       instance.inflightRequests = { inflight: _.noop };
-      instance.requestHandlerRegistry = { request1: _.noop, request2: _.noop };
+      instance.registries.requestHandlers = { request1: _.noop, request2: _.noop };
 
       await instance.reset();
 
@@ -582,9 +586,9 @@ describe('QueueMessagingAdaptor tests', () => {
       );
 
       expect(instance.inboxes).toEqual({});
-      expect(instance.subscriberRegistry).toEqual({});
+      expect(instance.registries.subscribers).toEqual({});
       expect(instance.inflightRequests).toEqual({});
-      expect(instance.requestHandlerRegistry).toEqual({});
+      expect(instance.registries.requestHandlers).toEqual({});
     });
   });
 });
