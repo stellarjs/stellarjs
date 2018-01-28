@@ -35,7 +35,7 @@ describe('MessagingAdaptor tests', () => {
     messagingInterface.registries.yada = { hi: 'bye' };
     messagingInterface.registries.requestHandlers = { foo: 'bar' };
     messagingInterface.reset();
-    expect(messagingInterface.registries).toEqual({groupSubscribers: {}, requestHandlers: {}, subscribers: {}, yada: {}});
+    expect(messagingInterface.registries).toEqual({requestHandlers: {}, subscribers: {}, yada: {}});
   });
 
   it('"registerSubsriberHandler" adds a subscriber to the registry', () => {
