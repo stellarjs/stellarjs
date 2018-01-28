@@ -67,7 +67,7 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
   subscribeGroup(groupId, channel, messageHandler) {
     const removeHandlerFn = this.registerSubscriberGroupHandler(groupId, channel, messageHandler);
     const groupInbox = `stlr:s:${groupId}:subscriptionInbox`;
-    return this._subscribe(groupInbox, channel, removeHandlerFn);
+    return this._subscribe(groupInbox, channel, removeHandlerFn, groupId);
   }
 
   reset() {
@@ -88,8 +88,8 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
     return this.transport.enqueue(inbox, req);
   }
 
-  _subscribe(inbox, channel, removeHandlerFn) {
-    this._processInbox(inbox, ({ data }) => this._subscriptionHandler(data));
+  _subscribe(inbox, channel, removeHandlerFn, groupId) {
+    this._processInbox(inbox, ({ data }) => this._subscriptionHandler(data, groupId));
     return this.transport.registerSubscriber(channel, inbox)
       .then(deregisterSubscriber => () => {
         const registryIsEmpty = removeHandlerFn();
@@ -134,8 +134,11 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
     inflightVars[0]({ headers, body });
   }
 
-  _subscriptionHandler({ headers, body }) {
+  _subscriptionHandler({ headers, body }, subscriptionId) {
     const handlers = this.registries.subscribers[headers.channel];
+    if (subscriptionId) {
+      return handlers[subscriptionId]({headers, body});
+    }
     return map(handlers, handler => handler({ headers, body }));
   }
 

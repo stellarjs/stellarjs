@@ -74,7 +74,7 @@ describe('full integration pub/sub app', () => {
           }))
           .then(() => fail())
           .catch((e) => {
-              expect(e.message).toEqual('Cannot subscribe more that once per url. "stlr:s:S3:subscriptionInbox.test:channel" is already subscribed to');
+              expect(e.message).toEqual('Cannot have more that once per url in registries.subscribers. "test:channel.S3" has already added');
               done();
           })
     });

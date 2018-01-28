@@ -92,7 +92,7 @@ describe('QueueMessagingAdaptor tests', () => {
       it('Subscribe on one channel', async () => {
           const channel = 'channelName';
           const mockHandler = jest.fn();
-          const message = { headers: { channel }, body: { message: "Hello World"} };
+          const data = { headers: { channel }, body: { message: "Hello World"} };
           instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
           instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
 
@@ -100,17 +100,17 @@ describe('QueueMessagingAdaptor tests', () => {
 
           expect(mockHandler).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 1 });
+          expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
+          
+          const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
           clearTransportMocks(instance);
           
-          instance._subscriptionHandler(message);
+          subscriptionHandler({ data });
 
           expect(mockHandler).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 1 });
+          expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance);
       });
 
@@ -118,7 +118,7 @@ describe('QueueMessagingAdaptor tests', () => {
           const channel = 'channelName';
           const mockHandler1 = jest.fn();
           const mockHandler2 = jest.fn();
-          const message = { headers: { channel }, body: { message: "Hello World"} };
+          const data = { headers: { channel }, body: { message: "Hello World"} };
           instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
           instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
 
@@ -130,19 +130,19 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler2).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
 
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 2 });
+          expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 2 });
 
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 2 });
+          const subscriptionHandler = _.last(instance.transport.process.mock.calls[0])
+
           clearTransportMocks(instance);
 
-          instance._subscriptionHandler(message);
+          subscriptionHandler({ data });
 
           expect(mockHandler1).toHaveBeenCalled();
           expect(mockHandler2).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 2 });
+          expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 2 });
           expectTransportMocksToHaveBeeenCalled(instance);
       });
 
@@ -167,10 +167,10 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
 
           expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel: channel1, numSubscribers: 1 },
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel: channel2, numSubscribers: 1 },
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel: channel3, numSubscribers: 1 },
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel: channel4, numSubscribers: 1 },);
+                                   { channel: channel1, numSubscribers: 1 },
+                                   { channel: channel2, numSubscribers: 1 },
+                                   { channel: channel3, numSubscribers: 1 },
+                                   { channel: channel4, numSubscribers: 1 },);
 
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 4 });
       });
@@ -188,8 +188,7 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(unsubscribeMock).not.toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 1 });
+          expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
           clearTransportMocks(instance);
 
@@ -197,70 +196,138 @@ describe('QueueMessagingAdaptor tests', () => {
           expect(mockHandler).not.toHaveBeenCalled();
           expect(unsubscribeMock).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:n:source:subscriptionInbox`, channel, numSubscribers: 0 });
+          expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 0 });
       });
   });
 
   describe('subscribeGroup', () => {
       it('Subscribe on one channel with one group', async () => {
-          const channel = 'channelName';
-          const groupId = 'groupId';
-          const mockHandler = jest.fn();
-          instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-          instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+        const channel = 'channelName';
+        const groupId = 'groupId';
+        const mockHandler = jest.fn();
+        const data = { headers: { channel }, body: { message: "Hello World"} };
+        
+        instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+        instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
 
-          await expect(instance.subscribeGroup(groupId, channel, mockHandler)).resolves.toBeInstanceOf(Function);
+        await expect(instance.subscribeGroup(groupId, channel, mockHandler)).resolves.toBeInstanceOf(Function);
 
-          expect(mockHandler).not.toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
+        expect(mockHandler).not.toHaveBeenCalled();
+        expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
 
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   { inbox: `stlr:s:${groupId}:subscriptionInbox`, channel, numSubscribers: 1 });
+        expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
 
-          expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 },
-                                                { name: 'registerSubscriber', numCalls: 1 });
+        expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
+        const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
+        clearTransportMocks(instance);
+
+        subscriptionHandler({ data });
+
+        expect(mockHandler.mock.calls).toHaveLength(1);
+        expect(instance.inboxes).toEqual({[`stlr:s:${groupId}:subscriptionInbox`]: true});
+        expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
+        expectTransportMocksToHaveBeeenCalled(instance);
       });
 
       it('Subscribe on multiple channels with one group', async () => {
-          const channelPrefix = 'sub-multiple-channels-one-group-';
-          const groupId = 'sub-group-id-1';
-          const mockHandler = jest.fn();
+        const channelPrefix = 'sub-multiple-channels-one-group-';
+        const groupId = 'sub-group-id-1';
+        const mockHandler = jest.fn();
+        const data = { headers: { channel: `${channelPrefix}1` }, body: { message: "Hello World"} };
 
-          instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-          instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+        instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+        instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
 
-          await expect(instance.subscribeGroup(groupId, `${channelPrefix}1`, mockHandler)).resolves
-            .toBeInstanceOf(Function);
-          await expect(instance.subscribeGroup(groupId, `${channelPrefix}2`, mockHandler)).resolves
-            .toBeInstanceOf(Function);
-          await expect(instance.subscribeGroup(groupId, `${channelPrefix}3`, mockHandler)).resolves
-            .toBeInstanceOf(Function);
+        await expect(instance.subscribeGroup(groupId, `${channelPrefix}1`, mockHandler)).resolves
+          .toBeInstanceOf(Function);
+        await expect(instance.subscribeGroup(groupId, `${channelPrefix}2`, mockHandler)).resolves
+          .toBeInstanceOf(Function);
+        await expect(instance.subscribeGroup(groupId, `${channelPrefix}3`, mockHandler)).resolves
+          .toBeInstanceOf(Function);
 
-          expect(mockHandler).not.toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
+        expect(mockHandler).not.toHaveBeenCalled();
+        expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
 
-          expectSubscriberRegistry(instance.registries.subscribers,
-                                   {
-                                       inbox: `stlr:s:${groupId}:subscriptionInbox`,
-                                       channel: `${channelPrefix}1`,
-                                       numSubscribers: 1
-                                   },
-                                   {
-                                       inbox: `stlr:s:${groupId}:subscriptionInbox`,
-                                       channel: `${channelPrefix}2`,
-                                       numSubscribers: 1
-                                   },
-                                   {
-                                       inbox: `stlr:s:${groupId}:subscriptionInbox`,
-                                       channel: `${channelPrefix}3`,
-                                       numSubscribers: 1
-                                   });
+        expectSubscriberRegistry(instance.registries.subscribers,
+                                 {
+                                     channel: `${channelPrefix}1`,
+                                     numSubscribers: 1
+                                 },
+                                 {
+                                     channel: `${channelPrefix}2`,
+                                     numSubscribers: 1
+                                 },
+                                 {
+                                     channel: `${channelPrefix}3`,
+                                     numSubscribers: 1
+                                 });
 
-          expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 },
-                                                { name: 'registerSubscriber', numCalls: 3 });
+        expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 3 });
+        const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
 
+        clearTransportMocks(instance);
+
+        subscriptionHandler({ data }, groupId);
+
+        expect(mockHandler.mock.calls).toHaveLength(1);
+        expect(instance.inboxes).toEqual({[`stlr:s:${groupId}:subscriptionInbox`]: true});
+        expectSubscriberRegistry(instance.registries.subscribers,
+                                 {
+                                   channel: `${channelPrefix}1`,
+                                   numSubscribers: 1
+                                 },
+                                 {
+                                   channel: `${channelPrefix}2`,
+                                   numSubscribers: 1
+                                 },
+                                 {
+                                   channel: `${channelPrefix}3`,
+                                   numSubscribers: 1
+                                 });
+        expectTransportMocksToHaveBeeenCalled(instance);
       });
+      
+    it('Subscribe on different channels with multiple groups', async () => {
+      const channel = 'sub-multiple-channels-one-group-';
+      const groupId = 'sub-group-id-';
+      const mockHandler = jest.fn();
+      const data = { headers: { channel }, body: { message: "Hello World"} };
+
+      instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+      instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+
+      await expect(instance.subscribeGroup(`${groupId}1`, channel, mockHandler)).resolves
+        .toBeInstanceOf(Function);
+      await expect(instance.subscribeGroup(`${groupId}2`, channel, mockHandler)).resolves
+        .toBeInstanceOf(Function);
+      await expect(instance.subscribeGroup(`${groupId}3`, channel, mockHandler)).resolves
+        .toBeInstanceOf(Function);
+
+      expect(mockHandler).not.toHaveBeenCalled();
+      expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}1:subscriptionInbox`]: true,
+                                         [`stlr:s:${groupId}2:subscriptionInbox`]: true,
+                                         [`stlr:s:${groupId}3:subscriptionInbox`]: true });
+
+      expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 3 });
+
+      expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 3 }, { name: 'registerSubscriber', numCalls: 3 });
+      const subscriptionHandler1 = _.last(instance.transport.process.mock.calls[0]);
+      const subscriptionHandler2 = _.last(instance.transport.process.mock.calls[1]);
+      const subscriptionHandler3 = _.last(instance.transport.process.mock.calls[2]);
+
+      clearTransportMocks(instance);
+
+      subscriptionHandler1({ data });
+      subscriptionHandler2({ data });
+      subscriptionHandler3({ data });
+
+      expect(mockHandler.mock.calls).toHaveLength(3);
+      expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}1:subscriptionInbox`]: true,
+                                         [`stlr:s:${groupId}2:subscriptionInbox`]: true,
+                                         [`stlr:s:${groupId}3:subscriptionInbox`]: true });
+      expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 3 });
+      expectTransportMocksToHaveBeeenCalled(instance);
+    });
       
     it('Subscribe on the same channel multiple times causes an error', async () => {
       const channel = 'channelName';
@@ -269,7 +336,7 @@ describe('QueueMessagingAdaptor tests', () => {
 
       const mockHandler1 = jest.fn();
       const mockHandler2 = jest.fn();
-      const message = { headers: { channel }, body: { message: "Hello World"} };
+      const data = { headers: { channel }, body: { message: "Hello World"} };
       instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
       instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
 
@@ -287,9 +354,11 @@ describe('QueueMessagingAdaptor tests', () => {
       expectSubscriberRegistry(instance.registries.subscribers, { inbox, channel, numSubscribers: 1 });
 
       expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
+      const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
+
       clearTransportMocks(instance);
 
-      instance._subscriptionHandler(message);
+      subscriptionHandler({ data }, groupId);
 
       expect(mockHandler1).toHaveBeenCalled();
       expect(mockHandler2).not.toHaveBeenCalled();

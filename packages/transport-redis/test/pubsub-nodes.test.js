@@ -92,7 +92,7 @@ describe('full integration pub/sub per inbox', () => {
     const doneBy = [];
     const handler = i => (message) => {
       expect(message).toEqual({ text: `hello world ${i}` });
-      doneBy.push(1);
+      doneBy.push(i);
     };
 
     Promise
