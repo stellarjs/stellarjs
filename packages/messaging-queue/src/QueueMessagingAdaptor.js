@@ -137,7 +137,7 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
   _subscriptionHandler({ headers, body }, subscriptionId) {
     const handlers = this.registries.subscribers[headers.channel];
     if (subscriptionId) {
-      return handlers[subscriptionId]({headers, body});
+      return handlers[subscriptionId]({ headers, body });
     }
     return map(handlers, handler => handler({ headers, body }));
   }
