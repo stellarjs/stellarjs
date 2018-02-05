@@ -1,3 +1,4 @@
+import get from 'lodash/get';
 import toUpper from 'lodash/toUpper';
 
 function buildPrefix(obj, start, err) {
@@ -11,7 +12,7 @@ function buildPrefix(obj, start, err) {
 
 function doLogFactory(logTraceDetail) {
   return function doLog(logger, metadata, start, err) {
-    if (!metadata.headers) {
+    if (!get(metadata, 'headers')) {
       return;
     }
 
