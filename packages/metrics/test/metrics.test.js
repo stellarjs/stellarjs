@@ -12,9 +12,7 @@ const service = 'service';
 const source = 'test';
 
 function createStellar() {
-  const memoryTransport = new MemoryTransport(console);
-  const messaging = new QueueMessagingAdaptor(memoryTransport, 'test', console, 1000);
-
+  const messaging = new MemoryTransport(console);
   const request = new StellarRequest(messaging, source, console);
   const handler = new StellarHandler(messaging, source, console);
   const pubSub = new StellarPubSub(messaging, source, console);
