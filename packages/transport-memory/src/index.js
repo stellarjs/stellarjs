@@ -4,9 +4,9 @@
 import uuid from 'uuid/v1';
 
 import { MessagingAdaptor } from '@stellarjs/core';
-import get from 'lodash/get';            
+import get from 'lodash/get';
 import values from 'lodash/values';
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 class MemoryTransport extends MessagingAdaptor {
   constructor(log, standardiseDates = false) {
@@ -14,7 +14,7 @@ class MemoryTransport extends MessagingAdaptor {
     this.subscriptionHandler = new EventEmitter();
     this.standardiseDates = standardiseDates;
   }
-  
+
 // standardise object to have json data spec
   standardiseObject(obj) {
     if (this.standardiseDates) {
@@ -51,7 +51,7 @@ class MemoryTransport extends MessagingAdaptor {
     const localHandler = this.getLocalHandler(req);
     try {
       return localHandler(this.standardiseObject(req));
-    } catch(e) {
+    } catch (e) {
       return e.__stellarResponse;
     }
   }
@@ -60,7 +60,7 @@ class MemoryTransport extends MessagingAdaptor {
     const localHandler = this.getLocalHandler(req);
     try {
       localHandler(this.standardiseObject(req));
-    } catch(e) {
+    } catch (e) {
       log.warn(`fireAndForget failed`, req);
     }
   }
@@ -74,7 +74,7 @@ class MemoryTransport extends MessagingAdaptor {
     return () => {
       deregisterFn();
       this.subscriptionHandler.removeListener(channel, messageHandler);
-    }
+    };
   }
 
   getSubscribers(channel) {
@@ -88,8 +88,8 @@ class MemoryTransport extends MessagingAdaptor {
   }
 }
 
-function memoryTransportFactory() {
-  return new MemoryTransport();
+function memoryTransportFactory({ log, standardiseDates }) {
+  return new MemoryTransport(log, standardiseDates);
 }
 
 export { MemoryTransport, memoryTransportFactory };

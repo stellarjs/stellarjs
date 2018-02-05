@@ -37,13 +37,13 @@ class WebsocketTransport extends RemoteRequestAdaptor {
       if (headers.channel) {
         return this.subscriptionHandler.emit(headers.channel, data);
       } else if (headers.type === 'response') {
-        return this._responseHandler(data)
-      } else {
-        const requestHandler = this.registries.requestHandlers[headers.queueName];
-        return requestHandler(data)
-          .then((res) => this.send(res))
-          .catch(err => this.send(err.__stellarResponse));
+        return this._responseHandler(data);
       }
+      const requestHandler = this.registries.requestHandlers[headers.queueName];
+      return requestHandler(data)
+          .then(res => this.send(res))
+          .catch(err => this.send(err.__stellarResponse));
+
 
       this.log.error(`@Stellar.Websocket message failed`);
       return undefined;
@@ -68,12 +68,12 @@ class WebsocketTransport extends RemoteRequestAdaptor {
 
   subscribe(channel, messageHandler) {
     const unsubscribeFn = this.registerSubscriber(channel);
-    this._subscribe(channel, messageHandler, unsubscribeFn);
+    return this._subscribe(channel, messageHandler, unsubscribeFn);
   }
 
   subscribeGroup(groupId, channel, messageHandler) {
     const unsubscribeFn = this.registerSubscriberGroupHandler(groupId, channel, messageHandler);
-    this._subscribe(channel, messageHandler, unsubscribeFn);
+    return this._subscribe(channel, messageHandler, unsubscribeFn);
   }
 
   _subscribe(channel, messageHandler, unsubscribeFn) {
