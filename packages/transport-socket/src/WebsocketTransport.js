@@ -4,18 +4,16 @@
 import get from 'lodash/get';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
-import uuid from 'uuid/v4';
-import { QueueTransport } from '@stellarjs/messaging-queue';
+import { RemoteRequestAdaptor } from '@stellarjs/messaging-queue';
 
-class WebsocketTransport extends QueueTransport {
+class WebsocketTransport extends RemoteRequestAdaptor {
   constructor(socket, log, sendingOnly) {
     super(log);
     this.sendingOnly = sendingOnly;
-    this.messageHandler = new EventEmitter();
+    this.subscriptionHandler = new EventEmitter();
 
-    this.socket = new Promise((resolve, reject) => {
+    this.socket = new Promise((resolve) => {
       this.socketResolver = resolve;
-      this.socketRejecter = reject;
       this.setSocket(socket);
     });
   }
@@ -25,44 +23,76 @@ class WebsocketTransport extends QueueTransport {
       return;
     }
 
-    if (!this.sendingOnly) {
-      socket.on('message', (str) => {
-        // this.log.info(`@Stellar.Websocket message received: ${str}`);
-        const command = JSON.parse(str);
-        if (get(command, 'data.headers.queueName')) {
-          this.messageHandler.emit(command.data.headers.queueName, command);
-        }
-      });
+    if (this.sendingOnly) {
+      this.socketResolver(socket);
+      return;
     }
+
+    socket.on('message', (str) => {
+      this.log.info(`@Stellar.Websocket message received: ${str}`);
+      const command = JSON.parse(str);
+      const data = get(command, 'data');
+      const headers = get(data, 'headers', {});
+
+      if (headers.channel) {
+        return this.subscriptionHandler.emit(headers.channel, data);
+      } else if (headers.type === 'response') {
+        return this._responseHandler(data)
+      } else {
+        const requestHandler = this.registries.requestHandlers[headers.queueName];
+        return requestHandler(data)
+          .then((res) => this.send(res))
+          .catch(err => this.send(err.__stellarResponse));
+      }
+
+      this.log.error(`@Stellar.Websocket message failed`);
+      return undefined;
+    });
 
     setTimeout(() => this.socketResolver(socket), 250);
   }
 
   onClose() {
-    this.socket = new Promise((resolve, reject) => {
+    this.socket = new Promise((resolve) => {
       this.socketResolver = resolve;
-      this.socketRejecter = reject;
     });
   }
 
-  getSubscribers(channel) { // eslint-disable-line no-unused-vars,class-methods-use-this
-    return Promise.resolve();
+  registerSubscriber(channel) {
+    return () => this.send({ headers: { channel, type: 'stopReactive' } });
   }
 
-  registerSubscriber(channel, queueName) {
-    return Promise.resolve(() => this._deregisterSubscriber(channel, queueName));
+  addRequestHandler(url, handler) {
+    return this.registerRequestHandler(url, handler);
   }
 
-  _deregisterSubscriber(channel, queueName) {
-    return this.enqueue(queueName, { headers: { channel, type: 'stopReactive' } });
+  subscribe(channel, messageHandler) {
+    const unsubscribeFn = this.registerSubscriber(channel);
+    this._subscribe(channel, messageHandler, unsubscribeFn);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  generateId() {
-    return uuid();
+  subscribeGroup(groupId, channel, messageHandler) {
+    const unsubscribeFn = this.registerSubscriberGroupHandler(groupId, channel, messageHandler);
+    this._subscribe(channel, messageHandler, unsubscribeFn);
   }
 
-  enqueue(queueName, data) {
+  _subscribe(channel, messageHandler, unsubscribeFn) {
+    this.subscriptionHandler.on(channel, messageHandler);
+    return () => {
+      unsubscribeFn();
+      this.subscriptionHandler.removeListener(channel, messageHandler);
+    };
+  }
+
+  publish(channel, message) {
+    return this.send(message);
+  }
+
+  remoteRequest(req) {
+    return this.send(req);
+  }
+
+  send(data) {
     // queueName ignored on a socket enqueue as there is only one queue
     return this.socket.then((s) => {
       const command = { data };
@@ -71,21 +101,9 @@ class WebsocketTransport extends QueueTransport {
     });
   }
 
-  process(queueName, callback) {
-    this.log.log('trace', `@WebsocketTransport: Registering inbox`, { queueName });
-    this.messageHandler.on(queueName, (command) => {
-      try {
-        callback(command);
-      } catch (e) {
-        this.log.warn(e, 'invalid message sent to stellar websocket transport', { queueName, obj: command });
-      }
-    });
-    return Promise.resolve();
-  }
-
-  stopProcessing(queueName) {
-    this.log.info(`@WebsocketTransport: Stopping inbox`, { queueName });
-    return this.messageHandler.removeAllListeners(queueName);
+  reset() {
+    super.reset();
+    this.subscriptionHandler.removeAllListeners();
   }
 }
 

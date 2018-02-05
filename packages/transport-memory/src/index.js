@@ -1,78 +1,90 @@
 /**
  * Created by ozsayag on 26/06/2017.
  */
-import Promise from 'bluebird';
+import uuid from 'uuid/v1';
 
-import { QueueTransport } from '@stellarjs/messaging-queue';
+import { MessagingAdaptor } from '@stellarjs/core';
+import get from 'lodash/get';            
+import values from 'lodash/values';
+import { EventEmitter } from "events";
 
-// standardise object to have json data spec
-function standardiseObject(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-class MemoryTransport extends QueueTransport {
-  constructor(log) {
+class MemoryTransport extends MessagingAdaptor {
+  constructor(log, standardiseDates = false) {
     super(log);
-    this.queues = {};
-    this.subscribers = {};
+    this.subscriptionHandler = new EventEmitter();
+    this.standardiseDates = standardiseDates;
   }
-
-  setQueue(name, callback) {
-    if (!this.queues[name]) {
-      this.queues[name] = { currentId: 0 };
+  
+// standardise object to have json data spec
+  standardiseObject(obj) {
+    if (this.standardiseDates) {
+      return JSON.parse(JSON.stringify(obj));
     }
 
-    if (callback) {
-      this.queues[name].callback = callback;
+    return obj;
+  }
+
+  getLocalHandler(req) {
+    const url = get(req, 'headers.queueName');
+    return get(this.registries.requestHandlers, url);
+  }
+
+  generateId() { // eslint-disable-line class-methods-use-this
+    return uuid();
+  }
+
+  publish(channel, payload) { // eslint-disable-line class-methods-use-this, no-unused-vars
+    this.subscriptionHandler.emit(channel, this.standardiseObject(payload));
+  }
+
+  subscribe(channel, messageHandler) {
+    const deregisterFn = this.registerSubscriberHandler(channel, messageHandler);
+    return this._subscribe(channel, messageHandler, deregisterFn);
+  }
+
+  subscribeGroup(groupId, channel, messageHandler) {
+    const deregisterFn = this.registerSubscriberGroupHandler(groupId, channel, messageHandler);
+    return this._subscribe(channel, messageHandler, deregisterFn);
+  }
+
+  request(req, requestTimeout) {
+    const localHandler = this.getLocalHandler(req);
+    try {
+      return localHandler(this.standardiseObject(req));
+    } catch(e) {
+      return e.__stellarResponse;
     }
   }
 
-  generateId(queueName) {
-    this.setQueue(queueName);
-    this.queues[queueName].currentId += 1;
-    return `${queueName}:${this.queues[queueName].currentId}`;
+  fireAndForget(req) { // eslint-disable-line class-methods-use-this, no-unused-vars
+    const localHandler = this.getLocalHandler(req);
+    try {
+      localHandler(this.standardiseObject(req));
+    } catch(e) {
+      log.warn(`fireAndForget failed`, req);
+    }
+  }
+
+  addRequestHandler(url, handler) {
+    this.registerRequestHandler(url, handler);
+  }
+
+  _subscribe(channel, messageHandler, deregisterFn) {
+    this.subscriptionHandler.on(channel, messageHandler);
+    return () => {
+      deregisterFn();
+      this.subscriptionHandler.removeListener(channel, messageHandler);
+    }
   }
 
   getSubscribers(channel) {
-    if (this.subscribers[channel] == null) {
-      this.subscribers[channel] = new Set();
-    }
-
-    return Promise.resolve(this.subscribers[channel].values());
+    const subscribers = this.registries.subscribers[channel];
+    return values(subscribers);
   }
 
-  registerSubscriber(channel, queueName) {
-    if (this.subscribers[channel] == null) {
-      this.subscribers[channel] = new Set();
-    }
-
-    return Promise.resolve(this.subscribers[channel].add(queueName))
-        .then(() => () => this._deregisterSubscriber(channel, queueName));
-  }
-
-  _deregisterSubscriber(channel, queueName) {
-    if (this.subscribers[channel] == null) {
-      this.subscribers[channel] = new Set();
-    }
-    return Promise.resolve(this.subscribers[channel].delete(queueName));
-  }
-
-  enqueue(queueName, data) {
-    const job = { data };
-    this.queues[queueName].callback(standardiseObject(job));
-
-    return Promise.resolve(job);
-  }
-
-  process(queueName, callback) {
-    this.setQueue(queueName, callback);
-
-    return Promise.resolve();
-  }
-
-  stopProcessing(queueName) {
-    delete this.queues[queueName];
-    return Promise.resolve(true);
+  reset() {
+    this.subscriptionHandler.removeAllListeners();
+    super.reset();
   }
 }
 

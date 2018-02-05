@@ -100,6 +100,27 @@ describe('StellarRequest', () => {
             }
         });
 
+      it('throw js error with __stellarResponse', async () => {
+        const stellarRequest = getStellarRequest();
+        stellarRequest.messagingAdaptor.request.mockImplementationOnce(() => {
+            const err = new Error('blah');
+            err.__stellarResponse = { headers: { type: 'response', errorType: 'StellarError' }, body: { message: 'blah' } }
+            throw err;
+        });
+
+        try {
+          const result = await stellarRequest.create('testservice:resource', { text: 'hello' });
+          fail('Exception should have been thrown');
+        } catch(e) {
+          expect(e).toBeInstanceOf(Error);
+          expect(e.message).toEqual('blah');
+          expectMethodMocksToHaveBeeenCalled(
+            stellarRequest.messagingAdaptor,
+            { name: 'request', numCalls: 1, args: [[{ headers, body: { text: 'hello' } }]] },
+            { name: 'generateId', numCalls: 2 });
+        }
+      });
+
         it('receive raw stellar error', async () => {
             const stellarRequest = getStellarRequest();
             stellarRequest.messagingAdaptor.request.mockReturnValue(Promise.resolve({ headers: { type: 'response', errorType: 'StellarError' }, body: { message: 'blah' } }));
