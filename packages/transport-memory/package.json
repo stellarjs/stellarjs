@@ -52,6 +52,8 @@
   "dependencies": {
     "@stellarjs/core": "^0.9.1",
     "@stellarjs/messaging-queue": "^0.9.1",
-    "bluebird": "^3.4.7"
+    "bluebird": "^3.4.7",
+    "lodash": "^4.17.4",
+    "uuid": "^3.1.0"
   }
 }

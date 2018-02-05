@@ -47,7 +47,7 @@ class MemoryTransport extends MessagingAdaptor {
     return this._subscribe(channel, messageHandler, deregisterFn);
   }
 
-  request(req, requestTimeout) {
+  request(req) {
     const localHandler = this.getLocalHandler(req);
     try {
       return localHandler(this.standardiseObject(req));
@@ -61,7 +61,7 @@ class MemoryTransport extends MessagingAdaptor {
     try {
       localHandler(this.standardiseObject(req));
     } catch (e) {
-      log.warn(`fireAndForget failed`, req);
+      this.log.warn(`fireAndForget failed`, req);
     }
   }
 

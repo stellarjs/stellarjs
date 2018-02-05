@@ -40,13 +40,13 @@ class WebsocketTransport extends RemoteRequestAdaptor {
         return this._responseHandler(data);
       }
       const requestHandler = this.registries.requestHandlers[headers.queueName];
+      if (!requestHandler) {
+        throw new Error(`@Stellar.Websocket message failed, no handler for message: ${str}`);
+      }
+
       return requestHandler(data)
           .then(res => this.send(res))
           .catch(err => this.send(err.__stellarResponse));
-
-
-      this.log.error(`@Stellar.Websocket message failed`);
-      return undefined;
     });
 
     setTimeout(() => this.socketResolver(socket), 250);

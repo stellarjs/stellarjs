@@ -22,7 +22,7 @@ export default class QueueMessagingAdaptor extends RemoteRequestAdaptor {
   }
 
   request({ headers = {}, body }, requestTimeout) {
-    return super.request({ headers: defaultsDeep({ respondTo: this.nodeResponseInbox }, headers), body }, requestTimeout)
+    return super.request({ headers: defaultsDeep({ respondTo: this.nodeResponseInbox }, headers), body }, requestTimeout);
   }
 
   addRequestHandler(url, requestHandler) {
