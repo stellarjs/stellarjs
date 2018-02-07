@@ -10,6 +10,7 @@ import unset from 'lodash/unset';
 import uuid from 'uuid/v1';
 
 import { MessagingAdaptor, StellarError } from '@stellarjs/core';
+import head from 'lodash/head';
 
 function stopRequestTimer(requestTimer) {
   if (requestTimer) {
@@ -22,7 +23,7 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
     super(log);
     this.transport = transport;
 
-    // Subscription Stuf
+    // Subscription Stuff
     this.nodeSubscriptionInbox = `stlr:n:${source}:subscriptionInbox`;
     this.inboxes = {};
     this.subscriberRegistry = {};
@@ -50,7 +51,7 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
   }
 
   addRequestHandler(url, requestHandler) {
-    const inbox = MessagingAdaptor.getServiceInbox(url);
+    const inbox = getServiceInbox(url);
     const fullUri = `${inbox}.${url}`;
     if (get(this.requestHandlerRegistry, fullUri)) {
       throw new Error(`Cannot addRequestHandler more that once per url. "${fullUri}" has already added`);
@@ -100,7 +101,7 @@ export default class QueueMessagingAdaptor extends MessagingAdaptor {
     this._processInbox(this.nodeResponseInbox, ({ data }) => this._responseHandler(data));
 
     const headers = get(req, 'headers', {});
-    const inbox = MessagingAdaptor.getServiceInbox(headers.queueName);
+    const inbox = getServiceInbox(headers.queueName);
     return this.transport.enqueue(inbox, req);
   }
 

@@ -29,15 +29,11 @@ export default class MessagingAdaptor {
     throw new Error('"addHandler" was called but was not implemented!');
   }
 
+  generateId() { // eslint-disable-line class-methods-use-this
+    throw new Error('"generateId" was called but was not implemented!');
+  }
+
   reset() { // eslint-disable-line class-methods-use-this
     throw new Error('"reset" was called but was not implemented!');
-  }
-
-  static getServiceName(queueName) {
-    return head(queueName.split(':')); // eslint-disable-line lodash/prefer-lodash-method
-  }
-
-  static getServiceInbox(queueName) {
-    return `stlr:s:${this.getServiceName(queueName)}:inbox`;
   }
 }
