@@ -1,5 +1,3 @@
-import head from 'lodash/head';
-
 export default class MessagingAdaptor {
   constructor(log) {
     this.log = log;

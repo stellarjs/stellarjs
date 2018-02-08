@@ -1,12 +1,11 @@
 import head from 'lodash/head';
-import split from 'lodash/split';
 
 function getServiceName(queueName) {
-  return head(split(queueName, ':'));
+  return head(queueName.split(':')); // eslint-disable-line lodash/prefer-lodash-method
 }
 
 function getServiceInbox(queueName) {
   return `stlr:s:${getServiceName(queueName)}:inbox`;
 }
 
-export { getServiceName, getServiceInbox };
+export { getServiceName, getServiceInbox as default };

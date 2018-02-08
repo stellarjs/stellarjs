@@ -1,3 +1,3 @@
-export function getUri(headers) {
+export default function getUri(headers) {
   return headers.queueName || headers.channel;
 }

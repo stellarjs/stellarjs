@@ -10,7 +10,8 @@ import unset from 'lodash/unset';
 import uuid from 'uuid/v1';
 
 import { MessagingAdaptor, StellarError } from '@stellarjs/core';
-import head from 'lodash/head';
+
+import getServiceInbox from './utils/getServiceInbox';
 
 function stopRequestTimer(requestTimer) {
   if (requestTimer) {

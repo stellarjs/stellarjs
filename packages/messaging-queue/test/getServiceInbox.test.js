@@ -1,4 +1,4 @@
-import { getServiceName, getServiceInbox } from '../src/utils';
+import { getServiceName, default as getServiceInbox } from '../src/utils/getServiceInbox';
 
 describe('utils', () => {
   describe('getServiceName', () => {
