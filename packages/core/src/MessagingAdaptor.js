@@ -1,6 +1,5 @@
 import fromPairs from 'lodash/fromPairs';
 import get from 'lodash/get';
-import head from 'lodash/head';
 import isEmpty from 'lodash/isEmpty';
 import map from 'lodash/map';
 import set from 'lodash/set';

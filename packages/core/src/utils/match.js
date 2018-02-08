@@ -1,4 +1,4 @@
-export function match(url, pattern) {
+export default function match(url, pattern) {
   if (pattern === undefined) {
     return true;
   }

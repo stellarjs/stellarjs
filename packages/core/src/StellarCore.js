@@ -1,12 +1,16 @@
 /**
  * Created by arolave on 25/09/2016.
  */
+import Promise from 'bluebird';
+
 import assign from 'lodash/assign';
 import merge from 'lodash/merge';
 import get from 'lodash/get';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
-import Promise from 'bluebird';
+
+import getUri from './utils/getUri';
+import match from './utils/match';
 
 class StellarCore {
   constructor(messagingAdaptor, source, log) {

@@ -4,7 +4,7 @@ import defaultsDeep from 'lodash/defaultsDeep';
 import get from 'lodash/get';
 import map from 'lodash/map';
 
-import getServiceInbox from './utils';
+import getServiceInbox from './utils/getServiceInbox';
 import RemoteRequestAdaptor from './RemoteRequestMessagingAdaptor';
 
 export default class QueueMessagingAdaptor extends RemoteRequestAdaptor {
