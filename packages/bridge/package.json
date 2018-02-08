@@ -29,8 +29,8 @@
     "compile": "yarn run compile:es6",
     "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
-    "test": "jest --forceExit",
-    "test:coverage": "jest --coverage --forceExit",
+    "test": "jest --runInBand --forceExit",
+    "test:coverage": "jest --coverage --runInBand --forceExit",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@stellarjs/engine.io-client": "^0.9.3",
     "babel-cli": "^6.24.1",
-    "babel-jest": "^20.0.3",
+    "babel-jest": "^22.0.4",
     "engine.io": "3.1.0",
     "engine.io-client": "3.1.1",
     "eslint": "^3.19.0",
@@ -52,7 +52,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^20.0.4",
+    "jest": "^22.0.4",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
   },
@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@stellarjs/core": "^0.9.1",
+    "@stellarjs/messaging-queue": "^0.9.1",
     "@stellarjs/transport-redis": "^0.9.1",
     "@stellarjs/transport-socket": "^0.9.1",
     "@stellarjs/mw-log-trace": "^0.9.1",

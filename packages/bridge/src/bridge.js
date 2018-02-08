@@ -117,12 +117,12 @@ function sendResponse(log, session, command, jobDataResp) {
 }
 
 function bridgeReactive(log, session, requestHeaders) {
-  return (subscriptionData, channel) => {
+  return ({ headers, body }) => {
     const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
-    const headers = defaults({ channel, queueName, source: session.source }, subscriptionData.headers);
-    const obj = { headers, body: subscriptionData.body };
+    const socketHeaders = defaults({ queueName, source: session.source }, headers);
+    const obj = { headers: socketHeaders, body };
 
-    log.info(`${session.logPrefix} BRIDGE REACTIVE`, { channel, queueName, obj });
+    log.info(`${session.logPrefix} BRIDGE REACTIVE`, { queueName, obj });
     return session.client.enqueue(queueName, obj);
   };
 }
@@ -139,14 +139,6 @@ function handleMessage(log, stellarRequest, session, command) {
                          { responseType: 'raw', headers: defaults({ source: session.source }, requestHeaders) })
         .then(response => sendResponse(log, session, command, response));
     }
-    case 'stopReactive': {
-      const stopper = last(session.reactiveStoppers[requestHeaders.channel]);
-      if (stopper) {
-        return stopper();
-      }
-
-      return Promise.resolve(false);
-    }
     case 'reactive': {
       const stopper = head(session.reactiveStoppers[requestHeaders.channel]);
       if (stopper) {
@@ -161,17 +153,25 @@ function handleMessage(log, stellarRequest, session, command) {
       const options = { responseType: 'raw', headers: defaults({ source: session.source }, requestHeaders) };
       const reactiveRequest = {
         results: stellarRequest._doQueueRequest(requestHeaders.queueName,
-                                                 command.data.body,
+                                                command.data.body,
                                                 { type: 'reactive', channel: requestHeaders.channel },
-                                                 options),
+                                                options),
         onStop: stellarRequest.pubsub.subscribe(requestHeaders.channel,
-                                                 bridgeReactive(log, session, requestHeaders),
-                                                 pick(options, 'responseType')),
+                                                bridgeReactive(log, session, requestHeaders),
+                                                pick(options, 'responseType')),
       };
 
       session.registerStopper(requestHeaders.channel, reactiveRequest.onStop, requestHeaders.id);
 
       return reactiveRequest.results.then(response => sendResponse(log, session, command, response));
+    }
+    case 'stopReactive': {
+      const stopper = last(session.reactiveStoppers[requestHeaders.channel]);
+      if (stopper) {
+        return stopper();
+      }
+
+      return Promise.resolve(false);
     }
     default: {
       throw new Error(`Invalid stellar bridge message: ${JSON.stringify(command)}`);

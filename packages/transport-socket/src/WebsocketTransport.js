@@ -5,10 +5,11 @@ import get from 'lodash/get';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import uuid from 'uuid/v4';
+import { QueueTransport } from '@stellarjs/messaging-queue';
 
-class WebsocketTransport {
+class WebsocketTransport extends QueueTransport {
   constructor(socket, log, sendingOnly) {
-    this.log = log;
+    super(log);
     this.sendingOnly = sendingOnly;
     this.messageHandler = new EventEmitter();
 

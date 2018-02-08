@@ -51,7 +51,7 @@ describe('redux-stellar', () => {
 
     middleware(mockRef)(mockNext)(action);
     expect(mockNext)
-          .toHaveBeenLastCalledWith({ type: action.type, payload: { promise: Promise.prototype, data: action.payload } });
+          .toHaveBeenLastCalledWith({ type: action.type, payload: { promise: expect.any(Promise), data: action.payload } });
   });
 
   it('should return action type - 3 parameters', () => {

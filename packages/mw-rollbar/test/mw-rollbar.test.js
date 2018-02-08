@@ -8,6 +8,7 @@ import middleware from '../src';
 import { StellarError } from '@stellarjs/core';
 import { StellarHandler, StellarRequest } from '@stellarjs/core';
 import { MemoryTransport } from '@stellarjs/transport-memory';
+import { QueueMessagingAdaptor } from '../../messaging-queue/lib-es6';
 
 describe('Rollbar middleware', () => {
   beforeEach(() => {
@@ -16,14 +17,16 @@ describe('Rollbar middleware', () => {
 
   it('Should only report the first occurence of an error', (done) => {
     const memoryTransport = new MemoryTransport(console);
-    const request = new StellarRequest(memoryTransport, 'origin', console, 1000);
-    const oneHandler = new StellarHandler(memoryTransport, 'testserviceOne', console);
+    const messaging = new QueueMessagingAdaptor(memoryTransport, 'test', console, 1000);
+
+    const request = new StellarRequest(messaging, 'origin', console);
+    const oneHandler = new StellarHandler(messaging, 'testserviceOne', console);
     oneHandler.use('.*', middleware());
-    const twoHandler = new StellarHandler(memoryTransport, 'testserviceTwo', console);
+    const twoHandler = new StellarHandler(messaging, 'testserviceTwo', console);
     twoHandler.use('.*', middleware());
 
     oneHandler.get('testserviceOne:resource', ({ body }) => {
-      const testserviceRequest = new StellarRequest(memoryTransport, 'testserviceOne', console, 1000);
+      const testserviceRequest = new StellarRequest(messaging, 'testserviceOne', console);
       return testserviceRequest
             .get('testserviceTwo:resource')
             .catch(e => e)

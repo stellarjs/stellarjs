@@ -44,7 +44,7 @@
   "devDependencies": {
     "@stellarjs/engine.io-client": "^0.9.3",
     "babel-cli": "^6.24.1",
-    "babel-jest": "^20.0.3",
+    "babel-jest": "^22.0.4",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-better-mutation": "^1.1.2",
@@ -52,7 +52,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^20.0.4",
+    "jest": "^22.0.4",
     "rimraf": "^2.6.1"
   },
   "dependencies": {
