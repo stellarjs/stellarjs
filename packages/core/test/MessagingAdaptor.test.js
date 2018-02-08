@@ -30,6 +30,12 @@ describe('MessagingAdaptor tests', () => {
       messagingInterface.addRequestHandler('url', _.noop);
     }).toThrow();
   });
+  
+  it('"generateId" throws exception', () => {
+    expect(() => {
+      messagingInterface.fireAndForget();
+    }).toThrow();
+  });
 
   it('"reset" throws exception', () => {
     messagingInterface.registries.yada = { hi: 'bye' };
@@ -128,38 +134,6 @@ describe('MessagingAdaptor tests', () => {
 
       deregisterB();
       expect(messagingInterface.registries.requestHandlers).toEqual({});
-    });
-
-  });
-
-  describe('getServiceName', () => {
-    it('throws for nil values', () => {
-      expect(() => Messaging.getServiceName(undefined)).toThrow();
-      expect(() => Messaging.getServiceName(null)).toThrow();
-    });
-
-    it('works with simple strings', () => {
-      expect(Messaging.getServiceName('test')).toEqual('test');
-    });
-
-    it('works with complex strings', () => {
-      expect(Messaging.getServiceName('test.fred:blah:tag')).toEqual('test.fred');
-    });
-  });
-
-
-  describe('getServiceInbox', () => {
-    it('throws for nil values', () => {
-      expect(() => Messaging.getServiceInbox(undefined)).toThrow();
-      expect(() => Messaging.getServiceInbox(null)).toThrow();
-    });
-
-    it('works with simple strings', () => {
-      expect(Messaging.getServiceInbox('test')).toEqual('stlr:s:test:inbox');
-    });
-
-    it('works with complex strings', () => {
-      expect(Messaging.getServiceInbox('test.fred:blah:tag')).toEqual('stlr:s:test.fred:inbox');
     });
   });
 });
