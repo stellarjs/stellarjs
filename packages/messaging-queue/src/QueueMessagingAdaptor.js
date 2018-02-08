@@ -4,8 +4,7 @@ import defaultsDeep from 'lodash/defaultsDeep';
 import get from 'lodash/get';
 import map from 'lodash/map';
 
-import { MessagingAdaptor } from '@stellarjs/core';
-
+import getServiceInbox from './utils';
 import RemoteRequestAdaptor from './RemoteRequestMessagingAdaptor';
 
 export default class QueueMessagingAdaptor extends RemoteRequestAdaptor {
@@ -13,7 +12,7 @@ export default class QueueMessagingAdaptor extends RemoteRequestAdaptor {
     super(log, requestTimeout);
     this.transport = transport;
 
-    // Subscription Stuf
+    // Subscription Stuff
     this.nodeSubscriptionInbox = `stlr:n:${source}:subscriptionInbox`;
     this.inboxes = {};
 
@@ -27,7 +26,7 @@ export default class QueueMessagingAdaptor extends RemoteRequestAdaptor {
 
   addRequestHandler(url, requestHandler) {
     this.registerRequestHandler(url, requestHandler);
-    const inbox = MessagingAdaptor.getServiceInbox(url);
+    const inbox = getServiceInbox(url);
     this._processInbox(inbox, ({ data }) => this._requestHandler(data));
     return Promise.resolve(true);
   }
@@ -62,7 +61,7 @@ export default class QueueMessagingAdaptor extends RemoteRequestAdaptor {
     this._processInbox(this.nodeResponseInbox, ({ data }) => this._responseHandler(data));
 
     const headers = get(req, 'headers', {});
-    const inbox = MessagingAdaptor.getServiceInbox(headers.queueName);
+    const inbox = getServiceInbox(headers.queueName);
     return this.transport.enqueue(inbox, req);
   }
 

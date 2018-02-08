@@ -8,18 +8,6 @@ import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 import Promise from 'bluebird';
 
-function getUri(headers) {
-  return headers.queueName || headers.channel;
-}
-
-function match(url, pattern) {
-  if (pattern === undefined) {
-    return true;
-  }
-
-  return url.match(pattern);
-}
-
 class StellarCore {
   constructor(messagingAdaptor, source, log) {
     this.handlerChain = [];
