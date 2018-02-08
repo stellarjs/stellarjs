@@ -6,6 +6,8 @@ import RedisClient from '@stellarjs/transport-redis/lib-es6/config-redisclient';
 import { StellarError } from '@stellarjs/core';
 import _ from 'lodash';
 
+jest.unmock('@stellarjs/transport-redis');
+
 let redisClient;
 const clearRedis = () => {
   redisClient = new RedisClient(console);
@@ -46,7 +48,7 @@ afterAll(() => {
 });
 
 describe('call server', () => {
-  it('on auth error dont reconnect', () => {
+  it('on auth error dont reconnect', (done) => {
     const stellarSocket = require('@stellarjs/engine.io-client').stellarSocket();
     stellarSocket
       .connect('localhost:8091', {

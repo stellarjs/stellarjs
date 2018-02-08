@@ -1,5 +1,6 @@
 import assign from 'lodash/assign';
 import QueueMessagingAdaptor from './QueueMessagingAdaptor';
+import RemoteRequestAdaptor from './RemoteRequestMessagingAdaptor';
 
 export default function queueMessagingFactoryConfig({ transport, transportFactory }) {
   return function (options) {
@@ -9,5 +10,5 @@ export default function queueMessagingFactoryConfig({ transport, transportFactor
   };
 }
 
-export { QueueMessagingAdaptor };
+export { QueueMessagingAdaptor, RemoteRequestAdaptor };
 export { default as QueueTransport } from './QueueTransport';

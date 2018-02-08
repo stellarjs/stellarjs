@@ -101,72 +101,73 @@ function assignClientToSession({ log, socket, session }) {
 //     });
 // }
 
-function sendResponse(log, session, command, jobDataResp) {
+function sendResponse(log, session, requestHeaders, res) {
   if (isUndefined(session.client)) {
     log.warn(`${session.logPrefix}: Socket was closed before response was sent.`);
     return Promise.reject(new Error('Socket was closed'));
   }
 
-  const requestId = command.data.headers.id;
-  const queueName = command.data.headers.respondTo;
-
-  const headers = defaults({ requestId, queueName, source: session.source }, jobDataResp.headers);
-  const obj = { headers, body: jobDataResp.body };
+  const queueName = requestHeaders.respondTo;
+  const headers = defaults({ requestId: requestHeaders.id, source: session.source, queueName }, res.headers);
+  const obj = { headers, body: res.body };
   log.info(`${session.logPrefix} BRIDGE RESPONSE`, { queueName, obj });
-  return session.client.enqueue(queueName, obj);
+  return session.client.send(obj);
 }
 
-function bridgeReactive(log, session, requestHeaders) {
+function bridgeSubscribe(log, session, requestHeaders) {
   return ({ headers, body }) => {
     const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
     const socketHeaders = defaults({ queueName, source: session.source }, headers);
     const obj = { headers: socketHeaders, body };
 
-    log.info(`${session.logPrefix} BRIDGE REACTIVE`, { queueName, obj });
-    return session.client.enqueue(queueName, obj);
+    log.info(`${session.logPrefix} BRIDGE SUBSCRIBE`, { queueName, obj });
+    return session.client.send(obj);
   };
 }
 
-function handleMessage(log, stellarRequest, session, command) {
-  const requestHeaders = command.data.headers;
+function subscribe(log, stellarRequest, session, req) {
+  const stopper = head(session.reactiveStoppers[req.headers.channel]);
+  if (stopper) {
+    const message = `Multiple subscriptions to same channel (${
+      req.headers.channel}) not supported. First subscription sent ${stopper}`;
 
-  switch (requestHeaders.type) {
+    log.warn(session.logPrefix, message);
+    const errorResponse = stellarRequest._prepareResponse(req, new StellarError(message));
+    return sendResponse(log, session, req.headers, errorResponse);
+  }
+
+  const onStop = stellarRequest.pubsub.subscribe(req.headers.channel,
+                                                 bridgeSubscribe(log, session, req.headers),
+                                                 { responseType: 'raw' });
+
+  session.registerStopper(req.headers.channel, onStop, req.headers.id);
+  return Promise.resolve(true);
+}
+
+function request(log, stellarRequest, session, req) {
+  return stellarRequest
+    ._doQueueRequest(req.headers.queueName,
+                     req.body,
+                     { type: 'request' },
+                     { responseType: 'raw', headers: defaults({ source: session.source }, req.headers) })
+    .then(response => sendResponse(log, session, req.headers, response));
+}
+
+function handleMessage(log, stellarRequest, session, req) {
+  switch (req.headers.type) {
     case 'request': {
-      return stellarRequest
-        ._doQueueRequest(requestHeaders.queueName,
-                         command.data.body,
-                         { type: 'request' },
-                         { responseType: 'raw', headers: defaults({ source: session.source }, requestHeaders) })
-        .then(response => sendResponse(log, session, command, response));
+      return request(log, stellarRequest, session, req);
+    }
+    case 'subscribe': {
+      return subscribe(log, stellarRequest, session, req);
     }
     case 'reactive': {
-      const stopper = head(session.reactiveStoppers[requestHeaders.channel]);
-      if (stopper) {
-        const message = `Multiple subscriptions to same channel (${
-          requestHeaders.channel}) not supported. First subscription sent ${stopper}`;
-
-        log.warn(session.logPrefix, message);
-        const errorResponse = stellarRequest._prepareResponse(command.data, new StellarError(message));
-        return sendResponse(log, session, command, errorResponse);
-      }
-
-      const options = { responseType: 'raw', headers: defaults({ source: session.source }, requestHeaders) };
-      const reactiveRequest = {
-        results: stellarRequest._doQueueRequest(requestHeaders.queueName,
-                                                command.data.body,
-                                                { type: 'reactive', channel: requestHeaders.channel },
-                                                options),
-        onStop: stellarRequest.pubsub.subscribe(requestHeaders.channel,
-                                                bridgeReactive(log, session, requestHeaders),
-                                                pick(options, 'responseType')),
-      };
-
-      session.registerStopper(requestHeaders.channel, reactiveRequest.onStop, requestHeaders.id);
-
-      return reactiveRequest.results.then(response => sendResponse(log, session, command, response));
+      return Promise.all([
+        request(log, stellarRequest, session, req),
+        subscribe(log, stellarRequest, session, req)]);
     }
     case 'stopReactive': {
-      const stopper = last(session.reactiveStoppers[requestHeaders.channel]);
+      const stopper = last(session.reactiveStoppers[req.headers.channel]);
       if (stopper) {
         return stopper();
       }
@@ -174,7 +175,7 @@ function handleMessage(log, stellarRequest, session, command) {
       return Promise.resolve(false);
     }
     default: {
-      throw new Error(`Invalid stellar bridge message: ${JSON.stringify(command)}`);
+      throw new Error(`Invalid stellar bridge message: ${JSON.stringify(req)}`);
     }
   }
 }
@@ -271,7 +272,7 @@ function init({
 
     instrumentation.startTransaction(getTxName(command.data.headers), session, () => {
       Promise
-        .try(() => handleMessage(log, stellarRequest, session, command))
+        .try(() => handleMessage(log, stellarRequest, session, command.data))
         .then(() => instrumentation.done())
         .catch((e) => {
           instrumentation.done(e);

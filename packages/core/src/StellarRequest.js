@@ -56,7 +56,7 @@ export default class StellarRequest extends StellarCore {
         fn(req) {
           return me.messagingAdaptor
             .request(req)
-            .catch(error => me._prepareResponse(req, error))
+            .catch(error => (error.__stellarResponse ? error.__stellarResponse : me._prepareResponse(req, error)))
             .then(res => responseHandler(res));
         },
       });

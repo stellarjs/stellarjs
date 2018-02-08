@@ -206,7 +206,7 @@ describe('engine-io client', () => {
       });
     }).then((socketB) => {
       expect(stellarSocketA.socket.id).not.toEqual(stellarSocketB.socket.id);
-      return [context.socketA.messagingAdaptor.transport.socket, socketB.messagingAdaptor.transport.socket];
+      return [context.socketA.messagingAdaptor.socket, socketB.messagingAdaptor.socket];
     }).all()
           .then(([realSocketA, realSocketB]) => {
             expect(realSocketA.id).not.toEqual(realSocketB.id);

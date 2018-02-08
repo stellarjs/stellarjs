@@ -6,8 +6,7 @@ import qs from 'qs';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import { configureStellar, StellarError, uuid } from '@stellarjs/core';
-import messagingFactoryConfig from '@stellarjs/messaging-queue';
-import transportFactory from '@stellarjs/transport-socket';
+import messagingFactory from '@stellarjs/transport-socket';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
@@ -23,7 +22,7 @@ function _calcNextDelay(maxDelay, delay) {
 }
 
 function stellarSocketFactory(eio, log = console) {
-  const { stellarRequest } = configureStellar({ log, messagingAdaptorFactory: messagingFactoryConfig({ transportFactory }) });
+  const { stellarRequest } = configureStellar({ log, messagingAdaptorFactory: messagingFactory });
   log.info('@StellarClient initialized');
   const stellarRequestOptions = typeof window === 'undefined' ? { sourceOverride: uuid() } : {};
 
@@ -117,7 +116,7 @@ function stellarSocketFactory(eio, log = console) {
             this.socket.on('close', () => {
               this.socket.off('close');
               log.info(`@StellarSocket.closeIfNeeded: Socket Closed`, { socketId: this.socket && this.socket.id });
-              this.stellar.messagingAdaptor.transport.onClose();
+              this.stellar.messagingAdaptor.onClose();
               resolve(this.state);
             });
             this.socket.close();
@@ -161,7 +160,7 @@ function stellarSocketFactory(eio, log = console) {
             reject(new ctor('Authentication Error')); // eslint-disable-line new-cap
           } else if (jam.messageType === 'connected') {
             this.state = 'connected';
-            this.stellar.messagingAdaptor.transport.setSocket(socketAttempt);
+            this.stellar.messagingAdaptor.setSocket(socketAttempt);
             this.socket = socketAttempt;
             this.userId = jam.userId;
             this.sessionId = jam.sessionId;
@@ -180,7 +179,7 @@ function stellarSocketFactory(eio, log = console) {
 
         socketAttempt.on('close', () => {
           log.info(`@StellarSocket: Closed`);
-          this.stellar.messagingAdaptor.transport.onClose();
+          this.stellar.messagingAdaptor.onClose();
           if (this.state === 'connected') {
             this.trigger('close');
             this.state = 'disconnected';
