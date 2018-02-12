@@ -9,9 +9,9 @@ import map from 'lodash/map';
 import getServiceInbox from './utils/getServiceInbox';
 
 export default class QueueTransport extends RemoteTransport {
-  constructor(transport, source, log, requestTimeout) {
+  constructor(queueSystem, source, log, requestTimeout) {
     super(log, requestTimeout);
-    this.transport = transport;
+    this.queueSystem = queueSystem;
 
     // Subscription Stuff
     this.nodeSubscriptionInbox = `stlr:n:${source}:subscriptionInbox`;
@@ -33,9 +33,9 @@ export default class QueueTransport extends RemoteTransport {
   }
 
   publish(channel, payload) {
-    return this.transport // eslint-disable-line lodash/prefer-lodash-method
+    return this.queueSystem // eslint-disable-line lodash/prefer-lodash-method
       .getSubscribers(channel)
-      .map(queueName => this.transport.enqueue(queueName, payload));
+      .map(queueName => this.queueSystem.enqueue(queueName, payload));
   }
 
   subscribe(channel, messageHandler) {
@@ -51,7 +51,7 @@ export default class QueueTransport extends RemoteTransport {
 
   reset() {
     return Promise
-      .all(map(this.inboxes, (v, inbox) => this.transport.stopProcessing(inbox)))
+      .all(map(this.inboxes, (v, inbox) => this.queueSystem.stopProcessing(inbox)))
       .then(() => {
         this.inboxes = {};
         return super.reset();
@@ -63,12 +63,12 @@ export default class QueueTransport extends RemoteTransport {
 
     const headers = get(req, 'headers', {});
     const inbox = getServiceInbox(headers.queueName);
-    return this.transport.enqueue(inbox, req);
+    return this.queueSystem.enqueue(inbox, req);
   }
 
   _subscribe(inbox, channel, removeHandlerFn, groupId) {
     this._processInbox(inbox, ({ data }) => this._subscriptionHandler(data, groupId));
-    return this.transport.registerSubscriber(channel, inbox)
+    return this.queueSystem.registerSubscriber(channel, inbox)
       .then(deregisterSubscriber => () => {
         const registryIsEmpty = removeHandlerFn();
         if (registryIsEmpty) {
@@ -93,7 +93,7 @@ export default class QueueTransport extends RemoteTransport {
         return Promise.resolve(true);
       }
 
-      return me.transport.enqueue(headers.respondTo, response);
+      return me.queueSystem.enqueue(headers.respondTo, response);
     }
 
     const requestHandler = this.registries.requestHandlers[headers.queueName];
@@ -109,7 +109,7 @@ export default class QueueTransport extends RemoteTransport {
 
     this.inboxes[inbox] = true;
     this.log.info(`@QueueMessagingAdaptor: Processing started`, { inbox });
-    this.transport.process(inbox, internalHandler);
+    this.queueSystem.process(inbox, internalHandler);
     return inbox;
   }
 }

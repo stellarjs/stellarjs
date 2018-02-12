@@ -32,32 +32,32 @@ function expectSubscriberRegistry(subscriberRegistry, ...expectedSubscribers) {
 }
 
 function expectTransportMocksToHaveBeeenCalled(instance, ...expectedFns) {
-  const fnNames = _.functions(instance.transport);
+  const fnNames = _.functions(instance.queueSystem);
   for (let i = 0; i < fnNames.length; i++) {
     const fnName = fnNames[i];
     const expectedFn = _.find(expectedFns, (expectedFn) => expectedFn.name === fnName);
     if (expectedFn) {
-      expect(instance.transport[fnName]).toHaveBeenCalled(); //`Expected transport.${fnName} to have been called`
+      expect(instance.queueSystem[fnName]).toHaveBeenCalled(); //`Expected queueSystem.${fnName} to have been called`
       if (expectedFn.numCalls) {
-          expect(instance.transport[fnName].mock.calls).toHaveLength(expectedFn.numCalls); // `Expected transport.${fnName} to have been called ${expectedFn.args[i]} times, not ${instance.transport[fnName].mock.calls} times`
+          expect(instance.queueSystem[fnName].mock.calls).toHaveLength(expectedFn.numCalls); // `Expected queueSystem.${fnName} to have been called ${expectedFn.args[i]} times, not ${instance.queueSystem[fnName].mock.calls} times`
       }
       if (expectedFn.args) {
           for(let i = 0; i < expectedFn.args.length; ++i) {
-              expect(instance.transport[fnName].mock.calls[i]).toEqual(expectedFn.args[i]); // , `Expected transport.${fnName} call ${i} to have been called with ${expectedFn.args[i]}, not ${instance.transport[fnName].mock.calls[i]}`
+              expect(instance.queueSystem[fnName].mock.calls[i]).toEqual(expectedFn.args[i]); // , `Expected queueSystem.${fnName} call ${i} to have been called with ${expectedFn.args[i]}, not ${instance.queueSystem[fnName].mock.calls[i]}`
           }
       }
 
       continue;
     }
 
-    expect(instance.transport[fnName]).not.toHaveBeenCalled(); // `Expected transport.${fnName} not to have been called with ${instance.transport[fnName].mock.calls[i]}`
+    expect(instance.queueSystem[fnName]).not.toHaveBeenCalled(); // `Expected queueSystem.${fnName} not to have been called with ${instance.queueSystem[fnName].mock.calls[i]}`
   }
 }
 
 function clearTransportMocks(instance) {
-    const fnNames = _.functions(instance.transport);
+    const fnNames = _.functions(instance.queueSystem);
     _.forEach(fnNames, (fnName) => {
-        instance.transport[fnName].mockClear();
+        instance.queueSystem[fnName].mockClear();
     });
 }
 
@@ -65,7 +65,7 @@ describe('QueueTransport tests', () => {
   let instance;
   
   beforeEach(() => {
-      const transport = {
+      const queueSystem = {
           enqueue: jest.fn(),
           process: jest.fn(),
           getSubscribers: jest.fn(),
@@ -73,10 +73,10 @@ describe('QueueTransport tests', () => {
          stopProcessing: jest.fn()
       };
 
-      transport.enqueue.mockName('transport.enqueue');
-      transport.process.mockName('transport.process');
-      transport.getSubscribers.mockName('transport.getSubscribers');
-      transport.registerSubscriber.mockName('transport.registerSubscriber');
+      queueSystem.enqueue.mockName('queueSystem.enqueue');
+      queueSystem.process.mockName('queueSystem.process');
+      queueSystem.getSubscribers.mockName('queueSystem.getSubscribers');
+      queueSystem.registerSubscriber.mockName('queueSystem.registerSubscriber');
 
       const log = {
           info: jest.fn(),
@@ -84,7 +84,7 @@ describe('QueueTransport tests', () => {
           error: jest.fn()
       };
 
-      instance = new QueueTransport(transport, 'source', log);
+      instance = new QueueTransport(queueSystem, 'source', log);
   });
 
   describe('subscribe', () => {
@@ -93,8 +93,8 @@ describe('QueueTransport tests', () => {
           const channel = 'channelName';
           const mockHandler = jest.fn();
           const data = { headers: { channel }, body: { message: "Hello World"} };
-          instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-          instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
           await expect(instance.subscribe(channel, mockHandler)).resolves.toBeInstanceOf(Function);
 
@@ -103,7 +103,7 @@ describe('QueueTransport tests', () => {
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
           
-          const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
+          const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
           clearTransportMocks(instance);
           
           subscriptionHandler({ data });
@@ -119,8 +119,8 @@ describe('QueueTransport tests', () => {
           const mockHandler1 = jest.fn();
           const mockHandler2 = jest.fn();
           const data = { headers: { channel }, body: { message: "Hello World"} };
-          instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-          instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
           await expect(instance.subscribe(channel, mockHandler1)).resolves.toBeInstanceOf(Function);
           await expect(instance.subscribe(channel, mockHandler2)).resolves.toBeInstanceOf(Function);
@@ -133,7 +133,7 @@ describe('QueueTransport tests', () => {
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 2 });
 
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 2 });
-          const subscriptionHandler = _.last(instance.transport.process.mock.calls[0])
+          const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0])
 
           clearTransportMocks(instance);
 
@@ -154,8 +154,8 @@ describe('QueueTransport tests', () => {
           const channel3 = `${channel}3`;
           const channel4 = `${channel}4`;
           const mockHandler = jest.fn();
-          instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-          instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
           await expect(instance.subscribe(channel1, mockHandler)).resolves.toBeInstanceOf(Function);
           await expect(instance.subscribe(channel2, mockHandler)).resolves.toBeInstanceOf(Function);
@@ -180,8 +180,8 @@ describe('QueueTransport tests', () => {
           const mockHandler = jest.fn();
           const unsubscribeMock = jest.fn();
 
-          instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(unsubscribeMock));
-          instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(unsubscribeMock));
+          instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
           const unsubscriber = await instance.subscribe(channel, mockHandler);
 
@@ -207,8 +207,8 @@ describe('QueueTransport tests', () => {
         const mockHandler = jest.fn();
         const data = { headers: { channel }, body: { message: "Hello World"} };
         
-        instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-        instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+        instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+        instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
         await expect(instance.subscribeGroup(groupId, channel, mockHandler)).resolves.toBeInstanceOf(Function);
 
@@ -218,7 +218,7 @@ describe('QueueTransport tests', () => {
         expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
 
         expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
-        const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
+        const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
         clearTransportMocks(instance);
 
         subscriptionHandler({ data });
@@ -235,8 +235,8 @@ describe('QueueTransport tests', () => {
         const mockHandler = jest.fn();
         const data = { headers: { channel: `${channelPrefix}1` }, body: { message: "Hello World"} };
 
-        instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-        instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+        instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+        instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
         await expect(instance.subscribeGroup(groupId, `${channelPrefix}1`, mockHandler)).resolves
           .toBeInstanceOf(Function);
@@ -263,7 +263,7 @@ describe('QueueTransport tests', () => {
                                  });
 
         expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 3 });
-        const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
+        const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
 
         clearTransportMocks(instance);
 
@@ -293,8 +293,8 @@ describe('QueueTransport tests', () => {
       const mockHandler = jest.fn();
       const data = { headers: { channel }, body: { message: "Hello World"} };
 
-      instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-      instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+      instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+      instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
       await expect(instance.subscribeGroup(`${groupId}1`, channel, mockHandler)).resolves
         .toBeInstanceOf(Function);
@@ -311,9 +311,9 @@ describe('QueueTransport tests', () => {
       expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 3 });
 
       expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 3 }, { name: 'registerSubscriber', numCalls: 3 });
-      const subscriptionHandler1 = _.last(instance.transport.process.mock.calls[0]);
-      const subscriptionHandler2 = _.last(instance.transport.process.mock.calls[1]);
-      const subscriptionHandler3 = _.last(instance.transport.process.mock.calls[2]);
+      const subscriptionHandler1 = _.last(instance.queueSystem.process.mock.calls[0]);
+      const subscriptionHandler2 = _.last(instance.queueSystem.process.mock.calls[1]);
+      const subscriptionHandler3 = _.last(instance.queueSystem.process.mock.calls[2]);
 
       clearTransportMocks(instance);
 
@@ -337,8 +337,8 @@ describe('QueueTransport tests', () => {
       const mockHandler1 = jest.fn();
       const mockHandler2 = jest.fn();
       const data = { headers: { channel }, body: { message: "Hello World"} };
-      instance.transport.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-      instance.transport.process.mockReturnValue(Promise.resolve(_.noop));
+      instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
+      instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
       await expect(instance.subscribeGroup(groupId, channel, mockHandler1)).resolves.toBeInstanceOf(Function);
       try {
@@ -354,7 +354,7 @@ describe('QueueTransport tests', () => {
       expectSubscriberRegistry(instance.registries.subscribers, { inbox, channel, numSubscribers: 1 });
 
       expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
-      const subscriptionHandler = _.last(instance.transport.process.mock.calls[0]);
+      const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
 
       clearTransportMocks(instance);
 
@@ -375,8 +375,8 @@ describe('QueueTransport tests', () => {
           const channel = 'channelName';
           const payload = { headers: {}, body: { foo: 'bar' }};
 
-          instance.transport.getSubscribers.mockReturnValue(Promise.resolve([]));
-          instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+          instance.queueSystem.getSubscribers.mockReturnValue(Promise.resolve([]));
+          instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
           await expect(instance.publish(channel, payload)).resolves.toEqual([]);
 
@@ -387,8 +387,8 @@ describe('QueueTransport tests', () => {
           const channel = 'channelName';
           const payload = { headers: {}, body: { foo: 'bar' }};
 
-          instance.transport.getSubscribers.mockReturnValue(Promise.resolve(['queueName']));
-          instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+          instance.queueSystem.getSubscribers.mockReturnValue(Promise.resolve(['queueName']));
+          instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
           await expect(instance.publish(channel, payload)).resolves.toEqual([true]);
 
@@ -399,8 +399,8 @@ describe('QueueTransport tests', () => {
           const channel = 'channelName';
           const payload = { headers: {}, body: { foo: 'bar' }};
 
-          instance.transport.getSubscribers.mockReturnValue(Promise.resolve(['queueName1', 'queueName2', 'queueName3']));
-          instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+          instance.queueSystem.getSubscribers.mockReturnValue(Promise.resolve(['queueName1', 'queueName2', 'queueName3']));
+          instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
           await expect(instance.publish(channel, payload)).resolves.toEqual([true, true, true]);
 
@@ -414,7 +414,7 @@ describe('QueueTransport tests', () => {
           const queueName = `${serviceName}:queueName`;
           const req = { headers: { queueName }, body: { foo: 'bar' }};
 
-          instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+          instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
           await expect(instance.fireAndForget(req)).resolves.toBe(true);
 
@@ -434,7 +434,7 @@ describe('QueueTransport tests', () => {
           const queueName = `${serviceName}:queueName`;
           const req = { headers: { queueName }, body: { foo: 'bar' }};
 
-          instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+          instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
           await expect(instance.fireAndForget(req)).resolves.toBe(true);
           await expect(instance.fireAndForget(req)).resolves.toBe(true);
@@ -461,7 +461,7 @@ describe('QueueTransport tests', () => {
             const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
             const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' }};
 
-            instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+            instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
             const response = instance.request(req, 100);
             await Promise.delay(50);
@@ -488,7 +488,7 @@ describe('QueueTransport tests', () => {
             const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
             const timeoutError = new StellarError(`Timeout error: No response to job 1 in 500ms`);
 
-            instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+            instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
             const response = instance.request(req, 500);
             await Promise.delay(50);
@@ -512,7 +512,7 @@ describe('QueueTransport tests', () => {
         const responseInbox = `stlr:n:source:responseInbox`;
         const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
 
-        instance.transport.enqueue.mockReturnValue(Promise.resolve(true));
+        instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
         instance.request(req);
         await Promise.delay(50);
@@ -544,7 +544,7 @@ describe('QueueTransport tests', () => {
             const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' }};
 
             mockHandler.mockReturnValue(Promise.resolve(res));
-            instance.transport.process.mockReturnValue(Promise.resolve(true));
+            instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
             await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
 
@@ -555,7 +555,7 @@ describe('QueueTransport tests', () => {
             expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler } );
             expect(mockHandler).not.toHaveBeenCalled();
 
-            instance.transport.process.mock.calls[0][1]({ data: req });
+            instance.queueSystem.process.mock.calls[0][1]({ data: req });
             await Promise.delay(50);
             
             expect(mockHandler).toHaveBeenCalled();
@@ -578,7 +578,7 @@ describe('QueueTransport tests', () => {
         const error = new Error('world');
         error.__stellarResponse = res;
         mockHandler.mockReturnValue(Promise.reject(error));
-        instance.transport.process.mockReturnValue(Promise.resolve(true));
+        instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
         await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
 
@@ -589,7 +589,7 @@ describe('QueueTransport tests', () => {
         expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler });
         expect(mockHandler).not.toHaveBeenCalled();
 
-        instance.transport.process.mock.calls[0][1]({ data: req });
+        instance.queueSystem.process.mock.calls[0][1]({ data: req });
         await Promise.delay(50);
 
         expect(mockHandler).toHaveBeenCalled();
@@ -610,7 +610,7 @@ describe('QueueTransport tests', () => {
         const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' }};
 
         mockHandler.mockReturnValue(Promise.resolve(res));
-        instance.transport.process.mockReturnValue(Promise.resolve(true));
+        instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
         await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
 
@@ -621,7 +621,7 @@ describe('QueueTransport tests', () => {
         expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler });
         expect(mockHandler).not.toHaveBeenCalled();
 
-        instance.transport.process.mock.calls[0][1]({ data: req });
+        instance.queueSystem.process.mock.calls[0][1]({ data: req });
         await Promise.delay(50);
 
         expect(mockHandler).toHaveBeenCalled();
@@ -640,7 +640,7 @@ describe('QueueTransport tests', () => {
 
   describe('reset', () => {
     it('should reset ok', async () => {
-      instance.transport.stopProcessing.mockReturnValue(Promise.resolve(true));
+      instance.queueSystem.stopProcessing.mockReturnValue(Promise.resolve(true));
 
       instance.inboxes = { inbox1: true, inbox2: true };
       instance.registries.subscribers = { subscriber1: _.noop };
