@@ -7,7 +7,7 @@ import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import { configureStellar, uuid } from '@stellarjs/core';
 import StellarError from '@stellarjs/stellar-error';
-import messagingFactory from '@stellarjs/transport-socket';
+import transportFactory from '@stellarjs/transport-socket';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
@@ -23,7 +23,7 @@ function _calcNextDelay(maxDelay, delay) {
 }
 
 function stellarSocketFactory(eio, log = console) {
-  const { stellarRequest } = configureStellar({ log, transportFactory: messagingFactory });
+  const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
   const stellarRequestOptions = typeof window === 'undefined' ? { sourceOverride: uuid() } : {};
 
