@@ -1,6 +1,6 @@
-import transportRedis from '@stellarjs/queue-redis-bull';
+import { BullRedisQueueSystem } from '@stellarjs/queue-redis-bull';
 import get from 'lodash/get';
-import instrumentRedisTransport from '../src';
+import instrumentBullRedisQueueSystem from '../src';
 
 let messageShim;
 
@@ -13,7 +13,7 @@ describe('test instrument newrelic', () => {
       LAST: 'LAST',
       QUEUE: 'QUEUE',
     };
-    instrumentRedisTransport(messageShim, transportRedis);
+    instrumentBullRedisQueueSystem(messageShim, BullRedisQueueSystem);
   });
 
   it('Should set Library name as stellarjs', () => {
@@ -21,7 +21,7 @@ describe('test instrument newrelic', () => {
   });
 
   it('Should record transport enqueue', () => {
-    const prototype = transportRedis.BullRedisQueueSystem.prototype;
+    const prototype = BullRedisQueueSystem.prototype;
     expect(messageShim.recordProduce).toBeCalledWith(prototype, 'enqueue', expect.any(Function));
     const messageHandler = get(messageShim, 'recordProduce.mock.calls[0][2]');
     const job = {
@@ -41,7 +41,7 @@ describe('test instrument newrelic', () => {
   });
 
   it('Should record transport process', () => {
-    const prototype = transportRedis.BullRedisQueueSystem.prototype;
+    const prototype = BullRedisQueueSystem.prototype;
     expect(messageShim.recordSubscribedConsume).toBeCalledWith(prototype, 'process', expect.any(Object));
     const consumeSpec = get(messageShim, 'recordSubscribedConsume.mock.calls[0][2]');
 

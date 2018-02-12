@@ -1,9 +1,9 @@
 import get from 'lodash/get';
 
-export default function instrumentBullRedisQueueSystem(shim, messageBrokerModule) {
+export default function instrumentBullRedisQueueSystem(shim, BullRedisQueueSystem) {
   shim.setLibrary('stellarjs');
 
-  shim.recordProduce(messageBrokerModule.BullRedisQueueSystem.prototype, 'enqueue', (_shim, fn, name, args) => {
+  shim.recordProduce(BullRedisQueueSystem.prototype, 'enqueue', (_shim, fn, name, args) => {
     const queueName = args[0];
     const obj = (args.length > 1) ? args[1] : {};
 
@@ -22,7 +22,7 @@ export default function instrumentBullRedisQueueSystem(shim, messageBrokerModule
     };
   });
 
-  shim.recordSubscribedConsume(messageBrokerModule.BullRedisQueueSystem.prototype, 'process', {
+  shim.recordSubscribedConsume(BullRedisQueueSystem.prototype, 'process', {
     consumer: shim.LAST,
     messageHandler(_shim, consumer, name, args) {
       const job = args[0];
