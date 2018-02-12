@@ -7,8 +7,8 @@ import { EventEmitter } from 'events';
 import { RemoteTransport } from '@stellarjs/transport';
 
 class WebsocketTransport extends RemoteTransport {
-  constructor(socket, log, sendingOnly) {
-    super(log);
+  constructor(socket, log, sendingOnly, requestTimeout) {
+    super(log, requestTimeout);
     this.sendingOnly = sendingOnly;
     this.subscriptionHandler = new EventEmitter();
 
