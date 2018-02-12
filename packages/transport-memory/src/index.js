@@ -3,12 +3,12 @@
  */
 import uuid from 'uuid/v1';
 
-import { MessagingAdaptor } from '@stellarjs/core';
+import { Transport } from '@stellarjs/transport';
 import get from 'lodash/get';
 import values from 'lodash/values';
 import { EventEmitter } from 'events';
 
-class MemoryTransport extends MessagingAdaptor {
+class MemoryTransport extends Transport {
   constructor(log, standardiseDates = false) {
     super(log);
     this.subscriptionHandler = new EventEmitter();

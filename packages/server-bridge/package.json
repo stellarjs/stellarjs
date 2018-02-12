@@ -1,0 +1,73 @@
+{
+  "name": "@stellarjs/server-bridge",
+  "version": "0.9.3",
+  "license": "MIT",
+  "main": "lib-es6/index.js",
+  "src": [
+    "src/**/*"
+  ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js"
+    ],
+    "coverageDirectory": "../../.artifacts/coverage/server-bridge",
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/server-bridge.xml",
+    "usePathForSuiteName": "true"
+  },
+  "scripts": {
+    "ci": "yarn run lint:ci && yarn run test-coverage",
+    "clean": "rimraf lib-es6",
+    "compile": "yarn run compile:es6",
+    "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
+    "compile:umd": "webpack -p",
+    "test": "jest --runInBand --forceExit",
+    "test:coverage": "jest --coverage --runInBand --forceExit",
+    "prepublish": "yarn run compile",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/server-bridge.xml src"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@stellarjs/client-engine.io": "^0.9.3",
+    "babel-cli": "^6.24.1",
+    "babel-jest": "^22.0.4",
+    "engine.io": "3.1.0",
+    "engine.io-client": "3.1.1",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-better-mutation": "^1.1.2",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-lodash": "2.4.4",
+    "eslint-plugin-promise": "3.5.0",
+    "jest": "^22.0.4",
+    "rimraf": "^2.6.1",
+    "url": "^0.11.0"
+  },
+  "peerDependencies": {
+    "engine.io": "2-3"
+  },
+  "dependencies": {
+    "@stellarjs/core": "^0.9.1",
+    "@stellarjs/queue-redis-bull": "^0.9.1",
+    "@stellarjs/stellar-error": "^0.9.1",
+    "@stellarjs/transport-queue": "^0.9.1",
+    "@stellarjs/transport-socket": "^0.9.1",
+    "@stellarjs/mw-log-trace": "^0.9.1",
+    "bluebird": "^3.4.7",
+    "lodash": "^4.17.4",
+    "safe-json-stringify": "^1.0.4"
+  }
+}

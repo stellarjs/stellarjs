@@ -1,13 +1,12 @@
-import _ from 'lodash';
 import Promise from 'bluebird';
 import StellarPubSub from '../src/StellarPubSub';
-import { messagingMockFactory } from './mocks';
+import { transportMockFactory } from './mocks';
 
 const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
   return
 };
 const getAppPubSub = (channel, body = { text: 'hi' }) => {
-  return new StellarPubSub(messagingMockFactory(), 'test', console, );
+  return new StellarPubSub(transportMockFactory(), 'test', console, );
 };
 
 describe('mock pubsub', () => {
@@ -15,12 +14,12 @@ describe('mock pubsub', () => {
   let headers;
   let defaultPubSub;
   let appPubSub;
-  let messagingMock;
+  let transportMock;
   
   beforeEach(() => {
-    messagingMock = messagingMockFactory();
-    defaultPubSub = new StellarPubSub(messagingMock, 'test', console);
-    appPubSub = new StellarPubSub(messagingMock, 'test', console, 'APP');
+    transportMock = transportMockFactory();
+    defaultPubSub = new StellarPubSub(transportMock, 'test', console);
+    appPubSub = new StellarPubSub(transportMock, 'test', console, 'APP');
     headers = {
       channel,
       id: '1',
@@ -43,11 +42,11 @@ describe('mock pubsub', () => {
     const subscriberMock = jest.fn();
     defaultPubSub.subscribe(channel, subscriberMock);
 
-    expect(messagingMock.subscribe).toHaveBeenCalled();
-    expect(messagingMock.subscribe.mock.calls).toHaveLength(1);
-    expect(messagingMock.subscribe.mock.calls[0]).toEqual([channel, expect.any(Function)]);
+    expect(transportMock.subscribe).toHaveBeenCalled();
+    expect(transportMock.subscribe.mock.calls).toHaveLength(1);
+    expect(transportMock.subscribe.mock.calls[0]).toEqual([channel, expect.any(Function)]);
 
-    messagingMock.subscribe.mock.calls[0][1]({ headers, body: {text: 'hello'} });
+    transportMock.subscribe.mock.calls[0][1]({ headers, body: {text: 'hello'} });
     await Promise.delay(50);
     expect(subscriberMock.mock.calls).toHaveLength(1);
     expect(subscriberMock.mock.calls[0]).toEqual([{text: 'hello'}]);
@@ -58,11 +57,11 @@ describe('mock pubsub', () => {
     const subscriberMock = jest.fn();
     appPubSub.subscribe(channel, subscriberMock);
 
-    expect(messagingMock.subscribeGroup).toHaveBeenCalled();
-    expect(messagingMock.subscribeGroup.mock.calls).toHaveLength(1);
-    expect(messagingMock.subscribeGroup.mock.calls[0]).toEqual(['APP', channel, expect.any(Function)]);
+    expect(transportMock.subscribeGroup).toHaveBeenCalled();
+    expect(transportMock.subscribeGroup.mock.calls).toHaveLength(1);
+    expect(transportMock.subscribeGroup.mock.calls[0]).toEqual(['APP', channel, expect.any(Function)]);
 
-    messagingMock.subscribeGroup.mock.calls[0][2]({ headers, body: {text: 'hello'} });
+    transportMock.subscribeGroup.mock.calls[0][2]({ headers, body: {text: 'hello'} });
     await Promise.delay(50);
     expect(subscriberMock.mock.calls).toHaveLength(1);
     expect(subscriberMock.mock.calls[0]).toEqual([{text: 'hello'}]);
@@ -87,11 +86,11 @@ describe('mock pubsub', () => {
 
     defaultPubSub.subscribe(channel, subscriberMock);
 
-    expect(messagingMock.subscribe).toHaveBeenCalled();
-    expect(messagingMock.subscribe.mock.calls).toHaveLength(1);
-    expect(messagingMock.subscribe.mock.calls[0]).toEqual([channel, expect.any(Function)]);
+    expect(transportMock.subscribe).toHaveBeenCalled();
+    expect(transportMock.subscribe.mock.calls).toHaveLength(1);
+    expect(transportMock.subscribe.mock.calls[0]).toEqual([channel, expect.any(Function)]);
 
-    messagingMock.subscribe.mock.calls[0][1](message);
+    transportMock.subscribe.mock.calls[0][1](message);
     await Promise.delay(50);
     expect(subscriberMock.mock.calls).toHaveLength(1);
     expect(subscriberMock.mock.calls[0]).toEqual([{text: 'hello'}]);
@@ -104,13 +103,13 @@ describe('mock pubsub', () => {
   });
 
   describe('publish', () => {
-    it('should call messagingAdaptor.publish', async () => {
+    it('should call trasport.publish', async () => {
       const message = { headers, body: { text: 'hi' }};
       await defaultPubSub.publish(channel, message.body);
 
-      expect(messagingMock.publish).toHaveBeenCalled();
-      expect(messagingMock.publish.mock.calls).toHaveLength(1);
-      expect(messagingMock.publish.mock.calls[0]).toEqual([channel, message]);
+      expect(transportMock.publish).toHaveBeenCalled();
+      expect(transportMock.publish.mock.calls).toHaveLength(1);
+      expect(transportMock.publish.mock.calls[0]).toEqual([channel, message]);
     });
 
     it('middleware should work', async () => {
@@ -130,9 +129,9 @@ describe('mock pubsub', () => {
 
       await defaultPubSub.publish(channel, message.body);
 
-      expect(messagingMock.publish).toHaveBeenCalled();
-      expect(messagingMock.publish.mock.calls).toHaveLength(1);
-      expect(messagingMock.publish.mock.calls[0]).toEqual([channel, message]);
+      expect(transportMock.publish).toHaveBeenCalled();
+      expect(transportMock.publish.mock.calls).toHaveLength(1);
+      expect(transportMock.publish.mock.calls[0]).toEqual([channel, message]);
 
       await Promise.delay(50);
 

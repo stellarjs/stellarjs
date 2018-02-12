@@ -33,8 +33,8 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
 
   return function configure(
     { log,
-      messagingAdaptor,
-      messagingAdaptorFactory,
+      transport,
+      transportFactory,
       source,
       sourceGenerator,
       app = process.env.APP,
@@ -44,29 +44,29 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
     const _log = log || console;
     const _source = source || getSourceGenerator(sourceGenerator)(_log);
     const _requestTimeout = requestTimout || defaultRequestTimeout;
-    const _messaging = messagingAdaptor
-      || messagingAdaptorFactory(assign({ source: _source, log: _log, requestTimeout: _requestTimeout }, options));
+    const _transport = transport
+      || transportFactory(assign({ source: _source, log: _log, requestTimeout: _requestTimeout }, options));
 
     function stellarAppPubSub() {
       register(_source, 'stellarAppPubSub');
-      return new StellarPubSub(_messaging, _source, _log, _app);
+      return new StellarPubSub(_transport, _source, _log, _app);
     }
 
     function stellarNodePubSub(pubsubOptions = {}) {
       const pubsubSource = pubsubOptions.sourceOverride || _source;
       register(pubsubSource, 'stellarNodePubSub');
-      return new StellarPubSub(_messaging, pubsubSource, _log);
+      return new StellarPubSub(_transport, pubsubSource, _log);
     }
 
     function stellarRequest(requestOptions = {}) {
       const requestSource = requestOptions.sourceOverride || _source;
       register(requestSource, 'stellarRequest');
-      return new StellarRequest(_messaging, requestSource, _log, stellarNodePubSub(requestOptions));
+      return new StellarRequest(_transport, requestSource, _log, stellarNodePubSub(requestOptions));
     }
 
     function stellarHandler() {
       register(_source, 'stellarHandler');
-      return new StellarHandler(_messaging, _source, _log, _app);
+      return new StellarHandler(_transport, _source, _log, _app);
     }
 
     return {

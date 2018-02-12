@@ -6,18 +6,17 @@ import { MemoryTransport } from '@stellarjs/transport-memory';
 import Promise from 'bluebird';
 
 import runMetrics, { resetMetrics, middleware, getMetrics } from '../src';
-import { QueueMessagingAdaptor } from '../../messaging-queue/lib-es6';
 
 const service = 'service';
 const source = 'test';
 
 function createStellar() {
-  const messaging = new MemoryTransport(console);
-  const request = new StellarRequest(messaging, source, console);
-  const handler = new StellarHandler(messaging, source, console);
-  const pubSub = new StellarPubSub(messaging, source, console);
+  const transport = new MemoryTransport(console);
+  const request = new StellarRequest(transport, source, console);
+  const handler = new StellarHandler(transport, source, console);
+  const pubSub = new StellarPubSub(transport, source, console);
 
-  return { messaging, handler, request, pubSub };
+  return { transport, handler, request, pubSub };
 }
 
 describe('metrics', () => {
@@ -31,7 +30,7 @@ describe('metrics', () => {
 
   afterEach(() => {
     resetMetrics();
-    stellar.messaging.reset();
+    stellar.transport.reset();
   });
 
   it('calls metrics middleware by pattern', () => {

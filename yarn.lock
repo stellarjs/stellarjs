@@ -16,6 +16,17 @@
   dependencies:
     nan "^2.4.0"
 
+"@stellarjs/engine.io-client@^0.9.3":
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/@stellarjs/engine.io-client/-/engine.io-client-0.9.3.tgz#b09f825d1a07517c17a7ed838d9c57f12c94b53f"
+  dependencies:
+    "@stellarjs/core" "^0.9.1"
+    "@stellarjs/transport-socket" "^0.9.1"
+    bluebird "^3.4.7"
+    lodash "^4.17.4"
+    qs "^6.5.0"
+    tough-cookie "^2.3.2"
+
 "@types/node@*":
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.5.2.tgz#83b8103fa9a2c2e83d78f701a9aa7c9539739aa5"

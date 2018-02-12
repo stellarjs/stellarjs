@@ -13,9 +13,9 @@ import getUri from './utils/getUri';
 import match from './utils/match';
 
 class StellarCore {
-  constructor(messagingAdaptor, source, log) {
+  constructor(transport, source, log) {
     this.handlerChain = [];
-    this.messagingAdaptor = messagingAdaptor;
+    this.transport = transport;
     this.log = log;
     this.setSource(source);
   }
@@ -51,7 +51,7 @@ class StellarCore {
    * @private
    */
   _getHeaders(headers, overrides) {
-    const id = this.messagingAdaptor.generateId();
+    const id = this.transport.generateId();
     return assign(
       {
         id,

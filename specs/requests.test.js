@@ -1,7 +1,8 @@
 /* eslint-disable */
 
 import Promise from 'bluebird';
-import { StellarRequest, StellarHandler, StellarError } from '@stellarjs/core';
+import StellarError from '@stellarjs/stellar-error';
+import { StellarRequest, StellarHandler } from '@stellarjs/core';
 
 import { log, getResourceName } from './helpers';
 

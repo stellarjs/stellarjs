@@ -6,8 +6,8 @@ import includes from 'lodash/includes';
 import StellarCore from './StellarCore';
 
 export default class StellarPubSub extends StellarCore {
-  constructor(messagingAdaptor, source, log, service) {
-    super(messagingAdaptor, source, log);
+  constructor(transport, source, log, service) {
+    super(transport, source, log);
     this.service = service;
   }
 
@@ -15,7 +15,7 @@ export default class StellarPubSub extends StellarCore {
     const me = this;
     this.publisherMiddlewares = [].concat(this.handlerChain, {
       fn({ headers, body }) {
-        return me.messagingAdaptor.publish(headers.channel, { headers, body });
+        return me.transport.publish(headers.channel, { headers, body });
       },
     });
   }
@@ -34,9 +34,9 @@ export default class StellarPubSub extends StellarCore {
     });
 
     if (this.service) {
-      return this.messagingAdaptor.subscribeGroup(this.service, channel, this._executeMiddlewares(subscriberMiddlewares));
+      return this.transport.subscribeGroup(this.service, channel, this._executeMiddlewares(subscriberMiddlewares));
     }
 
-    return this.messagingAdaptor.subscribe(channel, this._executeMiddlewares(subscriberMiddlewares));
+    return this.transport.subscribe(channel, this._executeMiddlewares(subscriberMiddlewares));
   }
 }

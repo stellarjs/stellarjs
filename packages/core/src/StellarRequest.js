@@ -1,12 +1,13 @@
 /**
  * Created by arolave on 25/09/2016.
  */
+import StellarError from '@stellarjs/stellar-error';
+
 import defaults from 'lodash/defaults';
 import get from 'lodash/get';
 import includes from 'lodash/includes';
 import lowerCase from 'lodash/lowerCase';
 
-import { StellarError } from './StellarError';
 import StellarCore from './StellarCore';
 import StellarPubSub from './StellarPubSub';
 
@@ -28,12 +29,12 @@ function responseHandler(responseData) {
 }
 
 export default class StellarRequest extends StellarCore {
-  constructor(messagingAdaptor, source, log, pubsub) {
-    super(messagingAdaptor, source, log);
+  constructor(transport, source, log, pubsub) {
+    super(transport, source, log);
     if (pubsub) {
       this.pubsub = pubsub;
     } else {
-      this.pubsub = new StellarPubSub(messagingAdaptor, source, log);
+      this.pubsub = new StellarPubSub(transport, source, log);
     }
   }
 
@@ -54,7 +55,7 @@ export default class StellarRequest extends StellarCore {
     this.requestMiddlewares = this.handlerChain.concat(
       {
         fn(req) {
-          return me.messagingAdaptor
+          return me.transport
             .request(req)
             .catch(error => (error.__stellarResponse ? error.__stellarResponse : me._prepareResponse(req, error)))
             .then(res => responseHandler(res));
@@ -64,7 +65,7 @@ export default class StellarRequest extends StellarCore {
     this.fireAndForgetMiddlewares = this.handlerChain.concat(
       {
         fn(request) {
-          return me.messagingAdaptor.fireAndForget(request);
+          return me.transport.fireAndForget(request);
         },
       });
   }

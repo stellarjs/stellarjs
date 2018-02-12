@@ -33,6 +33,6 @@ export default class StellarHandler extends StellarCore {
       },
     });
 
-    return this.messagingAdaptor.addRequestHandler(url, this._executeMiddlewares(this.allMiddlewares));
+    return this.transport.addRequestHandler(url, this._executeMiddlewares(this.allMiddlewares));
   }
 }

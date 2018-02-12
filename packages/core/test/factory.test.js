@@ -3,7 +3,7 @@
  */
 import Promise from 'bluebird';
 import preconfigure from '../src/factory';
-import { messagingMockFactory } from './mocks';
+import { transportMockFactory } from './mocks';
 import { default as uuid } from '../src/source-generators/uuid';
 import { default as browser } from '../src/source-generators/browser';
 import { default as env } from '../src/source-generators/env';
@@ -16,18 +16,18 @@ describe('factory generation', () => {
 
   it('set externalSource generation', () => {
     const { stellarRequest, source } = configureStellar(
-      { log: console, messagingAdaptorFactory: messagingMockFactory, source: 'external123' });
+      { log: console, transportFactory: transportMockFactory, source: 'external123' });
     const requestObj = stellarRequest();
     expect(source).toBe('external123');
   });
 
   it('set uuid generation', (done) => {
     const { stellarRequest, source } = configureStellar(
-      { log: console, messagingAdaptorFactory: messagingMockFactory, sourceGenerator: 'uuid' });
+      { log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();
-        requestObj.messagingAdaptor.request.mockReturnValue({ text: 'ooo' });
+        requestObj.transport.request.mockReturnValue({ text: 'ooo' });
         expect(source).toMatch(/^[0-9a-f\-]+$/);
         done();
       });
@@ -36,7 +36,7 @@ describe('factory generation', () => {
   it('a stellarRequests with same source should fail', (done) => {
     let requestObj;
     const { stellarRequest } = configureStellar(
-        { log: console, messagingAdaptorFactory: messagingMockFactory, sourceGenerator: 'uuid' });
+        { log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
     Promise.delay(50)
         .then(() => {
           requestObj = stellarRequest();
@@ -50,11 +50,11 @@ describe('factory generation', () => {
   });
 
   it('a stellarRequests with differed sources should succeed', (done) => {
-    const { stellarRequest } = configureStellar({ log: console, messagingAdaptorFactory: messagingMockFactory, sourceGenerator: 'uuid' });
+    const { stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();
-        requestObj.messagingAdaptor.request.mockReturnValue(Promise.resolve({ text: 'ooo' }));
+        requestObj.transport.request.mockReturnValue(Promise.resolve({ text: 'ooo' }));
 
         expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
 
@@ -76,7 +76,7 @@ describe('factory generation', () => {
 
   it('set browser generation', (done) => {
     global.localStorage = {};
-    const { source, stellarRequest } = configureStellar({ log: console, messagingAdaptorFactory: messagingMockFactory, sourceGenerator: 'browser' });
+    const { source, stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'browser' });
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();
@@ -89,7 +89,7 @@ describe('factory generation', () => {
   it('set env generation', (done) => {
     global.localStorage = {};
     process.env.STELLAR_SOURCE = '12345ABCDE';
-    const { source, stellarRequest } = configureStellar({ log: console, messagingAdaptorFactory: messagingMockFactory, sourceGenerator: 'env' });
+    const { source, stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'env' });
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();

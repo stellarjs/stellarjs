@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 
-import { StellarError } from '../src/StellarError';
-import { messagingMockFactory } from './mocks';
+import StellarError from '@stellarjs/stellar-error';
+import { transportMockFactory } from './mocks';
 import StellarHandler from '../src/StellarHandler';
 
 const getStellarHandler = () => {
-  return new StellarHandler(messagingMockFactory(), 'test', console);
+  return new StellarHandler(transportMockFactory(), 'test', console);
 };
 
 describe('StellarHandler', () => {
@@ -63,7 +63,7 @@ describe('StellarHandler', () => {
 
     beforeEach(() => {
       headers = {
-        id: stellarHandler.messagingAdaptor.generateId(),
+        id: stellarHandler.transport.generateId(),
         traceId: '1',
         queueName: 'testservice:resource:create',
         source: 'test',
@@ -90,11 +90,11 @@ describe('StellarHandler', () => {
       mockFn.mockReturnValue({ text: 'world' });
       stellarHandler.handleRequest('url', mockFn);
 
-      expect(stellarHandler.messagingAdaptor.addRequestHandler).toHaveBeenCalled();
-      expect(stellarHandler.messagingAdaptor.addRequestHandler.mock.calls).toHaveLength(1);
-      expect(stellarHandler.messagingAdaptor.addRequestHandler.mock.calls[0]).toEqual(['url', expect.any(Function)]);
+      expect(stellarHandler.transport.addRequestHandler).toHaveBeenCalled();
+      expect(stellarHandler.transport.addRequestHandler.mock.calls).toHaveLength(1);
+      expect(stellarHandler.transport.addRequestHandler.mock.calls[0]).toEqual(['url', expect.any(Function)]);
 
-      const res = await stellarHandler.messagingAdaptor.addRequestHandler.mock.calls[0][1](req);
+      const res = await stellarHandler.transport.addRequestHandler.mock.calls[0][1](req);
       expect(res).toEqual(expectedStellarResponse);
 
       expect(mockFn.mock.calls).toHaveLength(1);
@@ -122,7 +122,7 @@ describe('StellarHandler', () => {
       mockFn.mockReturnValue({ text: 'world' });
       stellarHandler.handleRequest('url', mockFn);
 
-      const result = await stellarHandler.messagingAdaptor.addRequestHandler.mock.calls[0][1](req);
+      const result = await stellarHandler.transport.addRequestHandler.mock.calls[0][1](req);
 
       expect(result).toEqual(expectedResult);
 
@@ -162,7 +162,7 @@ describe('StellarHandler', () => {
       stellarHandler.handleRequest('url', mockFn);
 
       try {
-        const result = await stellarHandler.messagingAdaptor.addRequestHandler.mock.calls[0][1](req);
+        const result = await stellarHandler.transport.addRequestHandler.mock.calls[0][1](req);
         fail('should throw');
       } catch (err) {
         expect(err).toEqual(expectedResult);
@@ -203,7 +203,7 @@ describe('StellarHandler', () => {
       stellarHandler.handleRequest('url', mockFn);
 
       try {
-        const result = await stellarHandler.messagingAdaptor.addRequestHandler.mock.calls[0][1](req);
+        const result = await stellarHandler.transport.addRequestHandler.mock.calls[0][1](req);
         fail('should throw');
       } catch (err) {
         expect(err).toEqual(expectedResult);
@@ -249,7 +249,7 @@ describe('StellarHandler', () => {
       stellarHandler.handleRequest('url', mockFn);
 
       try {
-        await stellarHandler.messagingAdaptor.addRequestHandler.mock.calls[0][1](req);
+        await stellarHandler.transport.addRequestHandler.mock.calls[0][1](req);
         fail('expected a throw');
       } catch (err) {
         expect(err).toEqual(error);

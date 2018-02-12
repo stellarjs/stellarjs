@@ -4,9 +4,9 @@
 import get from 'lodash/get';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
-import { RemoteRequestAdaptor } from '@stellarjs/messaging-queue';
+import { RemoteTransport } from '@stellarjs/transport';
 
-class WebsocketTransport extends RemoteRequestAdaptor {
+class WebsocketTransport extends RemoteTransport {
   constructor(socket, log, sendingOnly) {
     super(log);
     this.sendingOnly = sendingOnly;

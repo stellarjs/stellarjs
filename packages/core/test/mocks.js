@@ -1,8 +1,8 @@
 /**
  * Created by arolave on 29/05/2017.
  */
-function messagingMockFactory() {
-  const messagingMock = {
+function transportMockFactory() {
+  const transportMock = {
     request: jest.fn(),
     fireAndForget: jest.fn(),
     publish: jest.fn(),
@@ -13,9 +13,9 @@ function messagingMockFactory() {
   };
 
   let i = 1;
-  messagingMock.generateId.mockImplementation(() => `${i++}`);
+  transportMock.generateId.mockImplementation(() => `${i++}`);
 
-  return messagingMock;
+  return transportMock;
 }
 
-export { messagingMockFactory };
+export { transportMockFactory };

@@ -67,6 +67,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
+    "@stellarjs/stellar-error": "0.9.1",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4",
