@@ -7,16 +7,16 @@ import { log, getChannelName } from './helpers';
 const source = 'test';
 let stellarPub;
 let stellarSub;
-let messaging;
+let transport;
 
-export function doBeforeAll(messagingGenerator) {
-  messaging = messagingGenerator(source, log);
-  stellarPub = new StellarPubSub(messaging.a, source, log, 'P1');
-  stellarSub = new StellarPubSub(messaging.b, source, log, 'S1');
+export function doBeforeAll(transportGenerator) {
+  transport = transportGenerator(source, log);
+  stellarPub = new StellarPubSub(transport.a, source, log, 'P1');
+  stellarSub = new StellarPubSub(transport.b, source, log, 'S1');
 }
 
-export async function doAfterAll(closeMessaging) {
-  await closeMessaging();
+export async function doAfterAll(closeTransport) {
+  await closeTransport();
   await Promise.delay(5000);
 }
 
@@ -35,9 +35,9 @@ export function testPubSubWith1Subscriber(done) {
 export function testPubSubWith3Subscribers(done) {
   const channel = getChannelName();
   const stellarSubs = [
-    new StellarPubSub(messaging.b, 'test1', log, 'S1'),
-    new StellarPubSub(messaging.b, 'test2', log, 'S2'),
-    new StellarPubSub(messaging.b, 'test3', log, 'S3'),
+    new StellarPubSub(transport.b, 'test1', log, 'S1'),
+    new StellarPubSub(transport.b, 'test2', log, 'S2'),
+    new StellarPubSub(transport.b, 'test3', log, 'S3'),
   ];
 
   const doneBy = [];
@@ -59,8 +59,8 @@ export function testPubSubWith3Subscribers(done) {
 export function testPubSubWithOneRepeatSubscribersOnSameTransport(done) {
   const channel = getChannelName();
   const stellarSubs = [
-    new StellarPubSub(messaging.b, 'test4', log, 'S4'),
-    new StellarPubSub(messaging.b, 'test5', log, 'S4'),
+    new StellarPubSub(transport.b, 'test4', log, 'S4'),
+    new StellarPubSub(transport.b, 'test5', log, 'S4'),
   ];
 
   const doneBy = [];
@@ -79,14 +79,14 @@ export function testPubSubWithOneRepeatSubscribersOnSameTransport(done) {
     })
 }
 
-export function testPubSubWithOneRepeatSubscribersOnDifferentTransport(messagingGenerator) {
+export function testPubSubWithOneRepeatSubscribersOnDifferentTransport(transportBuilder) {
   return function (done) {
     const channel = getChannelName();
-    const otherMessaging = messagingGenerator(source, log);
+    const otherTransport = transportBuilder(source, log);
 
     const stellarSubs = [
-      new StellarPubSub(messaging.b, 'test6', log, 'S5'),
-      new StellarPubSub(otherMessaging.b, 'test7', log, 'S5'),
+      new StellarPubSub(transport.b, 'test6', log, 'S5'),
+      new StellarPubSub(otherTransport.b, 'test7', log, 'S5'),
     ];
 
     const doneBy = [];

@@ -3,7 +3,7 @@
  */
 import uuid from 'uuid/v1';
 
-import { Transport } from '@stellarjs/transport';
+import { Transport } from '@stellarjs/abstract-transport';
 import get from 'lodash/get';
 import values from 'lodash/values';
 import { EventEmitter } from 'events';

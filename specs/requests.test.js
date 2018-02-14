@@ -10,14 +10,14 @@ const source = 'test';
 let stellarRequest;
 let stellarHandler;
 
-export async function doAfterAll(closeMessaging) {
-  await closeMessaging();
+export async function doAfterAll(closeTransport) {
+  await closeTransport();
 }
 
-export function doBeforeAll(messagingGenerator) {
-  const messagings = messagingGenerator(source, log);
-  stellarRequest = new StellarRequest(messagings.a, source, log);
-  stellarHandler = new StellarHandler(messagings.b, source, log);
+export function doBeforeAll(transportGenerator) {
+  const transports = transportGenerator(source, log);
+  stellarRequest = new StellarRequest(transports.a, source, log);
+  stellarHandler = new StellarHandler(transports.b, source, log);
   return { source, stellarRequest, stellarHandler };
 }
 

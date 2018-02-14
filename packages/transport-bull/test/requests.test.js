@@ -9,15 +9,15 @@ import {
   doAfterAll
 } from '../../../specs/requests.test';
 
-import { closeMessaging, messagingGenerator } from './helpers';
+import { closeTransport, transportGenerator } from './helpers';
 
 describe('full integration req/response', () => {
   beforeAll(() => {
-    doBeforeAll(messagingGenerator);
+    doBeforeAll(transportGenerator);
   });
 
   afterAll(() => {
-    doAfterAll(closeMessaging);
+    doAfterAll(closeTransport);
   });
 
   it('test request response', testRequestResponse);
@@ -28,4 +28,4 @@ describe('full integration req/response', () => {
   it('test request timeout', testRequestTimeout);
 });
 
-// requestsSpec(messagingGenerator, afterAll, true);
+// requestsSpec(transportGenerator, afterAll, true);

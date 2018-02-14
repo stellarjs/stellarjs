@@ -8,15 +8,15 @@ import {
   testUnsubscribe
 } from '../../../specs/pubsub.test';
 
-import { messagingGenerator, closeMessaging } from './helpers';
+import { transportGenerator, closeTransport } from './helpers';
 
 describe('MEMORY full integration pub/sub per inbox', () => {
   beforeAll(() => {
-    doBeforeAll(messagingGenerator);
+    doBeforeAll(transportGenerator);
   });
 
   afterAll(() => {
-    doAfterAll(closeMessaging);
+    doAfterAll(closeTransport);
   });
   
   it('test pub sub 1 subscriber', testPubSubWith1Subscriber);

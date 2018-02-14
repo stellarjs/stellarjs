@@ -3,19 +3,19 @@ import _ from 'lodash';
 
 import { MemoryTransport } from '../src';
 
-let messagings = [];
+let transports = [];
 
-export function messagingGenerator(source, log) {
+export function transportGenerator(source, log) {
   const instance = new MemoryTransport(log);
-  messagings = _.concat([ { a: instance, b: instance } ], messagings);
-  return _.head(messagings)
+  transports = _.concat([ { a: instance, b: instance } ], transports);
+  return _.head(transports)
 }
 
-export async function closeMessaging() {
-  await Promise.map(messagings, (messaging) => {
-    messaging.a.reset();
-    messaging.b.reset();
+export async function closeTransport() {
+  await Promise.map(transports, (transport) => {
+    transport.a.reset();
+    transport.b.reset();
   });
-  messagings = [];
+  transports = [];
   return;
 }

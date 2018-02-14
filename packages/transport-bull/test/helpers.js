@@ -31,27 +31,27 @@ function closeRedis(redises) {
 }
 
 let redisTransports = [];
-let messagings = [];
+let transports = [];
 
-function messagingGenerator(source, log) {
+function transportGenerator(source, log) {
   redisTransports = _.concat([ new BullRedisQueueSystem(log), new BullRedisQueueSystem(log) ], redisTransports);
-  messagings = _.concat([ {
+  transports = _.concat([ {
     a: new QueueTransport(redisTransports[0], source, log, 1000),
     b: new QueueTransport(redisTransports[1], source, log, 1000)
-  } ], messagings);
-  return _.head(messagings);
+  } ], transports);
+  return _.head(transports);
 }
 
-async function closeMessaging() {
-  await Promise.map(messagings, (messaging) => {
-    messaging.a.reset();
-    messaging.b.reset();
+async function closeTransport() {
+  await Promise.map(transports, (transport) => {
+    transport.a.reset();
+    transport.b.reset();
   });
   await closeRedis(redisTransports);
   redisTransports = [];
-  messagings = [];
+  transports = [];
   return;
 }
 
 
-export { log, closeRedis, messagingGenerator, closeMessaging };
+export { log, closeRedis, transportGenerator, closeTransport };

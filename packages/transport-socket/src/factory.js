@@ -1,4 +1,4 @@
-import { localRequestHandlersDecorator } from '@stellarjs/transport';
+import { localRequestHandlersDecorator } from '@stellarjs/abstract-transport';
 
 import WebsocketTransport from './WebsocketTransport';
 

@@ -61,9 +61,8 @@
   },
   "dependencies": {
     "@stellarjs/core": "^0.9.1",
-    "@stellarjs/queue-redis-bull": "^0.9.1",
     "@stellarjs/stellar-error": "^0.9.1",
-    "@stellarjs/transport-queue": "^0.9.1",
+    "@stellarjs/transport-bull": "^0.9.1",
     "@stellarjs/transport-socket": "^0.9.1",
     "@stellarjs/mw-log-trace": "^0.9.1",
     "bluebird": "^3.4.7",

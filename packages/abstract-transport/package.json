@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/transport",
+  "name": "@stellarjs/abstract-transport",
   "version": "0.9.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -18,7 +18,7 @@
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/transport.xml src"
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/abstract-transport.xml src"
   },
   "publishConfig": {
     "access": "public"
@@ -45,12 +45,12 @@
       "!src/index.js",
       "!src/index.browser.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/transport",
+    "coverageDirectory": "../../.artifacts/coverage/abstract-transport",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/transport.xml",
+    "output": "../../.artifacts/test_results/abstract-transport.xml",
     "usePathForSuiteName": "true"
   },
   "devDependencies": {

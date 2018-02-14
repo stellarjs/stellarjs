@@ -4,7 +4,7 @@
 import get from 'lodash/get';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
-import { RemoteTransport } from '@stellarjs/transport';
+import { RemoteTransport } from '@stellarjs/abstract-transport';
 
 class WebsocketTransport extends RemoteTransport {
   constructor(socket, log, sendingOnly, requestTimeout) {

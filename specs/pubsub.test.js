@@ -6,19 +6,19 @@ import { StellarPubSub } from '@stellarjs/core';
 import { log, getChannelName } from './helpers';
 
 const source = 'test';
-let messaging;
+let transport;
 let stellarSub;
 let stellarPub;
 
-export function doBeforeAll(messagingGenerator) {
-  messaging = messagingGenerator(source, log);
-  stellarPub = new StellarPubSub(messaging.a, source, log);
-  stellarSub = new StellarPubSub(messaging.b, source, log);
+export function doBeforeAll(transportGenerator) {
+  transport = transportGenerator(source, log);
+  stellarPub = new StellarPubSub(transport.a, source, log);
+  stellarSub = new StellarPubSub(transport.b, source, log);
   return {stellarSub, stellarPub, source};
 }
 
-export async function doAfterAll(closeMessaging) {
-  await closeMessaging();
+export async function doAfterAll(closeTransport) {
+  await closeTransport();
   await Promise.delay(5000);
 }
 
@@ -69,10 +69,10 @@ export function testResubscribe(done) {
 export function testPubSubWith3Subscribers(done) {
   const channel = getChannelName();
   const stellarSubs = [
-    new StellarPubSub(messaging.b, 'test1', log),
-    new StellarPubSub(messaging.b, 'test2', log),
-    new StellarPubSub(messaging.b, 'test3', log),
-    new StellarPubSub(messaging.b, 'test4', log),
+    new StellarPubSub(transport.b, 'test1', log),
+    new StellarPubSub(transport.b, 'test2', log),
+    new StellarPubSub(transport.b, 'test3', log),
+    new StellarPubSub(transport.b, 'test4', log),
   ];
 
   const doneBy = [];
@@ -94,7 +94,7 @@ export function testChannelMultiplexing(done) {
   const channel1 = getChannelName();
   const channel2 = getChannelName();
   const channel3 = getChannelName();
-  const sub = new StellarPubSub(messaging.b, 'test6', log);
+  const sub = new StellarPubSub(transport.b, 'test6', log);
   const doneBy = [];
   const handler = i => (message) => {
     expect(message).toEqual({ text: `hello world ${i}` });

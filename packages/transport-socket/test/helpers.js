@@ -27,22 +27,22 @@ class FakeSocket {
   }
 }
 
-let messagings = [];
+let transports = [];
 
-export function messagingGenerator(source, log) {
+export function transportGenerator(source, log) {
   const socketA = new FakeSocket();
   const socketB = new FakeSocket();
   FakeSocket.connect(socketA, socketB);
   
-  messagings = _.concat([{ a: new WebsocketTransport(socketA, log), b: new WebsocketTransport(socketB, log) } ], messagings);
-  return _.head(messagings)
+  transports = _.concat([{ a: new WebsocketTransport(socketA, log), b: new WebsocketTransport(socketB, log) } ], transports);
+  return _.head(transports)
 }
 
-export async function closeMessaging() {
-  await Promise.map(messagings, (messaging) => {
-    messaging.a.reset();
-    messaging.b.reset();
+export async function closeTransport() {
+  await Promise.map(transports, (transport) => {
+    transport.a.reset();
+    transport.b.reset();
   });
-  messagings = [];
+  transports = [];
   return;
 }

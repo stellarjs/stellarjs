@@ -9,7 +9,7 @@ import map from 'lodash/map';
 import size from 'lodash/size';
 import split from 'lodash/split';
 import Promise from 'bluebird';
-import { QueueSystem } from '@stellarjs/transport-queue';
+import { QueueSystem } from '@stellarjs/abstract-transport-queue';
 
 import RedisClient from './config-redisclient';
 import redisConfig from './config-redis';
@@ -45,7 +45,7 @@ class BullRedisQueueSystem extends QueueSystem {
   }
 
   close() {
-    this.log.log('trace', `@BullRedisQueueSystem queue.close`);
+    this.log.log('trace', `@${BullRedisQueueSystem.name} queue.close`);
     return Promise
       .all(map(this.queues, (val, key) => this.stopProcessing(key)))
       .then(() => this.redis.closeAll());
@@ -94,7 +94,7 @@ class BullRedisQueueSystem extends QueueSystem {
       return Promise.resolve(true);
     }
 
-    this.log.log('trace', `@BullRedisQueueSystem: closing queue ${queueName}`);
+    this.log.log('trace', `@${BullRedisQueueSystem.name}: closing queue ${queueName}`);
     return this.queues[queueName]
       .close()
       .then(() => {
@@ -120,7 +120,7 @@ class BullRedisQueueSystem extends QueueSystem {
     const startTime = Date.now();
     const score = startTime - expiryWithin;
 
-    this.log.info(`@BullRedisQueueSystem.cleanResources: started for resources expiring ${
+    this.log.info(`@${BullRedisQueueSystem.name}.cleanResources: started for resources expiring ${
       expiryWithin >= 0 ? 'before last' : 'in next'} ${Math.abs(expiryWithin) / MINUTE_1} minutes`);
 
     return new Promise((resolve) => {
@@ -129,7 +129,7 @@ class BullRedisQueueSystem extends QueueSystem {
 
       let numCleaned = 0;
       stream.on('data', (resourceKeys) => {
-        this.log.info(`@BullRedisQueueSystem.cleanResources`, { resourceKeys });
+        this.log.info(`@${BullRedisQueueSystem.name}.cleanResources`, { resourceKeys });
         numCleaned += size(resourceKeys); // eslint-disable-line better-mutation/no-mutation
 
         return Promise // eslint-disable-line lodash/prefer-lodash-method
@@ -138,7 +138,7 @@ class BullRedisQueueSystem extends QueueSystem {
       });
 
       stream.on('end', () => {
-        this.log.info(`@BullRedisQueueSystem.resourceClean finished in ${Date.now() - startTime}ms`, { numCleaned });
+        this.log.info(`@${BullRedisQueueSystem.name}.resourceClean finished in ${Date.now() - startTime}ms`, { numCleaned });
         resolve(numCleaned);
       });
     });
@@ -153,7 +153,7 @@ class BullRedisQueueSystem extends QueueSystem {
         }
 
         const totalCleaned = numCleaned + size(jobs);
-        this.log.info(`@BullRedisQueueSystem.jobClean finished`, { totalCleaned, type, queueName: q.name });
+        this.log.info(`@${BullRedisQueueSystem.name}.jobClean finished`, { totalCleaned, type, queueName: q.name });
         return [q.name, type, totalCleaned];
       });
   }
@@ -181,11 +181,11 @@ class BullRedisQueueSystem extends QueueSystem {
 
     return this._getQueues()
       .then((registeredQueues) => {
-        this.log.info(`@BullRedisQueueSystem._removeUnusedQueues`, { registeredQueues });
+        this.log.info(`@${BullRedisQueueSystem.name}._removeUnusedQueues`, { registeredQueues });
         return this._doRemoveUnusedQueues(inboxStyle, (bullQueueNames) => {
-          this.log.info(`@BullRedisQueueSystem._removeUnusedQueues`, { bullQueueNames });
+          this.log.info(`@${BullRedisQueueSystem.name}._removeUnusedQueues`, { bullQueueNames });
           const unregisteredQueueNames = difference(bullQueueNames, registeredQueues);
-          this.log.info(`@BullRedisQueueSystem._removeUnusedQueues`, { unregisteredQueueNames });
+          this.log.info(`@${BullRedisQueueSystem.name}._removeUnusedQueues`, { unregisteredQueueNames });
           return Promise.all(map(unregisteredQueueNames, emptyQueue));
         });
       });
