@@ -2,11 +2,11 @@
  * Created by arolave on 07/06/2017.
  */
 import Promise from 'bluebird';
-import RedisClient from '@stellarjs/queue-redis-bull/lib-es6/config-redisclient';
+import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
 import StellarError from '@stellarjs/stellar-error';
 import _ from 'lodash';
 
-jest.unmock('@stellarjs/queue-redis-bull');
+jest.unmock('@stellarjs/transport-bull');
 
 let redisClient;
 const clearRedis = () => {
