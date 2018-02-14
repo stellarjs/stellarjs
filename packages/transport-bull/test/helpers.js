@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 
-import { QueueTransport } from '@stellarjs/transport-queue';
+import { QueueTransport } from '@stellarjs/abstract-transport-queue';
 
 import BullRedisQueueSystem from '../src/BullRedisQueueSystem';
 import RedisClient from '../src/config-redisclient';
