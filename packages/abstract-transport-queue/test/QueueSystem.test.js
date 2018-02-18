@@ -14,6 +14,10 @@ describe('QueueSystem tests', () => {
     expect(instance.process).toThrow();
   });
 
+  it('"processGroup" throws exception', () => {
+    expect(instance.processGroup).toThrow();
+  });
+
   it('"stopProcessing" throws exception', () => {
     expect(instance.stopProcessing).toThrow();
   });
