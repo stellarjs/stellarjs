@@ -40,7 +40,7 @@ export function testUnsubscribe(done) {
   const channel = getChannelName();
   let stopper;
   Promise.try(() => stellarSub.subscribe(channel, (msg) => {
-    log.log(`message received ${msg}`);
+    log.log(`message received`, msg);
     fail('should not receive a message');
   })).then((_stopper) => {
     stopper = _stopper;

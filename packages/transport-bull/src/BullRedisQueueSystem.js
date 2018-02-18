@@ -15,7 +15,6 @@ import RedisClient from './config-redisclient';
 import redisConfig from './config-redis';
 import { MINUTE_1, DEFAULT_INTERVAL, JOB_TIMEOUT, TWO_WEEKS } from './intervals';
 
-const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 100;
 const BULL_OPTIONS = { attempts: 1, removeOnComplete: true, removeOnFail: true, timeout: JOB_TIMEOUT };
 
 class BullRedisQueueSystem extends QueueSystem {
@@ -80,10 +79,20 @@ class BullRedisQueueSystem extends QueueSystem {
     const opts = assign({ jobId: get(obj, 'headers.id') }, BULL_OPTIONS);
     return this._getQueue(queueName).add(obj, opts);
   }
-
+  
   process(queueName, callback) {
     try {
-      return this._getQueue(queueName).process(STELLAR_CONCURRENCY, callback);
+      const q = this._getQueue(queueName);
+      return q.process(callback);
+    } catch (e) {
+      throw new Error(`${queueName} already has a handler on this node`);
+    }
+  }
+
+  processGroup(concurrency, queueName, callback) {
+    try {
+      const q = this._getQueue(queueName);
+      return q.process(concurrency, callback);
     } catch (e) {
       throw new Error(`${queueName} already has a handler on this node`);
     }

@@ -12,7 +12,7 @@ function stopRequestTimer(requestTimer) {
   }
 }
 
-export default class RemoteRequestAdaptor extends Transport {
+export default class RemoteTransport extends Transport {
   constructor(log, requestTimeout) {
     super(log);
 

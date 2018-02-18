@@ -8,6 +8,8 @@ import map from 'lodash/map';
 
 import getServiceInbox from './utils/getServiceInbox';
 
+const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 100;
+
 export default class QueueTransport extends RemoteTransport {
   constructor(queueSystem, source, log, requestTimeout) {
     super(log, requestTimeout);
@@ -28,7 +30,7 @@ export default class QueueTransport extends RemoteTransport {
   addRequestHandler(url, requestHandler) {
     this.registerRequestHandler(url, requestHandler);
     const inbox = getServiceInbox(url);
-    this._processInbox(inbox, ({ data }) => this._requestHandler(data));
+    this._processInbox(inbox, true, ({ data }) => this._requestHandler(data));
     return Promise.resolve(true);
   }
 
@@ -59,7 +61,7 @@ export default class QueueTransport extends RemoteTransport {
   }
 
   remoteRequest(req) {
-    this._processInbox(this.nodeResponseInbox, ({ data }) => this._responseHandler(data));
+    this._processInbox(this.nodeResponseInbox, false, ({ data }) => this._responseHandler(data));
 
     const headers = get(req, 'headers', {});
     const inbox = getServiceInbox(headers.queueName);
@@ -67,7 +69,7 @@ export default class QueueTransport extends RemoteTransport {
   }
 
   _subscribe(inbox, channel, removeHandlerFn, groupId) {
-    this._processInbox(inbox, ({ data }) => this._subscriptionHandler(data, groupId));
+    this._processInbox(inbox, !!groupId, ({ data }) => this._subscriptionHandler(data, groupId));
     return this.queueSystem.registerSubscriber(channel, inbox)
       .then(deregisterSubscriber => () => {
         const registryIsEmpty = removeHandlerFn();
@@ -102,14 +104,20 @@ export default class QueueTransport extends RemoteTransport {
       .catch(err => sendResponse(err.__stellarResponse));
   }
 
-  _processInbox(inbox, internalHandler) {
+  _processInbox(inbox, loadBalanced, internalHandler) {
     if (this.inboxes[inbox]) {
       return inbox;
     }
 
     this.inboxes[inbox] = true;
     this.log.info(`@QueueMessagingAdaptor: Processing started`, { inbox });
-    this.queueSystem.process(inbox, internalHandler);
-    return inbox;
+    if (loadBalanced) {
+      this.queueSystem.processGroup(STELLAR_CONCURRENCY, inbox, internalHandler);
+    } else {
+      this.queueSystem.process(inbox, (job, done) => {
+        internalHandler(job);
+        done();
+      });
+    }
   }
 }

@@ -11,6 +11,10 @@ export default class QueueSystem {
     throw new Error('"process" was called but was not implemented!');
   }
 
+  processGroup(concurrency, name, callback) {
+    throw new Error('"processGroup" was called but was not implemented!');
+  }
+
   stopProcessing(name) { // eslint-disable-line class-methods-use-this, no-unused-vars
     throw new Error('"stopProcessing" was called but was not implemented!');
   }

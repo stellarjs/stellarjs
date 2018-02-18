@@ -68,6 +68,7 @@ describe('QueueTransport tests', () => {
       const queueSystem = {
           enqueue: jest.fn(),
           process: jest.fn(),
+          processGroup: jest.fn(),
           getSubscribers: jest.fn(),
           registerSubscriber: jest.fn(),
          stopProcessing: jest.fn()
@@ -75,6 +76,7 @@ describe('QueueTransport tests', () => {
 
       queueSystem.enqueue.mockName('queueSystem.enqueue');
       queueSystem.process.mockName('queueSystem.process');
+      queueSystem.processGroup.mockName('queueSystem.processGroup');
       queueSystem.getSubscribers.mockName('queueSystem.getSubscribers');
       queueSystem.registerSubscriber.mockName('queueSystem.registerSubscriber');
 
@@ -94,7 +96,7 @@ describe('QueueTransport tests', () => {
           const mockHandler = jest.fn();
           const data = { headers: { channel }, body: { message: "Hello World"} };
           instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
-          instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
+          instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop), _.noop);
 
           await expect(instance.subscribe(channel, mockHandler)).resolves.toBeInstanceOf(Function);
 
@@ -106,7 +108,7 @@ describe('QueueTransport tests', () => {
           const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
           clearTransportMocks(instance);
           
-          subscriptionHandler({ data });
+          subscriptionHandler({ data }, _.noop);
 
           expect(mockHandler).toHaveBeenCalled();
           expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
@@ -137,7 +139,7 @@ describe('QueueTransport tests', () => {
 
           clearTransportMocks(instance);
 
-          subscriptionHandler({ data });
+          subscriptionHandler({ data }, _.noop);
 
           expect(mockHandler1).toHaveBeenCalled();
           expect(mockHandler2).toHaveBeenCalled();
@@ -217,8 +219,8 @@ describe('QueueTransport tests', () => {
 
         expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
 
-        expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
-        const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
+        expectTransportMocksToHaveBeeenCalled(instance, { name: 'processGroup', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
+        const subscriptionHandler = _.last(instance.queueSystem.processGroup.mock.calls[0]);
         clearTransportMocks(instance);
 
         subscriptionHandler({ data });
@@ -262,8 +264,8 @@ describe('QueueTransport tests', () => {
                                      numSubscribers: 1
                                  });
 
-        expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 3 });
-        const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
+        expectTransportMocksToHaveBeeenCalled(instance, { name: 'processGroup', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 3 });
+        const subscriptionHandler = _.last(instance.queueSystem.processGroup.mock.calls[0]);
 
         clearTransportMocks(instance);
 
@@ -310,10 +312,10 @@ describe('QueueTransport tests', () => {
 
       expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 3 });
 
-      expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 3 }, { name: 'registerSubscriber', numCalls: 3 });
-      const subscriptionHandler1 = _.last(instance.queueSystem.process.mock.calls[0]);
-      const subscriptionHandler2 = _.last(instance.queueSystem.process.mock.calls[1]);
-      const subscriptionHandler3 = _.last(instance.queueSystem.process.mock.calls[2]);
+      expectTransportMocksToHaveBeeenCalled(instance, { name: 'processGroup', numCalls: 3 }, { name: 'registerSubscriber', numCalls: 3 });
+      const subscriptionHandler1 = _.last(instance.queueSystem.processGroup.mock.calls[0]);
+      const subscriptionHandler2 = _.last(instance.queueSystem.processGroup.mock.calls[1]);
+      const subscriptionHandler3 = _.last(instance.queueSystem.processGroup.mock.calls[2]);
 
       clearTransportMocks(instance);
 
@@ -353,8 +355,8 @@ describe('QueueTransport tests', () => {
 
       expectSubscriberRegistry(instance.registries.subscribers, { inbox, channel, numSubscribers: 1 });
 
-      expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
-      const subscriptionHandler = _.last(instance.queueSystem.process.mock.calls[0]);
+      expectTransportMocksToHaveBeeenCalled(instance, { name: 'processGroup', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
+      const subscriptionHandler = _.last(instance.queueSystem.processGroup.mock.calls[0]);
 
       clearTransportMocks(instance);
 
@@ -550,18 +552,18 @@ describe('QueueTransport tests', () => {
 
             expectTransportMocksToHaveBeeenCalled(
               instance,
-              { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
+              { name: 'processGroup', numCalls: 1, args: [[100, requestInbox, expect.any(Function)]] }
             );
             expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler } );
             expect(mockHandler).not.toHaveBeenCalled();
 
-            instance.queueSystem.process.mock.calls[0][1]({ data: req });
+            instance.queueSystem.processGroup.mock.calls[0][2]({ data: req });
             await Promise.delay(50);
             
             expect(mockHandler).toHaveBeenCalled();
             expectTransportMocksToHaveBeeenCalled(
               instance,
-              { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] },
+              { name: 'processGroup', numCalls: 1, args: [[100, requestInbox, expect.any(Function)]] },
               { name: 'enqueue', numCalls: 1, args: [[responseInbox, res]] }
             );
         });
@@ -584,18 +586,18 @@ describe('QueueTransport tests', () => {
 
         expectTransportMocksToHaveBeeenCalled(
           instance,
-          { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
+          { name: 'processGroup', numCalls: 1, args: [[100, requestInbox, expect.any(Function)]] }
         );
         expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler });
         expect(mockHandler).not.toHaveBeenCalled();
 
-        instance.queueSystem.process.mock.calls[0][1]({ data: req });
+        instance.queueSystem.processGroup.mock.calls[0][2]({ data: req });
         await Promise.delay(50);
 
         expect(mockHandler).toHaveBeenCalled();
         expectTransportMocksToHaveBeeenCalled(
           instance,
-          { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] },
+          { name: 'processGroup', numCalls: 1, args: [[100, requestInbox, expect.any(Function)]] },
           { name: 'enqueue', numCalls: 1, args: [[responseInbox, res]] }
         );
       });
@@ -616,18 +618,18 @@ describe('QueueTransport tests', () => {
 
         expectTransportMocksToHaveBeeenCalled(
           instance,
-          { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
+          { name: 'processGroup', numCalls: 1, args: [[100, requestInbox, expect.any(Function)]] }
         );
         expect(instance.registries.requestHandlers).toEqual({ [url]: mockHandler });
         expect(mockHandler).not.toHaveBeenCalled();
 
-        instance.queueSystem.process.mock.calls[0][1]({ data: req });
+        instance.queueSystem.processGroup.mock.calls[0][2]({ data: req });
         await Promise.delay(50);
 
         expect(mockHandler).toHaveBeenCalled();
         expectTransportMocksToHaveBeeenCalled(
           instance,
-          { name: 'process', numCalls: 1, args: [[requestInbox, expect.any(Function)]] }
+          { name: 'processGroup', numCalls: 1, args: [[100, requestInbox, expect.any(Function)]] }
         );
       });
     });
