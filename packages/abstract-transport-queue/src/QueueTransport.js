@@ -119,5 +119,6 @@ export default class QueueTransport extends RemoteTransport {
         done();
       });
     }
+    return inbox;
   }
 }

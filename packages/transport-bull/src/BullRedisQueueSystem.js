@@ -79,7 +79,7 @@ class BullRedisQueueSystem extends QueueSystem {
     const opts = assign({ jobId: get(obj, 'headers.id') }, BULL_OPTIONS);
     return this._getQueue(queueName).add(obj, opts);
   }
-  
+
   process(queueName, callback) {
     try {
       const q = this._getQueue(queueName);
