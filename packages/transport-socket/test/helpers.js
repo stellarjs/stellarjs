@@ -1,8 +1,7 @@
-import Promise from 'bluebird';
 import _ from 'lodash';
 import { EventEmitter } from 'events';
 
-import { WebsocketTransport } from '../src';
+import transportFactory from '../src';
 
 class FakeSocket {
   constructor() {
@@ -27,22 +26,23 @@ class FakeSocket {
   }
 }
 
-let transports = [];
+let app1Sockets = [];
+let app2Sockets = [];
 
-export function transportGenerator(source, log) {
-  const socketA = new FakeSocket();
-  const socketB = new FakeSocket();
-  FakeSocket.connect(socketA, socketB);
-  
-  transports = _.concat([{ a: new WebsocketTransport(socketA, log), b: new WebsocketTransport(socketB, log) } ], transports);
-  return _.head(transports)
+export function factory(config) {
+  if (config.app === 'app1') {
+    app1Sockets.push(new FakeSocket());
+    return transportFactory(_.assign({socket: _.last(app1Sockets)}, config));
+
+  } else {
+    app2Sockets.push(new FakeSocket());
+
+    _.forEach(app1Sockets, (app1Socket) => {
+      FakeSocket.connect(app1Socket, _.last(app2Sockets));
+    });
+
+    return transportFactory(_.assign({socket: _.last(app2Sockets)}, config));
+  }
 }
 
-export async function closeTransport() {
-  await Promise.map(transports, (transport) => {
-    transport.a.reset();
-    transport.b.reset();
-  });
-  transports = [];
-  return;
-}
+export const onClose = _.noop;

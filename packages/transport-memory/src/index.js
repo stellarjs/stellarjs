@@ -9,8 +9,8 @@ import values from 'lodash/values';
 import { EventEmitter } from 'events';
 
 class MemoryTransport extends Transport {
-  constructor(log, standardiseDates = false) {
-    super(log);
+  constructor(source, log, standardiseDates = false) {
+    super(source, log);
     this.subscriptionHandler = new EventEmitter();
     this.standardiseDates = standardiseDates;
   }
@@ -22,11 +22,6 @@ class MemoryTransport extends Transport {
     }
 
     return obj;
-  }
-
-  getLocalHandler(req) {
-    const url = get(req, 'headers.queueName');
-    return get(this.registries.requestHandlers, url);
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
@@ -52,7 +47,7 @@ class MemoryTransport extends Transport {
     try {
       return localHandler(this.standardiseObject(req));
     } catch (e) {
-      return e.__stellarResponse;
+      return e.__stellarResponse ? e.__stellarResponse : e ;
     }
   }
 
@@ -88,8 +83,13 @@ class MemoryTransport extends Transport {
   }
 }
 
-function memoryTransportFactory({ log, standardiseDates }) {
-  return new MemoryTransport(log, standardiseDates);
+let instance;
+function memoryTransportFactory({ source, log, standardiseDates }) {
+  if (!instance) {
+    instance = new MemoryTransport(source, log, standardiseDates);
+  }
+
+  return instance;
 }
 
-export { MemoryTransport, memoryTransportFactory };
+export { MemoryTransport, memoryTransportFactory as default };

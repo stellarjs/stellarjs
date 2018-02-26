@@ -63,8 +63,8 @@ function startSession(log, source, socket) {
   return session;
 }
 
-function assignClientToSession({ log, socket, session }) {
-  return assign(session, { client: new WebsocketTransport(socket, log, true) });
+function assignClientToSession({ log, source, socket, session }) {
+  return assign(session, { client: new WebsocketTransport(socket, source, log, true) });
 }
 
 // TODO customize
@@ -304,7 +304,7 @@ function init({
     const startTime = Date.now();
 
     const initialSession = startSession(log, stellarRequest.source, socket);
-    callHandlersSerially(_newSessionHandlers, { log, socket, session: initialSession })
+    callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, log, socket, session: initialSession })
       .then((session) => {
         log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 

@@ -13,8 +13,8 @@ function stopRequestTimer(requestTimer) {
 }
 
 export default class RemoteTransport extends Transport {
-  constructor(log, requestTimeout) {
-    super(log);
+  constructor(source, log, requestTimeout) {
+    super(source, log);
 
     // Request Stuff
     this.defaultRequestTimeout = requestTimeout;
@@ -26,12 +26,11 @@ export default class RemoteTransport extends Transport {
   }
 
   request({ headers = {}, body }, requestTimeout = headers.requestTimeout || this.defaultRequestTimeout) {
-    return this
-      .remoteRequest({ headers, body })
-      .then(() => new Promise((resolve, reject) => {
-        const requestTimer = this._startRequestTimer(headers, requestTimeout);
-        this.inflightRequests[headers.id] = [resolve, reject, requestTimer]; // eslint-disable-line better-mutation/no-mutation
-      }));
+    return new Promise((resolve, reject) => {
+      // eslint-disable-next-line better-mutation/no-mutation
+      this.inflightRequests[headers.id] = [resolve, reject, this._startRequestTimer(headers, requestTimeout)];
+      return this.remoteRequest({ headers, body })
+    });
   }
 
   fireAndForget(req) {
@@ -45,14 +44,14 @@ export default class RemoteTransport extends Transport {
   _handleRequestTimeout(headers, requestTimeout) {
     if (!this.inflightRequests[headers.id]) {
       const context = { id: headers.id };
-      const message = `@QueueMessagingAdaptor: timeout for missing inflightRequest ${requestTimeout}ms`;
+      const message = `@RemoteTransport: timeout for missing inflightRequest ${requestTimeout}ms`;
       this.log.error(message, context);
       throw new Error(`${message} ${JSON.stringify(context)}`);
     }
 
     const reject = this.inflightRequests[headers.id][1];
     delete this.inflightRequests[headers.id];
-    this.log.warn(`@QueueMessagingAdaptor: timeout after ${requestTimeout}ms`, { id: headers.id });
+    this.log.warn(`@RemoteTransport: timeout after ${requestTimeout}ms`, { id: headers.id });
     reject(new StellarError(`Timeout error: No response to job ${headers.id} in ${requestTimeout}ms`));
   }
 
@@ -73,6 +72,7 @@ export default class RemoteTransport extends Transport {
     const id = headers.requestId;
     const inflightVars = this.inflightRequests[id];
     if (!inflightVars) {
+      this.log.warn(`@RemoteTransport: Unmatched response for inflightRequest[${id}]`);
       return;
     }
 

@@ -13,7 +13,7 @@ import getUri from './utils/getUri';
 import match from './utils/match';
 
 class StellarCore {
-  constructor(transport, source, log) {
+  constructor(transport, source = transport.source, log = transport.log) {
     this.handlerChain = [];
     this.transport = transport;
     this.log = log;

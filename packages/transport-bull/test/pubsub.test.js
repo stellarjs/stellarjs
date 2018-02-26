@@ -8,15 +8,15 @@ import {
   testUnsubscribe
 } from '../../../specs/pubsub.test';
 
-import { closeTransport, transportGenerator } from './helpers';
+import { onClose, factory } from './helpers';
 
 describe('full integration pub/sub per inbox', () => {
   beforeAll(() => {
-    doBeforeAll(transportGenerator);
+    doBeforeAll(factory);
   });
 
   afterAll(() => {
-    doAfterAll(closeTransport);
+    doAfterAll(onClose);
   });
   
   it('test pub sub 1 subscriber', testPubSubWith1Subscriber);

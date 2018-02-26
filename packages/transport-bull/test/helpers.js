@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 
-import { QueueTransport } from '@stellarjs/abstract-transport-queue';
-
-import BullRedisQueueSystem from '../src/BullRedisQueueSystem';
+import transportFactory from '../src';
 import RedisClient from '../src/config-redisclient';
+import { StellarPubSub } from '@stellarjs/core';
+
 
 const log = console;
 
@@ -30,28 +30,18 @@ function closeRedis(redises) {
     .then(() => context.redisClient.closeAll());
 }
 
-let redisTransports = [];
-let transports = [];
-
-function transportGenerator(source, log) {
-  redisTransports = _.concat([ new BullRedisQueueSystem(log), new BullRedisQueueSystem(log) ], redisTransports);
-  transports = _.concat([ {
-    a: new QueueTransport(redisTransports[0], source, log, 1000),
-    b: new QueueTransport(redisTransports[1], source, log, 1000)
-  } ], transports);
-  return _.head(transports);
+function factory(config) {
+  return transportFactory(config, true);
 }
 
-async function closeTransport() {
-  await Promise.map(transports, (transport) => {
-    transport.a.reset();
-    transport.b.reset();
-  });
-  await closeRedis(redisTransports);
-  redisTransports = [];
-  transports = [];
-  return;
+function subscriber(source, channel, app) {
+  const transport = factory({ log: console, source, app, requestTimeout: 1000 });
+  const stellarSub = new StellarPubSub(transport, app);
+  return new Promise((resolve) => stellarSub.subscribe(channel, resolve));
 }
 
+async function onClose(transports) {
+  return closeRedis(transports)
+}
 
-export { log, closeRedis, transportGenerator, closeTransport };
+export { log, closeRedis, factory, onClose, subscriber };

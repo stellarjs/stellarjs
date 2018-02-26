@@ -2,21 +2,33 @@ import Promise from 'bluebird';
 
 import { StellarPubSub } from '@stellarjs/core';
 
-import { log, getChannelName } from './helpers';
+import { log, getChannelName, closeTransport, transportGenerator } from './helpers';
 
-const source = 'test';
+const apps = {
+  'app1': ['source1a'],
+  'app2': ['source2c'],
+  'app3': ['source3d'],
+  'app4': ['source4e']
+
+};
+
 let stellarPub;
 let stellarSub;
-let transport;
+let stellarSubS2;
+let stellarSubS3;
+let transports;
 
-export function doBeforeAll(transportGenerator) {
-  transport = transportGenerator(source, log);
-  stellarPub = new StellarPubSub(transport.a, source, log, 'P1');
-  stellarSub = new StellarPubSub(transport.b, source, log, 'S1');
+export function doBeforeAll(transportFactory) {
+  transports = transportGenerator(apps, transportFactory);
+  stellarPub = new StellarPubSub(transports.app1.source1a);
+  stellarSub = new StellarPubSub(transports.app2.source2c, 'S1');
+  stellarSubS2 = new StellarPubSub(transports.app3.source3d, 'S2');
+  stellarSubS3 = new StellarPubSub(transports.app4.source4e, 'S3');
+  return {stellarSub, stellarPub};
 }
 
-export async function doAfterAll(closeTransport) {
-  await closeTransport();
+export async function doAfterAll(onClose) {
+  await closeTransport(onClose);
   await Promise.delay(5000);
 }
 
@@ -34,11 +46,7 @@ export function testPubSubWith1Subscriber(done) {
 
 export function testPubSubWith3Subscribers(done) {
   const channel = getChannelName();
-  const stellarSubs = [
-    new StellarPubSub(transport.b, 'test1', log, 'S1'),
-    new StellarPubSub(transport.b, 'test2', log, 'S2'),
-    new StellarPubSub(transport.b, 'test3', log, 'S3'),
-  ];
+  const stellarSubs = [ stellarSub, stellarSubS2, stellarSubS3 ];
 
   const doneBy = [];
   Promise
@@ -58,10 +66,7 @@ export function testPubSubWith3Subscribers(done) {
 
 export function testPubSubWithOneRepeatSubscribersOnSameTransport(done) {
   const channel = getChannelName();
-  const stellarSubs = [
-    new StellarPubSub(transport.b, 'test4', log, 'S4'),
-    new StellarPubSub(transport.b, 'test5', log, 'S4'),
-  ];
+  const stellarSubs = [ stellarSub, stellarSub ];
 
   const doneBy = [];
   Promise
@@ -74,7 +79,7 @@ export function testPubSubWithOneRepeatSubscribersOnSameTransport(done) {
     .then(() => fail())
     .catch((e) => {
       expect(e.message)
-        .toEqual(`Cannot have more that once per url in registries.subscribers. "${channel}.S4" has already added`);
+        .toEqual(`Cannot have more that once per url in registries.subscribers. "${channel}.S1" has already added`);
       done();
     })
 }
@@ -82,11 +87,11 @@ export function testPubSubWithOneRepeatSubscribersOnSameTransport(done) {
 export function testPubSubWithOneRepeatSubscribersOnDifferentTransport(transportBuilder) {
   return function (done) {
     const channel = getChannelName();
-    const otherTransport = transportBuilder(source, log);
+    const otherTransport = transportBuilder({ log: console, source: 'otherSource', app: 'app2', requestTimeout: 1000 });
 
     const stellarSubs = [
-      new StellarPubSub(transport.b, 'test6', log, 'S5'),
-      new StellarPubSub(otherTransport.b, 'test7', log, 'S5'),
+      new StellarPubSub(transports.app2.source2c, 'S5'),
+      new StellarPubSub(otherTransport, 'S5'),
     ];
 
     const doneBy = [];

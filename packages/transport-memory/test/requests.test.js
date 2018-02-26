@@ -3,15 +3,17 @@ import {
   testRequestResponseOverTwoQueues,
 } from '../../../specs/requests.test';
 
-import { transportGenerator, closeTransport } from './helpers';
+import _ from 'lodash';
+
+import { factory } from './helpers';
 
 describe('MEMORY full integration req/response', () => {
   beforeAll(() => {
-    doBeforeAll(transportGenerator);
+    doBeforeAll(factory);
   });
 
   afterAll(() => {
-    doAfterAll(closeTransport);
+    doAfterAll(_.noop);
   });
 
   it('test request response', testRequestResponse);

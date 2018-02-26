@@ -1,9 +1,11 @@
+import _ from 'lodash';
+
 const log = console;
 
 let resourceCount = 0;
-function getResourceName() {
+function getResourceName(app) {
   resourceCount += 1;
-  return `testservice:resource_${resourceCount}`;
+  return `${app}:resource_${resourceCount}`;
 }
 
 let channelCount = 0;
@@ -12,4 +14,24 @@ function getChannelName() {
   return `test:channel_${resourceCount}`;
 }
 
-export { log, getResourceName, getChannelName };
+let transports;
+function transportGenerator(apps, factory) {
+  transports = _.mapValues(apps, (sources, app) =>
+    _(sources)
+      .map((source) => [ source, factory({ log, source, app, requestTimeout: 1000 }) ])
+      .fromPairs()
+      .value()
+  );
+
+  return transports;
+}
+
+async function closeTransport(onClose) {
+  await Promise.all(
+    _.flatMap(transports, (sources) =>
+      _.map(sources, (transport) => transport.reset())));
+
+  return onClose(transports);
+}
+
+export { log, getResourceName, getChannelName, transportGenerator, closeTransport };

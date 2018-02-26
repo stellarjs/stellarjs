@@ -45,7 +45,7 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
     const _source = source || getSourceGenerator(sourceGenerator)(_log);
     const _requestTimeout = requestTimout || defaultRequestTimeout;
     const _transport = transport
-      || transportFactory(assign({ source: _source, log: _log, requestTimeout: _requestTimeout }, options));
+      || transportFactory(assign({ app: _app, source: _source, log: _log, requestTimeout: _requestTimeout }, options));
 
     function stellarAppPubSub() {
       register(_source, 'stellarAppPubSub');

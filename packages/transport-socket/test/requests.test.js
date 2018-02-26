@@ -3,15 +3,15 @@ import {
   testRequestResponseOverTwoQueues,
 } from '../../../specs/requests.test';
 
-import { transportGenerator, closeTransport } from './helpers';
+import { factory, onClose } from './helpers';
 
 describe('SOCKET full integration req/response', () => {
   beforeAll(() => {
-    doBeforeAll(transportGenerator);
+    doBeforeAll(factory);
   });
 
   afterAll(() => {
-    doAfterAll(closeTransport);
+    doAfterAll(onClose);
   });
 
   it('test request response', testRequestResponse);

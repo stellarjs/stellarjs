@@ -1,35 +1,41 @@
 /* eslint-disable */
 
+import _ from 'lodash';
 import Promise from 'bluebird';
 import StellarError from '@stellarjs/stellar-error';
 import { StellarRequest, StellarHandler } from '@stellarjs/core';
 
-import { log, getResourceName } from './helpers';
+import { log, getResourceName, closeTransport, transportGenerator } from './helpers';
 
-const source = 'test';
+const apps = {
+  'app1': ['source1a'],
+  'app2': ['source2c']
+};
+
 let stellarRequest;
 let stellarHandler;
 
-export async function doAfterAll(closeTransport) {
-  await closeTransport();
+export async function doAfterAll(onClose) {
+  await closeTransport(onClose);
 }
 
-export function doBeforeAll(transportGenerator) {
-  const transports = transportGenerator(source, log);
-  stellarRequest = new StellarRequest(transports.a, source, log);
-  stellarHandler = new StellarHandler(transports.b, source, log);
-  return { source, stellarRequest, stellarHandler };
+export function doBeforeAll(transportFactory) {
+  const transports = transportGenerator(apps, transportFactory);
+
+  stellarRequest = new StellarRequest(transports.app1.source1a, 'source1a', log);
+  stellarHandler = new StellarHandler(transports.app2.source2c, 'source2c', log);
+  return { stellarRequest, stellarHandler };
 }
 
 export async function testRequestResponse() {
-  const resourceName = getResourceName();
+  const resourceName = getResourceName('app2');
   stellarHandler.get(resourceName, ({ body }) => ({ text: `${body.text} worlds` }));
   const result = await stellarRequest.get(resourceName, { text: 'hello' });
   expect(result).toEqual({ text: 'hello worlds' });
 }
 
 export async function testRawRequestResponse() {
-  const resourceName = getResourceName();
+  const resourceName = getResourceName('app2');
   stellarHandler.get(resourceName, ({ body }) => ({ text: `${body.text} worlds` }));
 
   const result = await stellarRequest.get(resourceName, { text: 'hello' }, { responseType: 'raw' });
@@ -38,16 +44,15 @@ export async function testRawRequestResponse() {
                                          id: expect.any(String),
                                          requestId: expect.any(String),
                                          traceId: result.headers.requestId,
-                                         // queueName: 'stlr:n:test:responseInbox',
-                                         source: 'test',
+                                         source: _.head(apps.app2),
                                          timestamp: expect.any(Number),
                                          type: 'response',
                                        });
 }
 
 export async function testRequestResponseOverTwoQueues() {
-  const resourceName1 = getResourceName();
-  const resourceName2 = getResourceName();
+  const resourceName1 = getResourceName('app2');
+  const resourceName2 = getResourceName('app2');
   stellarHandler.handleRequest(`${resourceName1}:get`, async ({ body }) => {
     await Promise.delay(50);
     return { text: `${body.text} worlds` };
@@ -65,7 +70,7 @@ export async function testRequestResponseOverTwoQueues() {
 }
 
 export async function testMiddlewares() {
-  const resourceName = getResourceName();
+  const resourceName = getResourceName('app2');
   let handlerMw = 0;
   let requestMw = 0;
 
@@ -89,7 +94,7 @@ export async function testMiddlewares() {
 }
 
 export function testRequestErrorResponse(done) {
-  const resourceName = getResourceName();
+  const resourceName = getResourceName('app2');
   stellarHandler.get(resourceName, ({ body }) => {
     const errors = new StellarError();
     errors.addPropertyError('x', 'poop');
@@ -111,19 +116,19 @@ export function testRequestErrorResponse(done) {
 }
 
 export function testRequestTimeout(done) {
-  const resourceName = getResourceName();
+  const resourceName = getResourceName('app2');
 
   stellarHandler.get(resourceName, ({ body }) => {
     return Promise
-      .delay(1000)
+      .delay(800)
       .then(() => ({ text: `${body.text} worlds` }));
   });
 
   stellarRequest
-    .get(resourceName, { text: 'hello' }, { requestTimeout: 500 })
+    .get(resourceName, { text: 'hello' }, { headers: { requestTimeout: 500 } })
     .then(() => fail())
     .catch(e => {
       expect(e.constructor.name).toEqual('StellarError');
-      expect(e.message).toMatch(/Timeout error\: No response to job [a-f0-9\-]* in 1000ms/);
+      expect(e.message).toMatch(/Timeout error\: No response to job [a-f0-9\-]* in 500ms/);
     }).then(done)
 }

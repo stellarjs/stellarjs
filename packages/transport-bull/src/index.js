@@ -10,12 +10,14 @@ let instance;
 function queueSystemFactory({ log }) {
   if (!instance) {
     instance = new BullRedisQueueSystem(log); // eslint-disable-line better-mutation/no-mutation
-    startCleaner(instance, log);
+    if (process.env.NODE_ENV !== 'test') {
+      startCleaner(instance, log);
+    }
   }
   return instance;
 }
 
 const transportFactory = transportFactoryConfig({ queueSystemFactory });
-transportFactory.type = 'redis'; // eslint-disable-line better-mutation/no-mutation
+transportFactory.type = 'bull'; // eslint-disable-line better-mutation/no-mutation
 
 export { BullRedisQueueSystem, transportFactory as default, queueSystemFactory };
