@@ -29,7 +29,7 @@ export default class RemoteTransport extends Transport {
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line better-mutation/no-mutation
       this.inflightRequests[headers.id] = [resolve, reject, this._startRequestTimer(headers, requestTimeout)];
-      return this.remoteRequest({ headers, body })
+      return this.remoteRequest({ headers, body });
     });
   }
 

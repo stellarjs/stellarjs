@@ -4,7 +4,6 @@
 import uuid from 'uuid/v1';
 
 import { Transport } from '@stellarjs/abstract-transport';
-import get from 'lodash/get';
 import values from 'lodash/values';
 import { EventEmitter } from 'events';
 
@@ -47,7 +46,7 @@ class MemoryTransport extends Transport {
     try {
       return localHandler(this.standardiseObject(req));
     } catch (e) {
-      return e.__stellarResponse ? e.__stellarResponse : e ;
+      return e.__stellarResponse ? e.__stellarResponse : e;
     }
   }
 
@@ -86,7 +85,7 @@ class MemoryTransport extends Transport {
 let instance;
 function memoryTransportFactory({ source, log, standardiseDates }) {
   if (!instance) {
-    instance = new MemoryTransport(source, log, standardiseDates);
+    instance = new MemoryTransport(source, log, standardiseDates); // eslint-disable-line better-mutation/no-mutation
   }
 
   return instance;
