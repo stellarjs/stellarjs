@@ -13,9 +13,10 @@ function forkableSubscriber(source, channel, app) {
       console.error('error');
       process.send({ err })
     })
-    .finally(() => {
-      stellarSub.transport.reset();
-      process.exit(0)
+    .finally(async () => {
+      await stellarSub.transport.reset();
+      await Promise.delay(2000);
+      process.exit(0);
     });
 }
 forkableSubscriber(process.argv[2], process.argv[3], process.argv[4]);

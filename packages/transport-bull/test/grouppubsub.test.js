@@ -69,6 +69,7 @@ describe('full integration pub/sub app', () => {
     stellarPub.publish(channel, { text: 'hello world 2' });
     await expect(sub1).resolves.toEqual({ text: 'hello world 1' });
     await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
-    return stellarSub1.transport.reset();
+    stellarSub1.transport.reset();
+    await Promise.delay(2000);
   });
 });
