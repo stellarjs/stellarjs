@@ -1,8 +1,10 @@
 require('babel-register');
+const Promise = require('bluebird');
 const { subscriber } = require('./helpers');
 
 function forkableSubscriber(source, channel, app) {
-  return subscriber(source, channel, app)
+  const stellarSub = subscriber(source, channel, app);
+  return new Promise((resolve) => stellarSub.subscribe(channel, resolve))
     .then((result) => {
       console.info(`result ${JSON.stringify(result)}`);
       process.send({ result })
@@ -11,6 +13,9 @@ function forkableSubscriber(source, channel, app) {
       console.error('error');
       process.send({ err })
     })
-    .finally(() => process.exit(0));
+    .finally(() => {
+      stellarSub.transport.reset();
+      process.exit(0)
+    });
 }
 forkableSubscriber(process.argv[2], process.argv[3], process.argv[4]);

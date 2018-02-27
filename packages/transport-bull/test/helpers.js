@@ -27,8 +27,7 @@ function factory(config) {
 
 function subscriber(source, channel, app) {
   const transport = factory({ log: console, source, app, requestTimeout: 1000 });
-  const stellarSub = new StellarPubSub(transport, app);
-  return new Promise((resolve) => stellarSub.subscribe(channel, resolve));
+  return new StellarPubSub(transport, app);
 }
 
 async function onClose(transports) {

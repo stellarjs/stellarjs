@@ -59,12 +59,16 @@ describe('full integration pub/sub app', () => {
   it('test pub sub one repeat subscribers, different transport', async () => {
     const channel = getChannelName();
     const stellarPub = publisher('pub1');
-    const sub1 = subscriber('sub1', channel, 'app5');
+    const stellarSub1 = subscriber('sub1', channel, 'app5');
+
+    const sub1 = new Promise((resolve) => stellarSub1.subscribe(channel, resolve));
     const sub2 = forkSubscriber('sub2', channel, 'app5');
+    
     await Promise.delay(1000);
     stellarPub.publish(channel, { text: 'hello world 1' });
     stellarPub.publish(channel, { text: 'hello world 2' });
-    await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
     await expect(sub1).resolves.toEqual({ text: 'hello world 1' });
+    await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
+    return stellarSub1.transport.reset();
   });
 });
