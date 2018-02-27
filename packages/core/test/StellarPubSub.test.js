@@ -2,13 +2,6 @@ import Promise from 'bluebird';
 import StellarPubSub from '../src/StellarPubSub';
 import { transportMockFactory } from './mocks';
 
-const getDefaultPubSub = (channel, body = { text: 'hi' }) => {
-  return
-};
-const getAppPubSub = (channel, body = { text: 'hi' }) => {
-  return new StellarPubSub(transportMockFactory(), 'test', console, );
-};
-
 describe('mock pubsub', () => {
   const channel = 'testpubsub:channel';
   let headers;
@@ -18,8 +11,8 @@ describe('mock pubsub', () => {
   
   beforeEach(() => {
     transportMock = transportMockFactory();
-    defaultPubSub = new StellarPubSub(transportMock, 'test', console);
-    appPubSub = new StellarPubSub(transportMock, 'test', console, 'APP');
+    defaultPubSub = new StellarPubSub(transportMock, undefined);
+    appPubSub = new StellarPubSub(transportMock, 'APP');
     headers = {
       channel,
       id: '1',

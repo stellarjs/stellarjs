@@ -16,12 +16,10 @@ describe('full integration req/response', () => {
     doBeforeAll(factory);
   });
 
-  afterAll(() => {
-    doAfterAll(onClose);
-  });
+  afterAll(async () => doAfterAll(onClose));
 
   it('test request response', testRequestResponse);
-  it('test request and raw response', testRawRequestResponse);
+  it('test request and raw response', testRawRequestResponse(true));
   it('test request response across two queues', testRequestResponseOverTwoQueues);
   it('test request response with middlewares', testMiddlewares);
   it('test request response stellar error', testRequestErrorResponse);

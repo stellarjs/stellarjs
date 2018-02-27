@@ -23,7 +23,7 @@ export function doBeforeAll(transportFactory) {
 
 export async function doAfterAll(onClose) {
   await closeTransport(onClose);
-  await Promise.delay(5000);
+  await Promise.delay(2000);
 }
 
 export function testPubSubWith1Subscriber(done) {

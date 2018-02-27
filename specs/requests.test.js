@@ -16,14 +16,15 @@ let stellarRequest;
 let stellarHandler;
 
 export async function doAfterAll(onClose) {
-  await closeTransport(onClose);
+  return closeTransport(onClose);
+  await Promise.delay(2000);
 }
 
 export function doBeforeAll(transportFactory) {
   const transports = transportGenerator(apps, transportFactory);
 
-  stellarRequest = new StellarRequest(transports.app1.source1a, 'source1a', log);
-  stellarHandler = new StellarHandler(transports.app2.source2c, 'source2c', log);
+  stellarRequest = new StellarRequest(transports.app1.source1a);
+  stellarHandler = new StellarHandler(transports.app2.source2c);
   return { stellarRequest, stellarHandler };
 }
 
@@ -34,20 +35,22 @@ export async function testRequestResponse() {
   expect(result).toEqual({ text: 'hello worlds' });
 }
 
-export async function testRawRequestResponse() {
-  const resourceName = getResourceName('app2');
-  stellarHandler.get(resourceName, ({ body }) => ({ text: `${body.text} worlds` }));
+export function testRawRequestResponse(remote = false) {
+  return async function test() {
+    const resourceName = getResourceName('app2');
+    stellarHandler.get(resourceName, ({ body }) => ({ text: `${body.text} worlds` }));
 
-  const result = await stellarRequest.get(resourceName, { text: 'hello' }, { responseType: 'raw' });
-  expect(result.body).toEqual({ text: 'hello worlds' });
-  expect(result.headers).toMatchObject({
-                                         id: expect.any(String),
-                                         requestId: expect.any(String),
-                                         traceId: result.headers.requestId,
-                                         source: _.head(apps.app2),
-                                         timestamp: expect.any(Number),
-                                         type: 'response',
-                                       });
+    const result = await stellarRequest.get(resourceName, { text: 'hello' }, { responseType: 'raw' });
+    expect(result.body).toEqual({ text: 'hello worlds' });
+    expect(result.headers).toMatchObject({
+                                           id: expect.any(String),
+                                           requestId: expect.any(String),
+                                           traceId: result.headers.requestId,
+                                           source: remote ? _.head(apps.app2) : _.head(apps.app1),
+                                           timestamp: expect.any(Number),
+                                           type: 'response',
+                                         });
+  };
 }
 
 export async function testRequestResponseOverTwoQueues() {

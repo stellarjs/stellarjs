@@ -17,8 +17,7 @@ import { WebsocketTransport } from '@stellarjs/transport-socket';
 import { mwLogTraceFactory } from '@stellarjs/mw-log-trace';
 
 function createStellarRequest(stellarFactory, middlewares) {
-  const sourceOverride = `bridge-${stellarFactory.source}`;
-  const stellarRequest = stellarFactory.stellarRequest({ sourceOverride });
+  const stellarRequest = stellarFactory.stellarRequest();
   const mwLogTrace = mwLogTraceFactory('HEADERS');
   stellarRequest.use(/.*/, mwLogTrace);
   forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));

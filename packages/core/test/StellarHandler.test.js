@@ -6,7 +6,7 @@ import { transportMockFactory } from './mocks';
 import StellarHandler from '../src/StellarHandler';
 
 const getStellarHandler = () => {
-  return new StellarHandler(transportMockFactory(), 'test', console);
+  return new StellarHandler(transportMockFactory());
 };
 
 describe('StellarHandler', () => {

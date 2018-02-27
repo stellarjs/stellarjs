@@ -1,33 +1,24 @@
-import _ from 'lodash';
 import Promise from 'bluebird';
 
 import transportFactory from '../src';
 import RedisClient from '../src/config-redisclient';
 import { StellarPubSub } from '@stellarjs/core';
 
-
 const log = console;
 
-function closeRedis(redises) {
-  log.info('closeRedis');
-  const context = {};
-  const redisTransports = _.castArray(redises);
+function closeRedis() {
+  log.info('@closeRedis');
+  const redisClient = new RedisClient(log);
+  if (redisClient.defaultConnection.options.db !== 7) {
+    throw new Error(`invalid test db ${redisClient.defaultConnection.options.db}, should be 7`);
+  }
 
-  return Promise
-    .map(redisTransports, redisTransport => redisTransport.close())
-    .then(() => {
-      context.redisClient = new RedisClient(log);
-      if (context.redisClient.defaultConnection.options.db !== 7) {
-        throw new Error(`invalid test db ${context.redisClient.defaultConnection.options.db}, should be 7`);
-      }
-
-      return context.redisClient.defaultConnection.keys('*');
-    })
-    .then(() => context.redisClient.defaultConnection.flushdb())
-    .then(() => context.redisClient.defaultConnection.keys('*'))
-    .then(k => log.info(`keys: ${JSON.stringify(k)}`))
+  return redisClient.defaultConnection.keys('*')
+    .then(() => redisClient.defaultConnection.flushdb())
+    .then(() => redisClient.defaultConnection.keys('*'))
+    .then(k => log.info(`@closeRedis keys=${JSON.stringify(k)}`))
     .delay(500)
-    .then(() => context.redisClient.closeAll());
+    .then(() => redisClient.closeAll());
 }
 
 function factory(config) {

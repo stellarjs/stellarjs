@@ -29,12 +29,12 @@ function responseHandler(responseData) {
 }
 
 export default class StellarRequest extends StellarCore {
-  constructor(transport, source, log, pubsub) {
+  constructor(transport, pubsub, source, log) {
     super(transport, source, log);
     if (pubsub) {
       this.pubsub = pubsub;
     } else {
-      this.pubsub = new StellarPubSub(transport, source, log);
+      this.pubsub = new StellarPubSub(transport, undefined, source, log);
     }
   }
 

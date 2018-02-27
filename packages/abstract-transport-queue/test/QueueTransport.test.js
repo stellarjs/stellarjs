@@ -548,7 +548,7 @@ describe('QueueTransport tests', () => {
             mockHandler.mockReturnValue(Promise.resolve(res));
             instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
-            await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
+            expect(instance.addRequestHandler(url, mockHandler)).toEqual(requestInbox);
 
             expectTransportMocksToHaveBeeenCalled(
               instance,
@@ -582,7 +582,7 @@ describe('QueueTransport tests', () => {
         mockHandler.mockReturnValue(Promise.reject(error));
         instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
-        await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
+        expect(instance.addRequestHandler(url, mockHandler)).toEqual(requestInbox);
 
         expectTransportMocksToHaveBeeenCalled(
           instance,
@@ -614,7 +614,7 @@ describe('QueueTransport tests', () => {
         mockHandler.mockReturnValue(Promise.resolve(res));
         instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
-        await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
+        expect(instance.addRequestHandler(url, mockHandler)).toEqual(requestInbox);
 
         expectTransportMocksToHaveBeeenCalled(
           instance,

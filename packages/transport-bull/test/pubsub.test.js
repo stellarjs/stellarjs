@@ -15,9 +15,7 @@ describe('full integration pub/sub per inbox', () => {
     doBeforeAll(factory);
   });
 
-  afterAll(() => {
-    doAfterAll(onClose);
-  });
+  afterAll(async () => doAfterAll(onClose));
   
   it('test pub sub 1 subscriber', testPubSubWith1Subscriber);
   it('test unsubscribe', testUnsubscribe);

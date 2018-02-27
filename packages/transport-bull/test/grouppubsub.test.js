@@ -21,9 +21,12 @@ describe('full integration pub/sub app', () => {
     doBeforeAll(factory);
   });
 
-  afterAll(() => {
-    doAfterAll(onClose);
-    cp.kill();
+  afterAll(async () => {
+    if (cp) {
+      cp.kill();
+    }
+
+    return doAfterAll(onClose);
   });
 
   function forkSubscriber(source, channel, app) {
@@ -56,8 +59,8 @@ describe('full integration pub/sub app', () => {
   it('test pub sub one repeat subscribers, different transport', async () => {
     const channel = getChannelName();
     const stellarPub = publisher('pub1');
-    const sub1 = subscriber('sub1', channel, 'app2');
-    const sub2 = forkSubscriber('sub2', channel, 'app2');
+    const sub1 = subscriber('sub1', channel, 'app5');
+    const sub2 = forkSubscriber('sub2', channel, 'app5');
     await Promise.delay(1000);
     stellarPub.publish(channel, { text: 'hello world 1' });
     stellarPub.publish(channel, { text: 'hello world 2' });

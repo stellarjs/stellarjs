@@ -11,10 +11,10 @@ const service = 'service';
 const source = 'test';
 
 function createStellar() {
-  const transport = new MemoryTransport(console);
-  const request = new StellarRequest(transport, source, console);
-  const handler = new StellarHandler(transport, source, console);
-  const pubSub = new StellarPubSub(transport, source, console);
+  const transport = new MemoryTransport(source, console);
+  const request = new StellarRequest(transport);
+  const handler = new StellarHandler(transport);
+  const pubSub = new StellarPubSub(transport);
 
   return { transport, handler, request, pubSub };
 }

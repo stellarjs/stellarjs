@@ -14,22 +14,22 @@ const apps = {
 
 let stellarPub;
 let stellarSub;
-let stellarSubS2;
-let stellarSubS3;
+let stellarSubApp3;
+let stellarSubApp4;
 let transports;
 
 export function doBeforeAll(transportFactory) {
   transports = transportGenerator(apps, transportFactory);
   stellarPub = new StellarPubSub(transports.app1.source1a);
-  stellarSub = new StellarPubSub(transports.app2.source2c, 'S1');
-  stellarSubS2 = new StellarPubSub(transports.app3.source3d, 'S2');
-  stellarSubS3 = new StellarPubSub(transports.app4.source4e, 'S3');
+  stellarSub = new StellarPubSub(transports.app2.source2c, 'app2');
+  stellarSubApp3 = new StellarPubSub(transports.app3.source3d, 'app3');
+  stellarSubApp4 = new StellarPubSub(transports.app4.source4e, 'app4');
   return {stellarSub, stellarPub};
 }
 
 export async function doAfterAll(onClose) {
   await closeTransport(onClose);
-  await Promise.delay(5000);
+  await Promise.delay(2000);
 }
 
 export function testPubSubWith1Subscriber(done) {
@@ -46,7 +46,7 @@ export function testPubSubWith1Subscriber(done) {
 
 export function testPubSubWith3Subscribers(done) {
   const channel = getChannelName();
-  const stellarSubs = [ stellarSub, stellarSubS2, stellarSubS3 ];
+  const stellarSubs = [ stellarSub, stellarSubApp3, stellarSubApp4 ];
 
   const doneBy = [];
   Promise
@@ -59,7 +59,7 @@ export function testPubSubWith3Subscribers(done) {
     .then(() => stellarPub.publish(channel, { text: 'hello world' }))
     .delay(500)
     .then(() => {
-      expect(doneBy.sort()).toEqual(['S1', 'S2', "S3"]);
+      expect(doneBy.sort()).toEqual(['app2', 'app3', "app4"]);
       done();
     });
 }
@@ -79,7 +79,7 @@ export function testPubSubWithOneRepeatSubscribersOnSameTransport(done) {
     .then(() => fail())
     .catch((e) => {
       expect(e.message)
-        .toEqual(`Cannot have more that once per url in registries.subscribers. "${channel}.S1" has already added`);
+        .toEqual(`Cannot have more that once per url in registries.subscribers. "${channel}.app2" has already added`);
       done();
     })
 }
@@ -90,8 +90,8 @@ export function testPubSubWithOneRepeatSubscribersOnDifferentTransport(transport
     const otherTransport = transportBuilder({ log: console, source: 'otherSource', app: 'app2', requestTimeout: 1000 });
 
     const stellarSubs = [
-      new StellarPubSub(transports.app2.source2c, 'S5'),
-      new StellarPubSub(otherTransport, 'S5'),
+      new StellarPubSub(transports.app2.source2c, 'app2'),
+      new StellarPubSub(otherTransport, 'app2'),
     ];
 
     const doneBy = [];
@@ -105,7 +105,7 @@ export function testPubSubWithOneRepeatSubscribersOnDifferentTransport(transport
       .then(() => stellarPub.publish(channel, { text: 'hello world' }))
       .delay(500)
       .then(() => {
-        expect(doneBy.sort()).toEqual(["S5"]);
+        expect(doneBy.sort()).toEqual(["app2"]);
         done();
       });
   };
