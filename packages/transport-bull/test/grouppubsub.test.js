@@ -1,3 +1,6 @@
+import child_process from 'child_process';
+import EventEmitter from 'events';
+
 import { StellarPubSub } from '@stellarjs/core';
 import Promise from 'bluebird';
 import _ from 'lodash';
@@ -12,7 +15,6 @@ import {
 
 import { factory, onClose, subscriber } from './helpers';
 import { getChannelName } from '../../../specs/helpers';
-import child_process from 'child_process';
 
 let cp;
 
@@ -35,12 +37,11 @@ describe('full integration pub/sub app', () => {
       cp = child_process.fork(filepath, [source, channel, app]);
       cp.on('message', (m) => {
         const ev = _.isString(m) ? m : _.head(_.keys(m));
-        console.info(`subprocess message ${ev} ${JSON.stringify(m.result)}`);
         switch (ev) {
-          case 'result':
-            return resolve(m.result);
-          case 'err':
-            return reject(m.err);
+          case 'ready': {
+            console.info(`subprocess Ready`);
+            return resolve(cp);
+          }
         }
       });
       cp.on('error', (err) => console.error(err, 'error'));
@@ -63,7 +64,15 @@ describe('full integration pub/sub app', () => {
     const stellarSub1 = subscriber('sub1', channel, 'app5');
 
     const sub1 = new Promise((resolve) => stellarSub1.subscribe(channel, resolve));
-    const sub2 = forkSubscriber('sub2', channel, 'app5');
+    const forkedSubscriber = await forkSubscriber('sub2', channel, 'app5');
+    const sub2 = new Promise((resolve) => {
+      console.info('fork sub2 registration');
+      forkedSubscriber.on('message', (m) => {
+        const ev = _.isString(m) ? m : _.head(_.keys(m));
+        console.log(`forked result ${ev} ${m.result}`);
+        resolve(m.result);
+      })
+    });
     
     await Promise.delay(1000);
     console.log('forked publishing 1');
@@ -72,6 +81,7 @@ describe('full integration pub/sub app', () => {
     stellarPub.publish(channel, { text: 'hello world 2' });
     await expect(sub1).resolves.toEqual({ text: 'hello world 1' });
     await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
+    // cp.kill();
     // stellarSub1.transport.reset();
     // await Promise.delay(2000);
   });
