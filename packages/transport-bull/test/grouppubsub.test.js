@@ -57,6 +57,7 @@ describe('full integration pub/sub app', () => {
   it('test pub sub 3 subscriber', testPubSubWith3Subscribers);
   it('test pub sub one repeat subscribers, same transport', testPubSubWithOneRepeatSubscribersOnSameTransport);
   it('test pub sub one repeat subscribers, different transport', async () => {
+    // to make this work - perhaps we should be so aggressive about clsoing things down?
     const channel = getChannelName();
     const stellarPub = publisher('pub1');
     const stellarSub1 = subscriber('sub1', channel, 'app5');
@@ -69,7 +70,7 @@ describe('full integration pub/sub app', () => {
     stellarPub.publish(channel, { text: 'hello world 2' });
     await expect(sub1).resolves.toEqual({ text: 'hello world 1' });
     await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
-    stellarSub1.transport.reset();
-    await Promise.delay(2000);
+    // stellarSub1.transport.reset();
+    // await Promise.delay(2000);
   });
 });

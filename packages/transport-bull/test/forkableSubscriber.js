@@ -3,14 +3,18 @@ const Promise = require('bluebird');
 const { subscriber } = require('./helpers');
 
 function forkableSubscriber(source, channel, app) {
+  console.log(`forkableSubscriber(${source}, ${channel}, ${app})`);
   const stellarSub = subscriber(source, channel, app);
-  return new Promise((resolve) => stellarSub.subscribe(channel, resolve))
+  return new Promise((resolve) => {
+      const subscriber = stellarSub.subscribe(channel, resolve);
+      console.log('forkableSubscriber.subscribing')
+    })
     .then((result) => {
-      console.info(`result ${JSON.stringify(result)}`);
+      console.info(`forkableSubscriber.result ${JSON.stringify(result)}`);
       process.send({ result })
     })
     .catch(err => {
-      console.error('error');
+      console.error('forkableSubscriber.error');
       process.send({ err })
     })
     .finally(async () => {
