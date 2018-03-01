@@ -66,7 +66,9 @@ describe('full integration pub/sub app', () => {
     const sub2 = forkSubscriber('sub2', channel, 'app5');
     
     await Promise.delay(1000);
+    console.log('forked publishing 1');
     stellarPub.publish(channel, { text: 'hello world 1' });
+    console.log('forked publishing 2');
     stellarPub.publish(channel, { text: 'hello world 2' });
     await expect(sub1).resolves.toEqual({ text: 'hello world 1' });
     await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
