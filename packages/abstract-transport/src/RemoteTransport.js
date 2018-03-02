@@ -44,7 +44,7 @@ export default class RemoteTransport extends Transport {
   _handleRequestTimeout(headers, requestTimeout) {
     if (!this.inflightRequests[headers.id]) {
       const context = { id: headers.id };
-      const message = `@RemoteTransport: timeout for missing inflightRequest ${requestTimeout}ms`;
+      const message = `@RemoteTransport: Missing inflightRequest handler for timeout after ${requestTimeout}ms.`;
       this.log.error(message, context);
       throw new Error(`${message} ${JSON.stringify(context)}`);
     }
@@ -73,7 +73,7 @@ export default class RemoteTransport extends Transport {
     const id = headers.requestId;
     const inflightVars = this.inflightRequests[id];
     if (!inflightVars) {
-      this.log.warn(`@RemoteTransport: Unable to find inflightRequest handler. requestId=${headers.id}`);
+      this.log.error(`@RemoteTransport: Missing inflightRequest handler for response`, { id: headers.id });
       return;
     }
 
