@@ -29,7 +29,6 @@ class WebsocketTransport extends RemoteTransport {
     }
 
     socket.on('message', (str) => {
-      this.log.info(`@Stellar.Websocket message received: ${str}`);
       const command = JSON.parse(str);
       const data = get(command, 'data');
       const headers = get(data, 'headers', {});

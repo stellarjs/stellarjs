@@ -51,8 +51,9 @@ export default class RemoteTransport extends Transport {
 
     const reject = this.inflightRequests[headers.id][1];
     delete this.inflightRequests[headers.id];
-    this.log.warn(`@RemoteTransport: timeout after ${requestTimeout}ms`, { id: headers.id });
-    reject(new StellarError(`Timeout error: No response to job ${headers.id} in ${requestTimeout}ms`));
+    const message = `@RemoteTransport: timeout after ${requestTimeout}ms`;
+    this.log.warn(message, { id: headers.id });
+    reject(new StellarError(`${message}. requestId=${headers.id}`));
   }
 
   _startRequestTimer(headers, requestTimeout) {
@@ -72,7 +73,7 @@ export default class RemoteTransport extends Transport {
     const id = headers.requestId;
     const inflightVars = this.inflightRequests[id];
     if (!inflightVars) {
-      this.log.warn(`@RemoteTransport: Unmatched response for inflightRequest[${id}]`);
+      this.log.warn(`@RemoteTransport: Unable to find inflightRequest handler. requestId=${headers.id}`);
       return;
     }
 

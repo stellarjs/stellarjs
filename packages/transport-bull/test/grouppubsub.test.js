@@ -69,15 +69,15 @@ describe('full integration pub/sub app', () => {
       console.info('fork sub2 registration');
       forkedSubscriber.on('message', (m) => {
         const ev = _.isString(m) ? m : _.head(_.keys(m));
-        console.log(`forked result ${ev} ${m.result}`);
+        console.info(`forked result ${ev} ${m.result}`);
         resolve(m.result);
       })
     });
     
     await Promise.delay(1000);
-    console.log('forked publishing 1');
+    console.info('forked publishing 1');
     stellarPub.publish(channel, { text: 'hello world 1' });
-    console.log('forked publishing 2');
+    console.info('forked publishing 2');
     stellarPub.publish(channel, { text: 'hello world 2' });
     await expect(sub1).resolves.toEqual({ text: 'hello world 1' });
     await expect(sub2).resolves.toEqual({ text: 'hello world 2' });
