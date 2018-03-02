@@ -132,6 +132,6 @@ export function testRequestTimeout(done) {
     .then(() => fail())
     .catch(e => {
       expect(e.constructor.name).toEqual('StellarError');
-      expect(e.message).toMatch(/Timeout error\: No response to job [a-f0-9\-]* in 500ms/);
+      expect(e.message).toMatch(/@RemoteTransport\: TIMEOUT after 500ms. requestId=[a-f0-9\-]*/);
     }).then(done)
 }

@@ -44,14 +44,14 @@ export default class RemoteTransport extends Transport {
   _handleRequestTimeout(headers, requestTimeout) {
     if (!this.inflightRequests[headers.id]) {
       const context = { id: headers.id };
-      const message = `@RemoteTransport: Missing inflightRequest handler for timeout after ${requestTimeout}ms.`;
+      const message = `@RemoteTransport: MISSING inflightRequest handler for TIMEOUT after ${requestTimeout}ms.`;
       this.log.error(message, context);
       throw new Error(`${message} ${JSON.stringify(context)}`);
     }
 
     const reject = this.inflightRequests[headers.id][1];
     delete this.inflightRequests[headers.id];
-    const message = `@RemoteTransport: timeout after ${requestTimeout}ms`;
+    const message = `@RemoteTransport: TIMEOUT after ${requestTimeout}ms`;
     this.log.warn(message, { id: headers.id });
     reject(new StellarError(`${message}. requestId=${headers.id}`));
   }
@@ -73,7 +73,7 @@ export default class RemoteTransport extends Transport {
     const id = headers.requestId;
     const inflightVars = this.inflightRequests[id];
     if (!inflightVars) {
-      this.log.error(`@RemoteTransport: Missing inflightRequest handler for response`, { id: headers.id });
+      this.log.error(`@RemoteTransport: MISSING inflightRequest handler for response`, { id: headers.id });
       return;
     }
 
