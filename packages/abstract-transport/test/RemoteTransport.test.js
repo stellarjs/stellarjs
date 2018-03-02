@@ -39,7 +39,7 @@ describe('RemoteTransport', () => {
       const queueName = `${serviceName}:queueName`;
       const responseInbox = `stlr:n:source:responseInbox`;
       const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
-      const timeoutError = new StellarError(`Timeout error: No response to job 1 in 500ms`);
+      const timeoutError = new StellarError(`@RemoteTransport: timeout after 500ms. requestId=1`);
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
