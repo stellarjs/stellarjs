@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/core",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -67,7 +67,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/stellar-error": "0.9.1",
+    "@stellarjs/stellar-error": "^0.10.0",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4",
