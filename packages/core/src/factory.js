@@ -8,7 +8,7 @@ import StellarHandler from './StellarHandler';
 import StellarPubSub from './StellarPubSub';
 import StellarRequest from './StellarRequest';
 
-const requestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 30000;
+const defaultRequestTimeout = process.env.STELLAR_REQUEST_TIMEOUT || 30000;
 
 function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
   const _defaultSourceGenerator = defaultSourceGenerator;
@@ -31,33 +31,41 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
     }
   }
 
-  return function configure({ log, transport, transportFactory, source, sourceGenerator, app = process.env.APP, ...options }) {
+  return function configure(
+    { log,
+      transport,
+      transportFactory,
+      source,
+      sourceGenerator,
+      sourcePrefix = '',
+      app = process.env.APP,
+      requestTimout,
+      ...options }) {
     const _app = app;
     const _log = log || console;
-    const _transport = transport || transportFactory(assign({ log }, options));
-    const _source = source || getSourceGenerator(sourceGenerator)(_log);
-    const _requestTimeout = options.requestTimeout || requestTimeout;
+    const _source = source || `${sourcePrefix}${getSourceGenerator(sourceGenerator)(_log)}`;
+    const _requestTimeout = requestTimout || defaultRequestTimeout;
+    const _transport = transport
+      || transportFactory(assign({ app: _app, source: _source, log: _log, requestTimeout: _requestTimeout }, options));
 
     function stellarAppPubSub() {
       register(_source, 'stellarAppPubSub');
-      return new StellarPubSub(_transport, _source, _log, _app);
+      return new StellarPubSub(_transport, _app);
     }
 
-    function stellarNodePubSub(pubsubOptions = {}) {
-      const pubsubSource = pubsubOptions.sourceOverride || _source;
-      register(pubsubSource, 'stellarNodePubSub');
-      return new StellarPubSub(_transport, pubsubSource, _log);
+    function stellarNodePubSub() {
+      register(_source, 'stellarNodePubSub');
+      return new StellarPubSub(_transport);
     }
 
-    function stellarRequest(requestOptions = {}) {
-      const requestSource = requestOptions.sourceOverride || _source;
-      register(requestSource, 'stellarRequest');
-      return new StellarRequest(_transport, requestSource, _log, _requestTimeout, stellarNodePubSub(requestOptions));
+    function stellarRequest() {
+      register(_source, 'stellarRequest');
+      return new StellarRequest(_transport, stellarNodePubSub());
     }
 
     function stellarHandler() {
       register(_source, 'stellarHandler');
-      return new StellarHandler(_transport, _source, _log, _app);
+      return new StellarHandler(_transport);
     }
 
     return {

@@ -8,8 +8,6 @@ import env from './source-generators/env';
 const configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, env } });
 
 export { configureStellar };
-export { logger } from './logger';
-export { StellarError } from './StellarError';
 export { default as StellarCore } from './StellarCore';
 export { default as StellarPubSub } from './StellarPubSub';
 export { default as StellarRequest } from './StellarRequest';

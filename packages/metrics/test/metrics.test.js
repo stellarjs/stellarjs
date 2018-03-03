@@ -7,32 +7,36 @@ import Promise from 'bluebird';
 
 import runMetrics, { resetMetrics, middleware, getMetrics } from '../src';
 
-const service = 'test';
+const service = 'service';
+const source = 'test';
 
 function createStellar() {
-  const memoryTransport = new MemoryTransport();
-  const request = new StellarRequest(memoryTransport, service, console, 1000);
-  const handler = new StellarHandler(memoryTransport, service, console, 1000);
-  const pubSub = new StellarPubSub(memoryTransport, service, console, 1000);
+  const transport = new MemoryTransport(source, console);
+  const request = new StellarRequest(transport);
+  const handler = new StellarHandler(transport);
+  const pubSub = new StellarPubSub(transport);
 
-  return { handler, request, pubSub };
+  return { transport, handler, request, pubSub };
 }
 
 describe('metrics', () => {
+  let stellar;
   const resource1 = `${service}:resource`;
   const resource2 = `${service}:resource2`;
 
+  beforeEach(() => {
+    stellar = createStellar();
+  });
+
   afterEach(() => {
     resetMetrics();
-    StellarHandler.isProcessing = new Set();
+    stellar.transport.reset();
   });
 
   it('calls metrics middleware by pattern', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
@@ -40,26 +44,24 @@ describe('metrics', () => {
   });
 
   it('calls metrics middleware by multiple patterns', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-    stellar.handler.get(resource2, () => {});
-
     runMetrics({ handler: stellar.handler }, service, `${resource1}:get`, `${resource2}:get`);
 
+    stellar.handler.get(resource1, () => 1);
+    stellar.handler.get(resource2, () => 2);
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
-        .then(() => {
+        .then(([res1, res2]) => {
+          expect(res1).toEqual(1);
+          expect(res2).toEqual(2);
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
           expect(getMetrics()[`${resource2}:get`].requests).toBe(1);
         });
   });
 
   it('calls metrics middleware manually', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service);
     stellar.handler.use('.*', middleware);
 
+    stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
@@ -67,11 +69,9 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 1 after 1 request', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
@@ -79,11 +79,9 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 2 after 2 requests', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => {});
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource1)])
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(2);
@@ -91,12 +89,10 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 1 foreach url after 1 request per url', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-    stellar.handler.get(resource2, () => {});
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => {});
+    stellar.handler.get(resource2, () => {});
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
@@ -105,11 +101,9 @@ describe('metrics', () => {
   });
 
   it('doesn\'t set metrics on ignored endpoint', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service, `${resource2}:get`);
 
+    stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
         .then(() => {
           expect(getMetrics()[`${resource1}:get`]).not.toBeDefined();
@@ -117,12 +111,10 @@ describe('metrics', () => {
   });
 
   it('doesn\'t set metrics on ignored endpoint but set it on not ignored endpoint', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-    stellar.handler.get(resource2, () => {});
-
     runMetrics({ handler: stellar.handler }, service, `${resource1}:get`);
 
+    stellar.handler.get(resource1, () => {});
+    stellar.handler.get(resource2, () => {});
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource2)])
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
@@ -131,11 +123,9 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 1 after 1 request, a reset and a request', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
         .then(() => {
           expect(getMetrics()[`${resource1}:get`].requests).toBe(1);
@@ -148,11 +138,9 @@ describe('metrics', () => {
   });
 
   it('gets metrics from the metrics endpoint', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => {});
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
         .then(() => stellar.request.get(`${service}:metrics`))
         .then(({ metrics, node }) => {
@@ -162,11 +150,9 @@ describe('metrics', () => {
   });
 
   it('sets failed metrics to 1 after 1 failed request', () => {
-    const stellar = createStellar();
-    stellar.handler.get(resource1, () => { throw new Error(); });
-
     runMetrics({ handler: stellar.handler }, service, '.*');
 
+    stellar.handler.get(resource1, () => { throw new Error(); });
     return stellar.request.get(resource1)
         .catch(() => {
           expect(getMetrics()[`${resource1}:get`].failedRequests).toBe(1);
@@ -175,8 +161,6 @@ describe('metrics', () => {
   });
 
   it('gets metrics from the subscription', (done) => {
-    const stellar = createStellar();
-
     runMetrics({ handler: stellar.handler, pubSub: stellar.pubSub }, service, 100, '.*');
 
     stellar.pubSub.subscribe(`channel:${service}:metrics`, () => {

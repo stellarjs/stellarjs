@@ -28,10 +28,8 @@ function webpackConfig(context) {
             loader: 'babel-loader',
             options: {
               babelrc: false,
-              presets: [
-                ['es2015', { modules: false }],
-              ],
-              plugins: ['transform-object-rest-spread'],
+              presets: [["env", { "modules": false, "loose": true }]],
+              plugins: ["transform-object-rest-spread"]
             },
           },
         },

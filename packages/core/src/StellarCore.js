@@ -1,23 +1,22 @@
 /**
  * Created by arolave on 25/09/2016.
  */
+import Promise from 'bluebird';
+
 import assign from 'lodash/assign';
 import merge from 'lodash/merge';
 import get from 'lodash/get';
-import head from 'lodash/head';
 import includes from 'lodash/includes';
 import pick from 'lodash/pick';
-import Promise from 'bluebird';
+
+import getUri from './utils/getUri';
+import match from './utils/match';
 
 class StellarCore {
-  constructor(transport, source, log) {
+  constructor(transport, source = transport.source, log = transport.log) {
     this.handlerChain = [];
-    this.configure(transport);
+    this.transport = transport;
     this.log = log;
-    this.sourceSemaphore = new Promise((resolve) => {
-      this.sourceResolver = resolve;
-      return resolve;
-    });
     this.setSource(source);
   }
 
@@ -27,33 +26,15 @@ class StellarCore {
     }
 
     this.source = source;
-    this.sourceResolver(source);
-    this.log.info(`@StellarCore.setSource`, { source });
-  }
-
-  static getServiceName(queueName) {
-    return head(queueName.split(':')); // eslint-disable-line lodash/prefer-lodash-method
-  }
-
-  static getServiceInbox(queueName) {
-    return `stlr:s:${this.getServiceName(queueName)}:inbox`;
-  }
-
-  static getNodeInbox(nodeName) {
-    return `stlr:n:${nodeName}:inbox`;
-  }
-
-  configure(transport) {
-    this.transport = transport;
+    this.setMiddlewares();
   }
 
   use(pattern, fn) {
     this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
+    this.setMiddlewares();
   }
 
-  getNextId(inbox) {
-    return this.transport.generateId(inbox).then(id => `${inbox}:${id}`);
-  }
+  setMiddlewares() {} // eslint-disable-line class-methods-use-this
 
   /**
    * headers: {
@@ -69,14 +50,17 @@ class StellarCore {
    * @param options
    * @private
    */
-  _getHeaders(options = {}) {
+  _getHeaders(headers, overrides) {
+    const id = this.transport.generateId();
     return assign(
       {
+        id,
         timestamp: Date.now(),
         source: this.source,
+        traceId: id,
       },
-      options.headers,
-      { action: options.action }
+      headers,
+      overrides
     );
   }
 
@@ -93,89 +77,64 @@ class StellarCore {
       return val;
     };
 
-    return this
-      .getNextId(jobData.headers.respondTo)
-      .then((id) => {
-        const headers = assign(this._getHeaders(), {
-          id,
-          type: 'response',
-          requestId: jobData.headers.id,
-          traceId: jobData.headers.traceId,
-          queueName: jobData.headers.respondTo,
-        });
+    const headers = this._getHeaders({
+      type: 'response',
+      requestId: jobData.headers.id,
+      traceId: jobData.headers.traceId,
+      queueName: jobData.headers.respondTo,
+    });
 
-        return { headers, body: buildBody(headers) };
-      });
+    return { headers, body: buildBody(headers) };
   }
 
   _handlerResult(jobData, result) {
-    if (get(result, 'headers.type') === 'response' || !includes(['request', 'reactive'], jobData.headers.type)) {
+    if (get(result, 'headers.type') === 'response'
+      || !includes(['request', 'reactive'], jobData.headers.type)// ) {
+      || !jobData.headers.queueName) {
       return result;
     }
     return this._prepareResponse(jobData, result);
   }
 
   _handlerRejection(jobData, error) {
-    if (get(error, '__stellarResponse.source') === this.source || !includes(['request', 'reactive'], jobData.headers.type)) {
-      return Promise.reject(error);
+    if (get(error, '__stellarResponse.headers.source') === this.source
+      || !includes(['request', 'reactive'], jobData.headers.type)// ) {
+      || !jobData.headers.queueName) {
+      throw error;
     }
 
-    return this._prepareResponse(jobData, error).then((response) => {
-      merge(error, { __stellarResponse: response });
-      return Promise.reject(error);
-    });
+    const response = this._prepareResponse(jobData, error);
+    merge(error, { __stellarResponse: response });
+    throw error;
   }
 
-  _executeMiddlewares(handlers, jobData, options = {}) {
-    function match(url, pattern) {
-      return url.match(pattern);
-    }
-    // this.log.info(`@StellarCore.executeMiddlewares: handlers ${_.size(handlers)}`);
+  _executeMiddlewares(handlers) {
+    return (jobData, options = {}) => {
+      // this.log.info(`@StellarCore.executeMiddlewares: handlers ${_.size(handlers)}`);
 
-    const runMw = (i) => {
-      function next() {
-        return runMw(i + 1);
-      }
+      const runMw = (i) => {
+        function next() {
+          return runMw(i + 1);
+        }
 
-      if (handlers.length === i) {
-        this.log.error(`@StellarCore: Final Handler should not call next`, { jobData });
-        return Promise.reject(new Error('Final Handler should not call next'));
-      }
+        if (handlers.length === i) {
+          this.log.error(`@StellarCore: Final Handler should not call next`, { jobData });
+          return Promise.reject(new Error('Final Handler should not call next'));
+        }
 
-      // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
-      if (handlers[i].pattern === undefined ||
-        match(jobData.headers.queueName || jobData.headers.channel, handlers[i].pattern)) {
-        return Promise
-          .try(() => handlers[i].fn(jobData, next, options, this.log))
-          .then(result => this._handlerResult(jobData, result))
-          .catch(error => this._handlerRejection(jobData, error));
-      }
+          // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
+        if (match(getUri(jobData.headers), handlers[i].pattern)) {
+          return Promise
+                .try(() => handlers[i].fn(jobData, next, options, this.log))
+                .then(result => this._handlerResult(jobData, result))
+                .catch(error => this._handlerRejection(jobData, error));
+        }
 
-      return next();
+        return next();
+      };
+
+      return runMw(0);
     };
-
-    return runMw(0);
-  }
-
-  _enqueue(queueName, obj) {
-    this.log.info(`@StellarCore.enqueue`, { queueName, obj });
-    return this.transport
-      .enqueue(queueName, obj)
-      .catch((e) => {
-        this.log.error(e, `@StellarCore.enqueue`, { queueName, obj });
-        throw e;
-      });
-  }
-
-  _process(inbox, callback) {
-    return this.transport.process(inbox, (job) => {
-      this.log.info(`@StellarCore.process`, { inbox, obj: job.data });
-      return callback(job);
-    });
-  }
-
-  _stopProcessing(inbox) {
-    return this.transport.stopProcessing(inbox);
   }
 }
 
