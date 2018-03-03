@@ -105,10 +105,14 @@ class BullRedisQueueSystem extends QueueSystem {
 
     this.log.log('trace', `@${BullRedisQueueSystem.name}: closing queue ${queueName}`);
     return this.queues[queueName]
-      .close()
+      .close(true)
       .then(() => {
         delete this.queues[queueName];
         return true;
+      })
+      .catch((err) => {
+        this.log.warn(err);
+        return false;
       });
   }
 

@@ -12,7 +12,7 @@ const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 100;
 
 export default class QueueTransport extends RemoteTransport {
   constructor(queueSystem, source, log, requestTimeout) {
-    super(log, requestTimeout);
+    super(source, log, requestTimeout);
     this.queueSystem = queueSystem;
 
     // Subscription Stuff
@@ -30,8 +30,7 @@ export default class QueueTransport extends RemoteTransport {
   addRequestHandler(url, requestHandler) {
     this.registerRequestHandler(url, requestHandler);
     const inbox = getServiceInbox(url);
-    this._processInbox(inbox, true, ({ data }) => this._requestHandler(data));
-    return Promise.resolve(true);
+    return this._processInbox(inbox, true, ({ data }) => this._requestHandler(data));
   }
 
   publish(channel, payload) {
@@ -110,7 +109,7 @@ export default class QueueTransport extends RemoteTransport {
     }
 
     this.inboxes[inbox] = true;
-    this.log.info(`@QueueMessagingAdaptor: Processing started`, { inbox });
+    this.log.info(`@QueueTransport._processInbox`, { inbox });
     if (loadBalanced) {
       this.queueSystem.processGroup(STELLAR_CONCURRENCY, inbox, internalHandler);
     } else {

@@ -1,7 +1,7 @@
 /**
  * Created by arolave on 29/05/2017.
  */
-function transportMockFactory() {
+function transportMockFactory({ source = 'test', log = console } = {}) {
   const transportMock = {
     request: jest.fn(),
     fireAndForget: jest.fn(),
@@ -10,6 +10,8 @@ function transportMockFactory() {
     subscribeGroup: jest.fn(),
     addRequestHandler: jest.fn(),
     generateId: jest.fn(),
+    source: source,
+    log: log
   };
 
   let i = 1;

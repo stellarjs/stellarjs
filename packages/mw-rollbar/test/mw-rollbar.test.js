@@ -15,16 +15,16 @@ describe('Rollbar middleware', () => {
   });
 
   it('Should only report the first occurence of an error', (done) => {
-    const transport = new MemoryTransport(console);
+    const transport = new MemoryTransport('origin', console);
 
-    const request = new StellarRequest(transport, 'origin', console);
-    const oneHandler = new StellarHandler(transport, 'testserviceOne', console);
+    const request = new StellarRequest(transport);
+    const oneHandler = new StellarHandler(transport);
     oneHandler.use('.*', middleware());
-    const twoHandler = new StellarHandler(transport, 'testserviceTwo', console);
+    const twoHandler = new StellarHandler(transport, 'otherSource');
     twoHandler.use('.*', middleware());
 
     oneHandler.get('testserviceOne:resource', ({ body }) => {
-      const testserviceRequest = new StellarRequest(transport, 'testserviceOne', console);
+      const testserviceRequest = new StellarRequest(transport);
       return testserviceRequest
             .get('testserviceTwo:resource')
             .catch(e => e)

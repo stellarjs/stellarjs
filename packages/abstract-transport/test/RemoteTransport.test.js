@@ -1,14 +1,13 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 import RemoteTransport from '../src/RemoteTransport';
-import _fp from 'lodash/fp';
 import StellarError from '../../stellar-error/lib-es6';
 
 describe('RemoteTransport', () => {
   let instance;
   
   beforeEach(() => {
-    instance = new RemoteTransport(console);
+    instance = new RemoteTransport('source', console);
     instance.remoteRequest = jest.fn();
     instance.remoteRequest.mockName('instance.remoteRequest');
   });
@@ -40,7 +39,7 @@ describe('RemoteTransport', () => {
       const queueName = `${serviceName}:queueName`;
       const responseInbox = `stlr:n:source:responseInbox`;
       const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
-      const timeoutError = new StellarError(`Timeout error: No response to job 1 in 500ms`);
+      const timeoutError = new StellarError(`@RemoteTransport: TIMEOUT after 500ms. requestId=1`);
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 

@@ -28,7 +28,7 @@ class RedisClient {
 
   newConnection() {
     const client = new Redis(redisConfig);
-    assign(client, { id: uuid.v4() });
+    assign(client, { id: uuid.v1() });
 
     const prefix = `@RedisClient(${this.id}).${client.id}`;
 

@@ -6,19 +6,19 @@ import {
   testPubSubWithOneRepeatSubscribersOnDifferentTransport
 } from '../../../specs/grouppubsub.test';
 
-import { transportGenerator, closeTransport } from './helpers';
+import { factory, onClose } from './helpers';
 
 describe('SOCKET full integration pub/sub app', () => {
   beforeAll(() => {
-    doBeforeAll(transportGenerator);
+    doBeforeAll(factory);
   });
 
   afterAll(() => {
-    doAfterAll(closeTransport);
+    doAfterAll(onClose);
   });
 
-  it('test pub sub 1 subscriber', testPubSubWith1Subscriber);
-  it('test pub sub 3 subscriber', testPubSubWith3Subscribers);
+  xit('test pub sub 1 subscriber', testPubSubWith1Subscriber);
+  xit('test pub sub 3 subscriber', testPubSubWith3Subscribers);
   it('test pub sub one repeat subscribers, same transport', testPubSubWithOneRepeatSubscribersOnSameTransport);
-  it('test pub sub one repeat subscribers, different transport', testPubSubWithOneRepeatSubscribersOnDifferentTransport(transportGenerator));
+  it('test pub sub one repeat subscribers, different transport', testPubSubWithOneRepeatSubscribersOnDifferentTransport(factory));
 });

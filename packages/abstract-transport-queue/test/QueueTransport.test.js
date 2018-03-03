@@ -488,7 +488,7 @@ describe('QueueTransport tests', () => {
             const requestInbox = 'stlr:s:serviceName:inbox';
             const responseInbox = `stlr:n:source:responseInbox`;
             const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
-            const timeoutError = new StellarError(`Timeout error: No response to job 1 in 500ms`);
+            const timeoutError = new StellarError(`@RemoteTransport: TIMEOUT after 500ms. requestId=1`);
 
             instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
 
@@ -548,7 +548,7 @@ describe('QueueTransport tests', () => {
             mockHandler.mockReturnValue(Promise.resolve(res));
             instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
-            await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
+            expect(instance.addRequestHandler(url, mockHandler)).toEqual(requestInbox);
 
             expectTransportMocksToHaveBeeenCalled(
               instance,
@@ -582,7 +582,7 @@ describe('QueueTransport tests', () => {
         mockHandler.mockReturnValue(Promise.reject(error));
         instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
-        await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
+        expect(instance.addRequestHandler(url, mockHandler)).toEqual(requestInbox);
 
         expectTransportMocksToHaveBeeenCalled(
           instance,
@@ -614,7 +614,7 @@ describe('QueueTransport tests', () => {
         mockHandler.mockReturnValue(Promise.resolve(res));
         instance.queueSystem.process.mockReturnValue(Promise.resolve(true));
 
-        await expect(instance.addRequestHandler(url, mockHandler)).resolves.toEqual(true);
+        expect(instance.addRequestHandler(url, mockHandler)).toEqual(requestInbox);
 
         expectTransportMocksToHaveBeeenCalled(
           instance,

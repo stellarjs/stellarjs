@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 import {
   doAfterAll, doBeforeAll,
   testPubSubWith1Subscriber,
@@ -6,19 +8,20 @@ import {
   testPubSubWithOneRepeatSubscribersOnDifferentTransport
 } from '../../../specs/grouppubsub.test';
 
-import { transportGenerator, closeTransport } from './helpers';
+import { factory } from './helpers';
+import { MemoryTransport } from '../src';
 
 describe('MEMORY full integration pub/sub app', () => {
   beforeAll(() => {
-    doBeforeAll(transportGenerator);
+    doBeforeAll(factory);
   });
 
   afterAll(() => {
-    doAfterAll(closeTransport);
+    doAfterAll(_.noop);
   });
 
   it('test pub sub 1 subscriber', testPubSubWith1Subscriber);
   it('test pub sub 3 subscriber', testPubSubWith3Subscribers);
   it('test pub sub one repeat subscribers, same transport', testPubSubWithOneRepeatSubscribersOnSameTransport);
-  it('test pub sub one repeat subscribers, different transport', testPubSubWithOneRepeatSubscribersOnDifferentTransport(transportGenerator));
+  it('test pub sub one repeat subscribers, different transport', testPubSubWithOneRepeatSubscribersOnDifferentTransport(({ source, log }) => new MemoryTransport(source, log, false)));
 });

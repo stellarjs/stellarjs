@@ -3,23 +3,27 @@
 import Promise from 'bluebird';
 
 import { StellarPubSub } from '@stellarjs/core';
-import { log, getChannelName } from './helpers';
+import { transportGenerator, closeTransport, log, getChannelName } from './helpers';
 
-const source = 'test';
-let transport;
+const apps = {
+  'app1': ['source1a'],
+  'app2': ['source2c']
+};
+
+let transports;
 let stellarSub;
 let stellarPub;
 
-export function doBeforeAll(transportGenerator) {
-  transport = transportGenerator(source, log);
-  stellarPub = new StellarPubSub(transport.a, source, log);
-  stellarSub = new StellarPubSub(transport.b, source, log);
-  return {stellarSub, stellarPub, source};
+export function doBeforeAll(transportFactory) {
+  transports = transportGenerator(apps, transportFactory);
+  stellarPub = new StellarPubSub(transports.app1.source1a);
+  stellarSub = new StellarPubSub(transports.app2.source2c);
+  return {stellarSub, stellarPub};
 }
 
-export async function doAfterAll(closeTransport) {
-  await closeTransport();
-  await Promise.delay(5000);
+export async function doAfterAll(onClose) {
+  await closeTransport(onClose);
+  await Promise.delay(2000);
 }
 
 export function testPubSubWith1Subscriber(done) {
@@ -69,10 +73,10 @@ export function testResubscribe(done) {
 export function testPubSubWith3Subscribers(done) {
   const channel = getChannelName();
   const stellarSubs = [
-    new StellarPubSub(transport.b, 'test1', log),
-    new StellarPubSub(transport.b, 'test2', log),
-    new StellarPubSub(transport.b, 'test3', log),
-    new StellarPubSub(transport.b, 'test4', log),
+    new StellarPubSub(transports.app2.source2c, 'test1', log),
+    new StellarPubSub(transports.app2.source2c, 'test2', log),
+    new StellarPubSub(transports.app2.source2c, 'test3', log),
+    new StellarPubSub(transports.app2.source2c, 'test4', log),
   ];
 
   const doneBy = [];
@@ -94,7 +98,7 @@ export function testChannelMultiplexing(done) {
   const channel1 = getChannelName();
   const channel2 = getChannelName();
   const channel3 = getChannelName();
-  const sub = new StellarPubSub(transport.b, 'test6', log);
+  const sub = new StellarPubSub(transports.app2.source2c);
   const doneBy = [];
   const handler = i => (message) => {
     expect(message).toEqual({ text: `hello world ${i}` });

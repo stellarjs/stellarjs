@@ -8,7 +8,7 @@ import { expectMethodMocksToHaveBeeenCalled } from './helpers';
 import { transportMockFactory } from './mocks';
 
 function getStellarRequest(){
-  return new StellarRequest(transportMockFactory(), 'test', console);
+  return new StellarRequest(transportMockFactory());
 }
 
 describe('StellarRequest', () => {

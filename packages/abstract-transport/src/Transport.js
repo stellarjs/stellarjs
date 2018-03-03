@@ -19,7 +19,8 @@ function unset([k, ...vs], obj) {
 }
 
 export default class Transport {
-  constructor(log) {
+  constructor(source, log) {
+    this.source = source;
     this.log = log;
     this.registries = {
       requestHandlers: {},
@@ -51,6 +52,11 @@ export default class Transport {
 
   registerRequestHandler(url, handler) {
     return this._registerHandler('requestHandlers', url, handler);
+  }
+
+  getLocalHandler(req) {
+    const url = get(req, 'headers.queueName');
+    return get(this.registries.requestHandlers, url);
   }
 
   publish(channel, payload) { // eslint-disable-line class-methods-use-this, no-unused-vars

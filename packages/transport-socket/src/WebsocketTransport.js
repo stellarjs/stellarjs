@@ -7,8 +7,8 @@ import { EventEmitter } from 'events';
 import { RemoteTransport } from '@stellarjs/abstract-transport';
 
 class WebsocketTransport extends RemoteTransport {
-  constructor(socket, log, sendingOnly, requestTimeout) {
-    super(log, requestTimeout);
+  constructor(socket, source, log, sendingOnly, requestTimeout) {
+    super(source, log, requestTimeout);
     this.sendingOnly = sendingOnly;
     this.subscriptionHandler = new EventEmitter();
 
@@ -29,7 +29,6 @@ class WebsocketTransport extends RemoteTransport {
     }
 
     socket.on('message', (str) => {
-      this.log.info(`@Stellar.Websocket message received: ${str}`);
       const command = JSON.parse(str);
       const data = get(command, 'data');
       const headers = get(data, 'headers', {});

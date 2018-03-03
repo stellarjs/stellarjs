@@ -33,43 +33,14 @@ describe('factory generation', () => {
       });
   });
 
-  it('a stellarRequests with same source should fail', (done) => {
-    let requestObj;
-    const { stellarRequest } = configureStellar(
-        { log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
-    Promise.delay(50)
-        .then(() => {
-          requestObj = stellarRequest();
-
-          const newRequestObj = stellarRequest();
-          fail('shouldnt get this far');
-        })
-        .catch((e) => {
-          expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
-        }).then(() => done());
-  });
-
-  it('a stellarRequests with differed sources should succeed', (done) => {
-    const { stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
+  it('a sourcePrefix should be added if requested', (done) => {
+    const { stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid', sourcePrefix: 'testies-' });
     Promise.delay(50)
       .then(() => {
         const requestObj = stellarRequest();
         requestObj.transport.request.mockReturnValue(Promise.resolve({ text: 'ooo' }));
 
-        expect(requestObj.source).toMatch(/^[0-9a-f\-]+$/);
-
-        const differentObj = stellarRequest({ sourceOverride: 'override' });
-        expect(differentObj.source).toEqual('override');
-        expect(differentObj).not.toBe(requestObj);
-
-        return [
-          requestObj.create('testservice:resource', { text: 'toot' }),
-          differentObj.create('testservice:resource', { text: 'ahoot' }),
-        ];
-      })
-      .all()
-      .then((responses) => {
-        expect(responses).toEqual([{ text: 'ooo' }, { text: 'ooo' }]);
+        expect(requestObj.source).toMatch(/^testies-[0-9a-f\-]+$/)
       })
       .then(done);
   });
