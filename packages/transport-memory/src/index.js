@@ -47,7 +47,7 @@ class MemoryTransport extends Transport {
     try {
       const res = localHandler(this.standardiseObject(req));
       if (isFunction(res.then)) {
-          return res.then(this.standardiseObject.bind(this));
+        return res.then(this.standardiseObject.bind(this));
       }
       return this.standardiseObject(res);
     } catch (e) {
