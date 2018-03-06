@@ -2,9 +2,10 @@
  * Created by ozsayag on 26/06/2017.
  */
 import uuid from 'uuid/v1';
+import values from 'lodash/values';
+import isFunction from 'lodash/isFunction';
 
 import { Transport } from '@stellarjs/abstract-transport';
-import values from 'lodash/values';
 import { EventEmitter } from 'events';
 
 class MemoryTransport extends Transport {
@@ -44,9 +45,13 @@ class MemoryTransport extends Transport {
   request(req) {
     const localHandler = this.getLocalHandler(req);
     try {
-      return localHandler(this.standardiseObject(req));
+      const res = localHandler(this.standardiseObject(req));
+      if (isFunction(res.then)) {
+          return res.then(this.standardiseObject.bind(this));
+      }
+      return this.standardiseObject(res);
     } catch (e) {
-      return e.__stellarResponse ? e.__stellarResponse : e;
+      return e.__stellarResponse ? this.standardiseObject(e.__stellarResponse) : e;
     }
   }
 
