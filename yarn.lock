@@ -16,6 +16,15 @@
   dependencies:
     nan "^2.4.0"
 
+"@stellarjs/core@^0.9.1":
+  version "0.9.1"
+  resolved "https://registry.npmjs.org/@stellarjs/core/-/core-0.9.1.tgz#0af953188641fbbf2ef77c032a6074b235122070"
+  dependencies:
+    bluebird "^3.4.7"
+    lodash "^4.17.4"
+    safe-json-stringify "^1.0.4"
+    uuid "^3.1.0"
+
 "@stellarjs/engine.io-client@^0.9.3":
   version "0.9.3"
   resolved "https://registry.yarnpkg.com/@stellarjs/engine.io-client/-/engine.io-client-0.9.3.tgz#b09f825d1a07517c17a7ed838d9c57f12c94b53f"
@@ -26,6 +35,14 @@
     lodash "^4.17.4"
     qs "^6.5.0"
     tough-cookie "^2.3.2"
+
+"@stellarjs/transport-socket@^0.9.1":
+  version "0.9.1"
+  resolved "https://registry.npmjs.org/@stellarjs/transport-socket/-/transport-socket-0.9.1.tgz#10b3dae44e1cb74a6bc0532346499be17a2315eb"
+  dependencies:
+    "@stellarjs/core" "^0.9.1"
+    bluebird "^3.4.7"
+    lodash "^4.17.4"
 
 "@types/node@*":
   version "8.5.2"
