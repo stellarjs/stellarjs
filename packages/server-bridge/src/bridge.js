@@ -147,7 +147,7 @@ function request(log, stellarRequest, session, req) {
   return stellarRequest
     ._doQueueRequest(req.headers.queueName,
                      req.body,
-                     { type: 'request' },
+                     { type: req.headers.type || 'request' },
                      { responseType: 'raw', headers: req.headers })
     .then(response => sendResponse(log, session, req.headers, response));
 }

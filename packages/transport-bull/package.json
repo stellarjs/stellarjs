@@ -13,8 +13,7 @@
     },
     "collectCoverageFrom": [
       "src/*.js",
-      "!src/index.js",
-      "!src/index.browser.js"
+      "!src/index.js"
     ],
     "coverageDirectory": "../../.artifacts/coverage/transport-bull",
     "testResultsProcessor": "../../node_modules/jest-junit"
