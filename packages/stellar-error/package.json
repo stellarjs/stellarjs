@@ -3,7 +3,7 @@
   "version": "0.10.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
-  "browser": "lib/index.js",
+  "browser": "lib/index.browser.js",
   "src": [
     "src/**/*"
   ],
