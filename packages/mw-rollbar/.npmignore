@@ -1,9 +1,0 @@
-src/
-coverage/
-__mocks__/
-test/
-wallaby.js
-webpack.config.js
-.babelrc
-.eslintrc
-.flowconfig

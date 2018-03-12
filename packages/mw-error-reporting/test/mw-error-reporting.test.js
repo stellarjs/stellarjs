@@ -9,7 +9,7 @@ import StellarError from '@stellarjs/stellar-error';
 import { StellarHandler, StellarRequest } from '@stellarjs/core';
 import { MemoryTransport } from '@stellarjs/transport-memory';
 
-describe('Rollbar middleware', () => {
+xdescribe('Error Reporting middleware', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
