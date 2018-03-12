@@ -14,7 +14,7 @@ function errorReportingMiddleware({ reporters, ignoredErrorTypes }) {
             return reject(err);
           }
 
-          forEach(reporters, item => item.report(err, req));
+          forEach(reporters, item => item(err, req));
           return true;
         });
     });
