@@ -53,6 +53,8 @@
   "dependencies": {
     "@stellarjs/core": "^0.10.1",
     "bluebird": "^3.4.7",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "rollbar": "^2.2.6",
+    "newrelic": "^2.2.0"
   }
 }
