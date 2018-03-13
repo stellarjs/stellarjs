@@ -3,7 +3,6 @@
  */
 
 import Promise from 'bluebird';
-import rollbar from 'rollbar';
 import StellarError from '@stellarjs/stellar-error';
 import { StellarHandler, StellarRequest } from '@stellarjs/core';
 import { MemoryTransport } from '@stellarjs/transport-memory';
