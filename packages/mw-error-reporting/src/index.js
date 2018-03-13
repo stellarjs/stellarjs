@@ -6,18 +6,15 @@ import Promise from 'bluebird';
 
 function errorReportingMiddleware({ reporters, ignoredErrorTypes }) {
   return function (req, next) {
-    return new Promise((resolve, reject) => {
-      next()
-        .then(response => resolve(response))
+    return next()
         .catch((err) => {
           if (includes(map(ignoredErrorTypes, 'name'), get(err, 'constructor.name'))) {
-            return reject(err);
+            return Promise.reject(err);
           }
 
           forEach(reporters, item => item(err, req));
           return true;
         });
-    });
   };
 }
 

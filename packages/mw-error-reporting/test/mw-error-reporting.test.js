@@ -9,7 +9,7 @@ import { MemoryTransport } from '@stellarjs/transport-memory';
 import middleware from '../src';
 
 describe('Error Reporting middleware', () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
