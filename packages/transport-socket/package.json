@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-socket",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -29,7 +29,7 @@
     "ci": "yarn run lint:ci && yarn run test-coverage",
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6 && yarn run compile:umd",
-    "compile:es6": "babel ./src --out-dir ./lib-es6",
+    "compile:es6": "babel ./src --ignore src/index.browser.js --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -66,7 +66,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/abstract-transport": "^0.10.0",
+    "@stellarjs/abstract-transport": "^0.10.1",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "uuid": "^3.1.0"

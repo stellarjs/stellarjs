@@ -92,7 +92,6 @@ class WebsocketTransport extends RemoteTransport {
   }
 
   send(data) {
-    // queueName ignored on a socket enqueue as there is only one queue
     return this.socket.then((s) => {
       const command = { data };
       s.send(JSON.stringify(command));

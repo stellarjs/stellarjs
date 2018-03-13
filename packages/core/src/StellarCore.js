@@ -54,13 +54,13 @@ class StellarCore {
     const id = this.transport.generateId();
     return assign(
       {
-        id,
         timestamp: Date.now(),
         source: this.source,
         traceId: id,
       },
       headers,
-      overrides
+      overrides,
+      { id } // id must be the generated value
     );
   }
 

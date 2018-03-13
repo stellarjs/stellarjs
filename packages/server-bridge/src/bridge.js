@@ -107,7 +107,7 @@ function sendResponse(log, session, requestHeaders, res) {
   }
 
   const queueName = requestHeaders.respondTo;
-  const headers = defaults({ requestId: requestHeaders.id, source: session.source, queueName }, res.headers);
+  const headers = defaults({ requestId: requestHeaders.id, queueName }, res.headers);
   const obj = { headers, body: res.body };
   log.info(`${session.logPrefix} BRIDGE RESPONSE`, { queueName, obj });
   return session.client.send(obj);
@@ -116,7 +116,7 @@ function sendResponse(log, session, requestHeaders, res) {
 function bridgeSubscribe(log, session, requestHeaders) {
   return ({ headers, body }) => {
     const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
-    const socketHeaders = defaults({ queueName, source: session.source }, headers);
+    const socketHeaders = defaults({ queueName }, headers);
     const obj = { headers: socketHeaders, body };
 
     log.info(`${session.logPrefix} BRIDGE SUBSCRIBE`, { queueName, obj });
@@ -147,8 +147,8 @@ function request(log, stellarRequest, session, req) {
   return stellarRequest
     ._doQueueRequest(req.headers.queueName,
                      req.body,
-                     { type: 'request' },
-                     { responseType: 'raw', headers: defaults({ source: session.source }, req.headers) })
+                     { type: req.headers.type || 'request' },
+                     { responseType: 'raw', headers: req.headers })
     .then(response => sendResponse(log, session, req.headers, response));
 }
 

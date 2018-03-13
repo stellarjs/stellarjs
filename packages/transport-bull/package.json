@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-bull",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -13,8 +13,7 @@
     },
     "collectCoverageFrom": [
       "src/*.js",
-      "!src/index.js",
-      "!src/index.browser.js"
+      "!src/index.js"
     ],
     "coverageDirectory": "../../.artifacts/coverage/transport-bull",
     "testResultsProcessor": "../../node_modules/jest-junit"
@@ -66,7 +65,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/abstract-transport-queue": "^0.10.0",
+    "@stellarjs/abstract-transport-queue": "^0.10.1",
     "bluebird": "^3.4.7",
     "bull": "3.3.6",
     "ioredis": "^2.4.0",

@@ -38,8 +38,7 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
           {
             type: `${type}_${publishAction}`,
             payload: data,
-          }
-                );
+          });
 
                 // in angular no reducers yet so will have to pass reactiveHandler with the action
         const handler = (data, publishAction) => {
