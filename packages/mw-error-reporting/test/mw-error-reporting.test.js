@@ -57,7 +57,20 @@ describe('Error Reporting middleware', () => {
           });
   });
 
-  it('Should not report to rollbar a StellarError ', (done) => {
+  it('Should report to rollbar an error ', (done) => {
+    const req = {};
+    const val = 'Boohoo';
+    const reporterMock = jest.fn();
+
+    middleware({ reporters: [reporterMock] })(req, () => Promise.reject(new Error('Boohoo')))
+      .catch((err) => {
+        expect(err.message).toEqual(val);
+        expect(reporterMock).toBeCalled();
+        done();
+      });
+  });
+
+  it('Should not report a StellarError ', (done) => {
     const req = {};
     const val = 'Boohoo';
     const reporterMock = jest.fn();
