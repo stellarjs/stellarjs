@@ -12,7 +12,7 @@ function errorReportingMiddleware({ reporters, ignoredErrorTypes }) {
           }
 
           try {
-            Promise.map(reporters, reporter => reporter(err, req));
+            Promise.map(reporters, reporter => reporter(err, req)); // eslint-disable-line
           } catch (e) {
             log.error(e);
           }
