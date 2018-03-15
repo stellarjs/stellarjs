@@ -12,7 +12,11 @@ function errorReportingMiddleware({ reporters, ignoredErrorTypes }) {
           }
 
           try {
-            Promise.map(reporters, reporter => reporter(err, req)); // eslint-disable-line lodash/prefer-lodash-method
+            // eslint-disable-next-line lodash/prefer-lodash-method
+            Promise.map(reporters, reporter => reporter(err, req))
+              .catch((e) => {
+                log.error(e);
+              });
           } catch (e) {
             log.error(e);
           }
