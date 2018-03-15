@@ -4,8 +4,6 @@
 
 import Promise from 'bluebird';
 import StellarError from '@stellarjs/stellar-error';
-import { StellarHandler, StellarRequest } from '@stellarjs/core';
-import { MemoryTransport } from '@stellarjs/transport-memory';
 import middleware from '../src';
 
 describe('Error Reporting middleware', () => {
@@ -23,7 +21,7 @@ describe('Error Reporting middleware', () => {
           .then((res) => {
             expect(res).toEqual(val);
             expect(reporterMock).not.toBeCalled();
-            done();
+            return done();
           });
   });
 
@@ -37,7 +35,7 @@ describe('Error Reporting middleware', () => {
           .catch((err) => {
             expect(err.message).toEqual(val);
             expect(reporterMock).not.toBeCalled();
-            done();
+            return done();
           });
   });
 });
