@@ -4,7 +4,7 @@ import map from 'lodash/map';
 import Promise from 'bluebird';
 
 function errorReportingMiddleware({ reporters, ignoredErrorTypes }) {
-  return function (req, next, log) {
+  return function (req, next, options, log) {
     return next()
         .catch((err) => {
           if (includes(map(ignoredErrorTypes, 'name'), get(err, 'constructor.name'))) {
