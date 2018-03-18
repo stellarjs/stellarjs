@@ -137,7 +137,7 @@ function subscribe(log, stellarRequest, session, req) {
 
   const onStop = stellarRequest.pubsub.subscribe(req.headers.channel,
                                                  bridgeSubscribe(log, session, req.headers),
-                                                 { responseType: 'raw' });
+                                                 { responseType: 'raw', session });
 
   session.registerStopper(req.headers.channel, onStop, req.headers.id);
   return Promise.resolve(true);
@@ -148,7 +148,7 @@ function request(log, stellarRequest, session, req) {
     ._doQueueRequest(req.headers.queueName,
                      req.body,
                      { type: req.headers.type || 'request' },
-                     { responseType: 'raw', headers: req.headers })
+                     { responseType: 'raw', headers: req.headers, session })
     .then(response => sendResponse(log, session, req.headers, response));
 }
 
