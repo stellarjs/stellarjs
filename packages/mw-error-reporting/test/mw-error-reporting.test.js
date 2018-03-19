@@ -28,11 +28,96 @@ describe('Error Reporting middleware', () => {
         .get('testserviceTwo:resource')
         .catch(e => e)
         .delay(200)
-        .then(e => Promise.reject(e));
+        .then((e) => {
+          expect(reporterMock).not.toBeCalled();
+          Promise.reject(e);
+        });
     });
 
     twoHandler.get('testserviceTwo:resource', ({ body }) => {
+      throw new Error('errored');
+    });
+
+    request.get('testserviceOne:resource')
+      .catch(e => console.info('received expected error'))
+      .then(() => {
+        expect(reporterMock).toBeCalled();
+      })
+      .then(() => done());
+  });
+
+  it('Should not report in a & b sources, since not local error', (done) => {
+    const transport = new MemoryTransport('origin', console);
+    const reporterMock = jest.fn();
+    const request = new StellarRequest(transport);
+    const oneHandler = new StellarHandler(transport, 'aSource');
+    oneHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    const twoHandler = new StellarHandler(transport, 'bSource');
+    twoHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    const erroringHandler = new StellarHandler(transport, 'cSource');
+    erroringHandler.use('.*', middleware({ reporters: [reporterMock] }));
+
+    oneHandler.get('testserviceOne:resource', () => {
+      const testserviceRequest = new StellarRequest(transport);
+      return testserviceRequest
+        .get('testserviceTwo:resource')
+        .catch(e => e)
+        .delay(200)
+        .then(e => Promise.reject(e));
+    });
+
+    twoHandler.get('testserviceTwo:resource', () => {
+      const testserviceRequest = new StellarRequest(transport);
+      return testserviceRequest
+        .get('testserviceThree:resource')
+        .catch(e => e)
+        .delay(200)
+        .then(e => Promise.reject(e));
+    });
+
+    erroringHandler.get('testserviceThree:resource', () => {
       throw new Error('its broke');
+    });
+
+    request.get('testserviceOne:resource')
+      .catch(e => console.info('received expected error'))
+      .then(() => {
+        expect(reporterMock).toBeCalled();
+      })
+      .then(() => done());
+  });
+
+  it('Should report, since is local error', (done) => {
+    const transport = new MemoryTransport('origin', console);
+    const reporterMock = jest.fn();
+    const request = new StellarRequest(transport);
+    const oneHandler = new StellarHandler(transport, 'leSource');
+    oneHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    const twoHandler = new StellarHandler(transport, 'leSource');
+    twoHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    const erroringHandler = new StellarHandler(transport, 'leSource');
+    erroringHandler.use('.*', middleware({ reporters: [reporterMock] }));
+
+    oneHandler.get('testserviceOne:resource', () => {
+      const testserviceRequest = new StellarRequest(transport);
+      return testserviceRequest
+        .get('testserviceTwo:resource')
+        .catch(e => e)
+        .delay(200)
+        .then(e => Promise.reject(e));
+    });
+
+    twoHandler.get('testserviceTwo:resource', () => {
+      const testserviceRequest = new StellarRequest(transport);
+      return testserviceRequest
+        .get('testserviceThree:resource')
+        .catch(e => e)
+        .delay(200)
+        .then(e => Promise.reject(e));
+    });
+
+    erroringHandler.get('testserviceThree:resource', () => {
+      throw new Error('an error');
     });
 
     request.get('testserviceOne:resource')
