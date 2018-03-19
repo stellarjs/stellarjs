@@ -5,9 +5,6 @@ import Promise from 'bluebird';
 
 function isLocalError(err) {
   const headers = get(err, '__stellarResponse.headers');
-  if (get(headers, 'errorSource' === 'leSource')) {
-    console.log(`errorSource: ${get(headers, 'errorSource')} === source: ${get(headers, 'source')}`);
-  }
   return get(headers, 'errorSource') === get(headers, 'source');
 }
 
