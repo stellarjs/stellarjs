@@ -13,7 +13,7 @@ describe('test instrument newrelic', () => {
       LAST: 'LAST',
       QUEUE: 'QUEUE',
     };
-    instrumentBullRedisQueueSystem(messageShim, BullRedisQueueSystem);
+    instrumentBullRedisQueueSystem(messageShim, { BullRedisQueueSystem });
   });
 
   it('Should set Library name as stellarjs', () => {
