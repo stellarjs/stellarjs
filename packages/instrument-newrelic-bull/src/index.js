@@ -22,7 +22,7 @@ export default function instrumentBullRedisQueueSystem(shim, bullTransport) {
     };
   });
 
-  shim.recordSubscribedConsume(bullTransport.BullRedisQueueSystem.prototype, 'process', {
+  const consumeSpec = {
     consumer: shim.LAST,
     messageHandler(_shim, consumer, name, args) {
       const job = args[0];
@@ -35,5 +35,8 @@ export default function instrumentBullRedisQueueSystem(shim, bullTransport) {
         headers,
       };
     },
-  });
+  };
+
+  shim.recordSubscribedConsume(bullTransport.BullRedisQueueSystem.prototype, 'process', consumeSpec);
+  shim.recordSubscribedConsume(bullTransport.BullRedisQueueSystem.prototype, 'processGroup', consumeSpec);
 }
