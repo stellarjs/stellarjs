@@ -6,9 +6,12 @@ import QueueTransport from './QueueTransport';
 
 export default function configure({ queueSystem, queueSystemFactory }) {
   return function (options) {
-    const { source, log, requestTimeout, optimizeLocalHandlers } = options;
+    const { source, log, requestTimeout, optimizeLocalHandlers, standardiseDates } = options;
     const finalQueue = queueSystem || queueSystemFactory(assign({ log }, options));
-    const transport = new QueueTransport(finalQueue, source, log, requestTimeout);
-    return optimizeLocalHandlers ? localRequestHandlersDecorator(transport) : transport;
+    const TransportClazz = optimizeLocalHandlers
+      ? localRequestHandlersDecorator(QueueTransport, standardiseDates)
+      : QueueTransport;
+
+    return new TransportClazz(finalQueue, source, log, requestTimeout);
   };
 }

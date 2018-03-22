@@ -15,10 +15,10 @@ function getChannelName() {
 }
 
 let transports;
-function transportGenerator(apps, factory) {
+function transportGenerator(apps, factory, optimizeLocalHandlers = false) {
   transports = _.mapValues(apps, (sources, app) =>
     _(sources)
-      .map((source) => [ source, factory({ log, source, app, requestTimeout: 1000 }) ])
+      .map((source) => [ source, factory({ log, source, app, optimizeLocalHandlers, requestTimeout: 1000 }) ])
       .fromPairs()
       .value()
   );
