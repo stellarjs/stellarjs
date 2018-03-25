@@ -23,7 +23,7 @@ export async function doAfterAll(onClose) {
 export function doBeforeAll(transportFactory) {
   const transports = _.mapValues(transportGenerator(apps, transportFactory, true));
 
-  stellarRequest = new StellarRequest(transports.app1.source1a);
+  stellarRequest = new StellarRequest(transports.app1.source1a, { optimizeLocalHandlers: true, standardizeDates: true });
   stellarHandler = new StellarHandler(transports.app1.source1a);
   stellarPub = new StellarPubSub(transports.app1.source1a);
   stellarSub = new StellarPubSub(transports.app1.source1a);

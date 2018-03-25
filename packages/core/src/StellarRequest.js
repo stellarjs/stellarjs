@@ -10,6 +10,7 @@ import lowerCase from 'lodash/lowerCase';
 
 import StellarCore from './StellarCore';
 import StellarPubSub from './StellarPubSub';
+import mwLocalDispatchFactory from './mwLocalDispatch';
 
 function prepErrorResponse(responseData, error) {
   error.__stellarResponse = responseData; // eslint-disable-line better-mutation/no-mutation, no-param-reassign
@@ -29,12 +30,17 @@ function responseHandler(responseData) {
 }
 
 export default class StellarRequest extends StellarCore {
-  constructor(transport, pubsub, source, log) {
-    super(transport, source, log);
+  constructor(transport, { pubsub, ...options } = {}) {
+    super(transport, options);
+
+    this.optimizeLocalHandlers = options.optimizeLocalHandlers;
+    this.standardizeDates = options.standardizeDates;
+    this.setMiddlewares();
+
     if (pubsub) {
       this.pubsub = pubsub;
     } else {
-      this.pubsub = new StellarPubSub(transport, undefined, source, log);
+      this.pubsub = new StellarPubSub(transport, undefined, options);
     }
   }
 
@@ -52,22 +58,30 @@ export default class StellarRequest extends StellarCore {
 
   setMiddlewares() {
     const me = this;
-    this.requestMiddlewares = this.handlerChain.concat(
-      {
-        fn(req) {
-          return me.transport
-            .request(req)
-            .catch(error => (error.__stellarResponse ? error.__stellarResponse : me._prepareResponse(req, error)))
-            .then(res => responseHandler(res));
-        },
-      });
 
-    this.fireAndForgetMiddlewares = this.handlerChain.concat(
-      {
-        fn(request) {
-          return me.transport.fireAndForget(request);
-        },
-      });
+    function buildFinalMws(dispatchFn) {
+      if (me.optimizeLocalHandlers) {
+        return [
+          { fn: mwLocalDispatchFactory({ standardizeDates: me.standardizeDates }) },
+          { fn: dispatchFn },
+        ];
+      }
+
+      return [{ fn: dispatchFn }];
+    }
+
+    const requestMws = buildFinalMws(
+      req => me.transport
+          .request(req)
+          .catch(error => (error.__stellarResponse ? error.__stellarResponse : me._prepareResponse(req, error)))
+          .then(res => responseHandler(res))
+    );
+    this.requestMiddlewares = this.handlerChain.concat(requestMws);
+
+    const fireAndForgetMws = buildFinalMws(
+      req => me.transport.fireAndForget(req)
+    );
+    this.fireAndForgetMiddlewares = this.handlerChain.concat(fireAndForgetMws);
   }
 
   get(url, body, options) {
@@ -103,14 +117,14 @@ export default class StellarRequest extends StellarCore {
   request(url, method, body, options = {}) {
     return this._doQueueRequest(`${url}:${lowerCase(method)}`,
                                 body,
-                                { type: 'request' },
+                                { type: options.requestOnly ? 'fireAndForget' : 'request' },
                                 options);
   }
 
   _doQueueRequest(queueName, body = {}, { type, channel }, options = {}) {
     const headers = this._getHeaders(options.headers, { queueName, type, channel });
 
-    if (options.requestOnly) {
+    if (type === 'fireAndForget') {
       return this._executeMiddlewares(this.fireAndForgetMiddlewares)({ headers, body }, options);
     }
 

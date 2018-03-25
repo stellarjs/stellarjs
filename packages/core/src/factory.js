@@ -60,7 +60,7 @@ function preconfigure({ defaultSourceGenerator, sourceGenerators }) {
 
     function stellarRequest() {
       register(_source, 'stellarRequest');
-      return new StellarRequest(_transport, stellarNodePubSub());
+      return new StellarRequest(_transport, { pubsub: stellarNodePubSub(), ...options });
     }
 
     function stellarHandler() {

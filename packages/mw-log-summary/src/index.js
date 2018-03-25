@@ -1,4 +1,5 @@
 import assign from 'lodash/assign';
+import includes from 'lodash/includes';
 import pick from 'lodash/pick';
 
 function requestResponseLogBody(req, res) {
@@ -6,7 +7,7 @@ function requestResponseLogBody(req, res) {
 }
 
 function isRequest(req) {
-  return req.headers.type === 'request' || req.headers.type === 'reactive';
+  return includes(['request', 'reactive', 'fireAndForget'], req.headers.type);
 }
 
 export default function mwLogSummary(req, next, options, log) {
