@@ -10,10 +10,10 @@ import { Transport } from '@stellarjs/abstract-transport';
 import { EventEmitter } from 'events';
 
 class MemoryTransport extends Transport {
-  constructor(source, log, standardizeDates = false) {
+  constructor(source, log, stringifyDates = false) {
     super(source, log);
     this.subscriptionHandler = new EventEmitter();
-    this.standardizeObject = standardizeObjectFactory(standardizeDates);
+    this.standardizeObject = standardizeObjectFactory(stringifyDates);
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
@@ -80,9 +80,9 @@ class MemoryTransport extends Transport {
 }
 
 let instance;
-function memoryTransportFactory({ source, log, standardizeDates }) {
+function memoryTransportFactory({ source, log, stringifyDates }) {
   if (!instance) {
-    instance = new MemoryTransport(source, log, standardizeDates); // eslint-disable-line better-mutation/no-mutation
+    instance = new MemoryTransport(source, log, stringifyDates); // eslint-disable-line better-mutation/no-mutation
   }
 
   return instance;

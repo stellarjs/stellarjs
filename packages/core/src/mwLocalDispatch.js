@@ -2,8 +2,8 @@ import get from 'lodash/get';
 import isFunction from 'lodash/isFunction';
 import standardizeObjectFactory from './utils/standardizeObject';
 
-export default function mwLocalDispatchFactory({ standardizeDates = true } = {}) {
-  const standardizeObject = standardizeObjectFactory({ standardizeDates });
+export default function mwLocalDispatchFactory({ stringifyDates = true } = {}) {
+  const standardizeObject = standardizeObjectFactory({ stringifyDates });
 
   function doLocalCall(req, transport, next, responseHandler) {
     const localHandler = transport.getLocalHandler(req);

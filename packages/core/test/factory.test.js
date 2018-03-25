@@ -16,7 +16,7 @@ describe('factory generation', () => {
 
   it('set default stellar request with local dispatch (uuid generation))', () => {
     const { stellarRequest, source } = configureStellar(
-      { log: console, transportFactory: transportMockFactory, optimizeLocalHandlers: true, standardizeDates: true });
+      { log: console, transportFactory: transportMockFactory, optimizeLocalHandlers: true, stringifyDates: true });
     const requestObj = stellarRequest();
     expect(source).toMatch(/^[0-9a-f\-]+$/);
     expect(requestObj.requestMiddlewares).toHaveLength(2);

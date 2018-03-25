@@ -1,5 +1,5 @@
-export default function standardizeObjectFactory({ standardizeDates }) {
-  if (!standardizeDates) {
+export default function standardizeObjectFactory({ stringifyDates }) {
+  if (!stringifyDates) {
     return function (x) {
       return x;
     };

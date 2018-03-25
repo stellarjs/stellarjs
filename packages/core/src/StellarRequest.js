@@ -34,7 +34,7 @@ export default class StellarRequest extends StellarCore {
     super(transport, options);
 
     this.optimizeLocalHandlers = options.optimizeLocalHandlers;
-    this.standardizeDates = options.standardizeDates;
+    this.stringifyDates = options.stringifyDates;
     this.setMiddlewares();
 
     if (pubsub) {
@@ -62,7 +62,7 @@ export default class StellarRequest extends StellarCore {
     function buildFinalMws(dispatchFn) {
       if (me.optimizeLocalHandlers) {
         return [
-          { fn: mwLocalDispatchFactory({ standardizeDates: me.standardizeDates }) },
+          { fn: mwLocalDispatchFactory({ stringifyDates: me.stringifyDates }) },
           { fn: dispatchFn },
         ];
       }

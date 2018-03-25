@@ -4,7 +4,7 @@ describe('standardizeObject', () => {
   const dateStr = '2018-03-25T08:23:16.000Z';
   const sampleDate = new Date(dateStr);
   it('if on return dates standardized to json', () => {
-    const standardizeObject = standardizeObjectFactory({standardizeDates: true});
+    const standardizeObject = standardizeObjectFactory({stringifyDates: true});
 
     expect(standardizeObject(undefined)).toEqual(undefined);
     expect(standardizeObject(null)).toEqual(null);
@@ -25,7 +25,7 @@ describe('standardizeObject', () => {
   });
 
   it('if off return dates as is', () => {
-    const standardizeObject = standardizeObjectFactory({standardizeDates: false});
+    const standardizeObject = standardizeObjectFactory({stringifyDates: false});
 
     expect(standardizeObject(undefined)).toEqual(undefined);
     expect(standardizeObject(null)).toEqual(null);
