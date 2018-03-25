@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/abstract-transport",
-  "version": "0.10.1",
+  "version": "0.10.4",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",

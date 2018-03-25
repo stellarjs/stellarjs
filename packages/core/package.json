@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/core",
-  "version": "0.10.1",
+  "version": "0.10.4",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -54,7 +54,7 @@
     "usePathForSuiteName": "true"
   },
   "devDependencies": {
-    "@stellarjs/abstract-transport": "^0.10.1",
+    "@stellarjs/abstract-transport": "^0.10.4",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
     "eslint": "^3.19.0",
