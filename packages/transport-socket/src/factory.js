@@ -1,10 +1,14 @@
-import { localRequestHandlersDecorator } from '@stellarjs/abstract-transport';
-
 import WebsocketTransport from './WebsocketTransport';
 
-function transportFactory({ log, source, socket, requestTimeout, sendingOnly = false, optimizeLocalHandlers = false }) {
-  const transport = new WebsocketTransport(socket, source, log, sendingOnly, requestTimeout);
-  return optimizeLocalHandlers ? localRequestHandlersDecorator(transport) : transport;
+function transportFactory(
+  {
+    log,
+    source,
+    socket,
+    requestTimeout,
+    sendingOnly = false,
+  }) {
+  return new WebsocketTransport(socket, source, log, sendingOnly, requestTimeout);
 }
 transportFactory.type = `websocket`;
 

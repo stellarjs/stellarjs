@@ -100,6 +100,14 @@ function assignClientToSession({ log, source, socket, session }) {
 //     });
 // }
 
+function sendRequest(log, stellarRequest, session, req) {
+  return stellarRequest
+    ._doQueueRequest(req.headers.queueName,
+                     req.body,
+                     { type: req.headers.type || 'request' },
+                     { responseType: 'raw', headers: req.headers, session });
+}
+
 function sendResponse(log, session, requestHeaders, res) {
   if (isUndefined(session.client)) {
     log.warn(`${session.logPrefix}: Socket was closed before response was sent.`);
@@ -144,11 +152,7 @@ function subscribe(log, stellarRequest, session, req) {
 }
 
 function request(log, stellarRequest, session, req) {
-  return stellarRequest
-    ._doQueueRequest(req.headers.queueName,
-                     req.body,
-                     { type: req.headers.type || 'request' },
-                     { responseType: 'raw', headers: req.headers, session })
+  return sendRequest(log, stellarRequest, session, req)
     .then(response => sendResponse(log, session, req.headers, response));
 }
 
@@ -156,6 +160,9 @@ function handleMessage(log, stellarRequest, session, req) {
   switch (req.headers.type) {
     case 'request': {
       return request(log, stellarRequest, session, req);
+    }
+    case 'fireAndForget': {
+      return sendRequest(log, stellarRequest, session, req);
     }
     case 'subscribe': {
       return subscribe(log, stellarRequest, session, req);

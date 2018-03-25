@@ -5,23 +5,15 @@ import uuid from 'uuid/v1';
 import values from 'lodash/values';
 import isFunction from 'lodash/isFunction';
 
+import { standardizeObjectFactory } from '@stellarjs/core';
 import { Transport } from '@stellarjs/abstract-transport';
 import { EventEmitter } from 'events';
 
 class MemoryTransport extends Transport {
-  constructor(source, log, standardiseDates = false) {
+  constructor(source, log, stringifyDates = false) {
     super(source, log);
     this.subscriptionHandler = new EventEmitter();
-    this.standardiseDates = standardiseDates;
-  }
-
-// standardise object to have json data spec
-  standardiseObject(obj) {
-    if (this.standardiseDates) {
-      return JSON.parse(JSON.stringify(obj));
-    }
-
-    return obj;
+    this.standardizeObject = standardizeObjectFactory(stringifyDates);
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
@@ -29,7 +21,7 @@ class MemoryTransport extends Transport {
   }
 
   publish(channel, payload) { // eslint-disable-line class-methods-use-this, no-unused-vars
-    this.subscriptionHandler.emit(channel, this.standardiseObject(payload));
+    this.subscriptionHandler.emit(channel, this.standardizeObject(payload));
   }
 
   subscribe(channel, messageHandler) {
@@ -45,20 +37,20 @@ class MemoryTransport extends Transport {
   request(req) {
     const localHandler = this.getLocalHandler(req);
     try {
-      const res = localHandler(this.standardiseObject(req));
+      const res = localHandler(this.standardizeObject(req));
       if (isFunction(res.then)) {
-        return res.then(this.standardiseObject.bind(this));
+        return res.then(this.standardizeObject.bind(this));
       }
-      return this.standardiseObject(res);
+      return this.standardizeObject(res);
     } catch (e) {
-      return e.__stellarResponse ? this.standardiseObject(e.__stellarResponse) : e;
+      return e.__stellarResponse ? this.standardizeObject(e.__stellarResponse) : e;
     }
   }
 
   fireAndForget(req) { // eslint-disable-line class-methods-use-this, no-unused-vars
     const localHandler = this.getLocalHandler(req);
     try {
-      localHandler(this.standardiseObject(req));
+      localHandler(this.standardizeObject(req));
     } catch (e) {
       this.log.warn(`fireAndForget failed`, req);
     }
@@ -88,9 +80,9 @@ class MemoryTransport extends Transport {
 }
 
 let instance;
-function memoryTransportFactory({ source, log, standardiseDates }) {
+function memoryTransportFactory({ source, log, stringifyDates }) {
   if (!instance) {
-    instance = new MemoryTransport(source, log, standardiseDates); // eslint-disable-line better-mutation/no-mutation
+    instance = new MemoryTransport(source, log, stringifyDates); // eslint-disable-line better-mutation/no-mutation
   }
 
   return instance;

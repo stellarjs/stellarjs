@@ -142,7 +142,7 @@ describe('StellarRequest', () => {
 
             expectMethodMocksToHaveBeeenCalled(
               stellarRequest.transport,
-              { name: 'fireAndForget', numCalls: 1, args: [[{ headers: _.assign({}, headers, { queueName: 'testservice:resource:remove' }), body: 99 }]] },
+              { name: 'fireAndForget', numCalls: 1, args: [[{ headers: _.assign({}, headers, { queueName: 'testservice:resource:remove', type: 'fireAndForget' }), body: 99 }]] },
               { name: 'generateId', numCalls: 2 });
         });
     });

@@ -12,4 +12,5 @@ export { default as StellarCore } from './StellarCore';
 export { default as StellarPubSub } from './StellarPubSub';
 export { default as StellarRequest } from './StellarRequest';
 export { default as StellarHandler } from './StellarHandler';
+export { default as standardizeObjectFactory } from './utils/standardizeObject';
 export { uuid };

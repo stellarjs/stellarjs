@@ -6,8 +6,8 @@ import includes from 'lodash/includes';
 import StellarCore from './StellarCore';
 
 export default class StellarPubSub extends StellarCore {
-  constructor(transport, service, source, log) {
-    super(transport, source, log);
+  constructor(transport, service, options) {
+    super(transport, options);
     this.service = service;
   }
 
