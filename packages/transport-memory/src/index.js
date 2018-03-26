@@ -13,7 +13,7 @@ class MemoryTransport extends Transport {
   constructor(source, log, stringifyDates = false) {
     super(source, log);
     this.subscriptionHandler = new EventEmitter();
-    this.standardizeObject = standardizeObjectFactory(stringifyDates);
+    this.standardizeObject = standardizeObjectFactory({ stringifyDates });
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
