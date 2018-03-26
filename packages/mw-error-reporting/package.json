@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/mw-error-reporting",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -38,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/transport-memory": "^0.10.4",
+    "@stellarjs/transport-memory": "^0.10.5",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
