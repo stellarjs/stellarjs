@@ -36,7 +36,6 @@ function startSession(log, source, socket) {
   const parsedUrl = url.parse(requestUrl, true);
   const sessionId = get(parsedUrl, 'query.x-sessionId');
 
-  console.log(`start session ${url} ${JSON.stringify(parsedUrl)} ${sessionId}`);
   const session = {
     source,
     sessionId: sessionId || socket.id,
