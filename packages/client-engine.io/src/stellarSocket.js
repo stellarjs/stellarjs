@@ -86,7 +86,7 @@ function stellarSocketFactory(eio, log = console) {
     },
     connect(url, options = {}) {
       this.getOptions = () => {
-        if (isFunction(options)) {
+        if(isFunction(options)) {
           return options();
         }
         return options;
