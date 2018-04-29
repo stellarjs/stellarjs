@@ -124,14 +124,16 @@ describe('engine-io client', () => {
         const triggers = {};
 
         stellarSocket.on('open', () => {
-            const { userId } = stellarSocket;
+            const { userId, sessionId } = stellarSocket;
             triggers.userId = userId;
+            triggers.sessionId = sessionId;
             triggers.open = Date.now();
         });
         stellarSocket.on('reconnected', () => {
-            const { userId } = stellarSocket;
+            const { userId, sessionId } = stellarSocket;
             triggers.reconnect = Date.now();
             triggers.userId = userId;
+            triggers.sessionId = sessionId;
         });
         stellarSocket.on('close', () => {
             triggers.close = Date.now();
