@@ -3,7 +3,6 @@
  */
 import Promise from 'bluebird';
 import qs from 'qs';
-import isFunction from 'lodash/isFunction';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import { configureStellar, uuid } from '@stellarjs/core';
@@ -85,24 +84,16 @@ function stellarSocketFactory(eio, log = console) {
       }
     },
     connect(url, options = {}) {
-      this.getOptions = () => {
-        if(isFunction(options)) {
-          return options();
-        }
-        return options;
-      };
+      log.info(`@StellarSocket.connect`, { url, options });
 
-      const { tryToReconnect } = this.getOptions();
+      this.tryToReconnect = options.tryToReconnect !== false;
 
-      this.tryToReconnect = tryToReconnect !== false;
-
-      log.info(`@StellarSocket.connect`, { url, options: this.getOptions() });
-
+      this.options = options;
       return this
         ._closeIfNeeded()
         .then(() => {
           this.connectedOnce = false;
-          return this._doConnect(url, this.getOptions());
+          return this._doConnect(url, options);
         })
         .then((result) => {
           log.info(`@StellarSocket connection success`);
@@ -111,7 +102,7 @@ function stellarSocketFactory(eio, log = console) {
         .catch((e) => {
           log.info(`@StellarSocket connection failed`);
           if (this.tryToReconnect) {
-            return this._reconnect(url, this.getOptions());
+            return this._reconnect(url, options);
           }
           throw e;
         });
@@ -195,7 +186,7 @@ function stellarSocketFactory(eio, log = console) {
             this.state = 'disconnected';
             this.socket = null;
             if (this.tryToReconnect) {
-              this._reconnect(url, this.getOptions());
+              this._reconnect(url, { userId, token, secure, params });
             }
           }
         });
