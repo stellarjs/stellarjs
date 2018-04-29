@@ -12,11 +12,12 @@ let lastInstance;
 function triggerOpen(instance, url) {
   const parsedQs = qs.parse(_.last(_.split(url, '?')));
   const userId = parsedQs['x-auth-user'];
+  const sessionId = parsedQs['x-sessionId'];
   return Promise
   .delay(50)
   .then(() => {
     instance.send('open');
-    instance.send('message', JSON.stringify({ messageType: 'connected', userId }));
+    instance.send('message', JSON.stringify({ messageType: 'connected', userId, sessionId }));
   });
 }
 
@@ -118,39 +119,37 @@ describe('engine-io client', () => {
       });
   });
 
-  it('should trigger an reconnec eventt with new connection state', (done) => {
+  it('should trigger an reconnect event with new connection state', (done) => {
         const stellarSocket = stellarSocketFactory(successEio);
         const triggers = {};
 
         stellarSocket.on('open', () => {
             const { userId } = stellarSocket;
-            triggers.userId = _.toNumber(userId);
+            triggers.userId = userId;
             triggers.open = Date.now();
         });
         stellarSocket.on('reconnected', () => {
             const { userId } = stellarSocket;
             triggers.reconnect = Date.now();
-            triggers.userId = _.toNumber(userId);
+            triggers.userId = userId;
         });
         stellarSocket.on('close', () => {
             triggers.close = Date.now();
         });
 
-        let i = 0;
-        function connectOptions() {
-            i++;
-            return { userId: i }
-        }
 
         let userIdOnConnect;
+        let sessionIdOnConnect;
         stellarSocket
-            .connect('myurl',  connectOptions)
+            .connect('myurl',  { userId: '1',  sessionId:'2' })
             .then(() => {
                 expect(triggers.open).toBeTruthy();
                 expect(triggers.reconnect).toBeFalsy();
                 expect(triggers.close).toBeFalsy();
-                expect(triggers.userId).toBeTruthy();
+                expect(triggers.userId).toEqual('1');
+                expect(triggers.sessionId).toEqual('2');
                 userIdOnConnect = triggers.userId;
+                sessionIdOnConnect = triggers.sessionId;
             })
             .then(() => {
                 lastInstance.send('close');
@@ -160,7 +159,8 @@ describe('engine-io client', () => {
                 expect(triggers.open).toBeTruthy();
                 expect(triggers.reconnect).toBeTruthy();
                 expect(triggers.close).toBeTruthy();
-                expect(triggers.userId).toEqual(userIdOnConnect + 1);
+                expect(triggers.userId).toEqual(userIdOnConnect);
+                expect(triggers.sessionId).toEqual(sessionIdOnConnect);
                 done();
             });
     });
