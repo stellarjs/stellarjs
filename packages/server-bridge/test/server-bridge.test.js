@@ -161,14 +161,13 @@ describe('call server', () => {
                 extraParam: 1,
             },
         }).then(() => {
-
             expect(stellarSocket.sessionId).toEqual('456');
             expect(stellarSocket.userId).toEqual('123');
             stellarSocket.close();
         })
         .then(() => {
                 done();
-         });
+        });
     });
 
     it('no sessionId set - sessionId should equal to socketId ', (done) => {
