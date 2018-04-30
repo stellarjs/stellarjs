@@ -148,6 +148,51 @@ describe('call server', () => {
       });
   });
 
+    it('sessionId set - sessionId should equal sessionId header', (done) => {
+        const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+        stellarSocket.connect('localhost:8091', {
+            secure: false,
+            userId: '123',
+            sessionId:'456',
+            token: '123',
+            tokenType: 'API',
+            eioConfig: { upgrade: false },
+            params: {
+                extraParam: 1,
+            },
+        }).then(() => {
+
+            expect(stellarSocket.sessionId).toEqual('456');
+            expect(stellarSocket.userId).toEqual('123');
+            stellarSocket.close();
+        })
+        .then(() => {
+                done();
+         });
+    });
+
+    it('no sessionId set - sessionId should equal to socketId ', (done) => {
+        const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+        stellarSocket.connect('localhost:8091', {
+            secure: false,
+            userId: '123',
+            token: '123',
+            tokenType: 'API',
+            eioConfig: { upgrade: false },
+            params: {
+                extraParam: 1,
+            },
+        }).then(() => {
+            expect(stellarSocket.sessionId).toBeTruthy();
+            expect(stellarSocket.sessionId).toEqual(stellarSocket.socket.id);
+            expect(stellarSocket.userId).toEqual('123');
+            stellarSocket.close();
+        })
+        .then(() => {
+                done();
+        });
+    });
+
   it('custom timeout should extend normal timeout', (done) => {
     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
     stellarSocket.connect('localhost:8091', {
