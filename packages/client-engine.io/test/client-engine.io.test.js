@@ -3,17 +3,21 @@
  */
 import _ from 'lodash';
 import Promise from 'bluebird';
+import qs from 'qs';
 import stellarSocketFactory from '../src/stellarSocket';
 import uuid from 'uuid/v4';
 
 let lastInstance;
 
-function triggerOpen(instance) {
+function triggerOpen(instance, url) {
+  const parsedQs = qs.parse(_.last(_.split(url, '?')));
+  const userId = parsedQs['x-auth-user'];
+  const sessionId = parsedQs['x-sessionId'];
   return Promise
   .delay(50)
   .then(() => {
     instance.send('open');
-    instance.send('message', JSON.stringify({ messageType: 'connected' }));
+    instance.send('message', JSON.stringify({ messageType: 'connected', userId, sessionId }));
   });
 }
 
@@ -28,7 +32,7 @@ function triggerError(instance) {
 
 function mockEio(trigger) {
   return {
-    Socket: jest.fn(() => {
+    Socket: jest.fn((url) => {
       const socketInstance = {
         listeners: {},
         on(event, fn) {
@@ -46,7 +50,7 @@ function mockEio(trigger) {
         id: uuid(),
       };
 
-      trigger(socketInstance);
+      trigger(socketInstance, url);
 
       lastInstance = socketInstance;
       return socketInstance;
@@ -114,6 +118,54 @@ describe('engine-io client', () => {
         done();
       });
   });
+
+  it('should trigger an reconnect event with new connection state', (done) => {
+        const stellarSocket = stellarSocketFactory(successEio);
+        const triggers = {};
+
+        stellarSocket.on('open', () => {
+            const { userId, sessionId } = stellarSocket;
+            triggers.userId = userId;
+            triggers.sessionId = sessionId;
+            triggers.open = Date.now();
+        });
+        stellarSocket.on('reconnected', () => {
+            const { userId, sessionId } = stellarSocket;
+            triggers.reconnect = Date.now();
+            triggers.userId = userId;
+            triggers.sessionId = sessionId;
+        });
+        stellarSocket.on('close', () => {
+            triggers.close = Date.now();
+        });
+
+
+        let userIdOnConnect;
+        let sessionIdOnConnect;
+        stellarSocket
+            .connect('myurl',  { userId: '1',  sessionId:'2' })
+            .then(() => {
+                expect(triggers.open).toBeTruthy();
+                expect(triggers.reconnect).toBeFalsy();
+                expect(triggers.close).toBeFalsy();
+                expect(triggers.userId).toEqual('1');
+                expect(triggers.sessionId).toEqual('2');
+                userIdOnConnect = triggers.userId;
+                sessionIdOnConnect = triggers.sessionId;
+            })
+            .then(() => {
+                lastInstance.send('close');
+                return Promise.delay(100);
+            })
+            .then(() => {
+                expect(triggers.open).toBeTruthy();
+                expect(triggers.reconnect).toBeTruthy();
+                expect(triggers.close).toBeTruthy();
+                expect(triggers.userId).toEqual(userIdOnConnect);
+                expect(triggers.sessionId).toEqual(sessionIdOnConnect);
+                done();
+            });
+    });
 
   it('should not trigger an reconnect event if connnect is done', (done) => {
     const stellarSocket = stellarSocketFactory(successEio);

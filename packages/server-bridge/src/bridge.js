@@ -1,4 +1,5 @@
 import Promise from 'bluebird';
+import url from 'url';
 import assign from 'lodash/assign';
 import defaults from 'lodash/defaults';
 import isObject from 'lodash/isObject';
@@ -31,9 +32,13 @@ function createStellarRequest(stellarFactory, middlewares) {
 
 const sessions = {};
 function startSession(log, source, socket) {
+  const requestUrl = get(socket, 'request.url');
+  const parsedUrl = url.parse(requestUrl, true);
+  const sessionId = get(parsedUrl, 'query.x-sessionId');
+
   const session = {
     source,
-    sessionId: socket.id,
+    sessionId: sessionId || socket.id,
     ip: get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
     logPrefix: `${source} @StellarBridge(${socket.id})`,
