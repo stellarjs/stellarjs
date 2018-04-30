@@ -59,7 +59,7 @@ function startSession(log, source, socket) {
     },
     offlineFns: [() => {
       log.info(`${session.logPrefix}: ended session`, { sessionId: socket.id });
-      delete session[socket.id];
+      delete sessions[socket.id];
     }],
   };
 
