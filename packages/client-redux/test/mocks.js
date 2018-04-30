@@ -1,22 +1,18 @@
-import http from 'http';
-
-const mockStellarSocket = {
+const mockStellarSocket = (response) => ({
   stellar: {
     getReactive(url, finalChannel, payload, handler, options) {
-      const response = {
-        onStop() {
-                    // return {
-                    //     stopper() {}
-                    // };
-        },
-        results() {},
+      return {
+          onStop() {
+              // return {
+              //     stopper() {}
+              // };
+          },
+          results() {},
       };
-
-      return response;
     },
 
     request(url, method, payload, options) {
-      return {
+      return Promise.resolve(response) || {
         url,
         method,
         payload,
@@ -24,19 +20,20 @@ const mockStellarSocket = {
       };
     },
   },
-};
+});
 
 const mockRef = {
   dispatch() {},
   getState() {},
 };
 
-const mockAction = ({ resource = 'mockRecource', method = {}, payload = {}, path = '' }) => ({
+const mockAction = ({ resource = 'mockRecource', method = {}, payload = {}, path = '', Decorator }) => ({
   type: 'mockType',
   resource,
   path,
   method,
   payload,
+  Decorator,
 });
 
 export { mockStellarSocket, mockRef, mockAction };
