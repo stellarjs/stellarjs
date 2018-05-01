@@ -1,7 +1,5 @@
 import Promise from 'bluebird';
 
-import uuid from 'uuid/v1';
-
 import StellarError from '@stellarjs/stellar-error';
 
 import Transport from './Transport';
@@ -19,10 +17,6 @@ export default class RemoteTransport extends Transport {
     // Request Stuff
     this.defaultRequestTimeout = requestTimeout;
     this.inflightRequests = {};
-  }
-
-  generateId() { // eslint-disable-line class-methods-use-this
-    return uuid();
   }
 
   request({ headers = {}, body }, requestTimeout = headers.requestTimeout || this.defaultRequestTimeout) {

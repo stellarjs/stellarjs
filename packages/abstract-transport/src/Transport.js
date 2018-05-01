@@ -83,8 +83,8 @@ export default class Transport {
     throw new Error('"addHandler" was called but was not implemented!');
   }
 
-  generateId() { // eslint-disable-line class-methods-use-this
-    throw new Error('"generateId" was called but was not implemented!');
+  generateId() {
+      return uuid();
   }
 
   reset() {
