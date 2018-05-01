@@ -1,7 +1,4 @@
-/**
- * Created by arolave on 05/10/2016.
- */
 import transportFactory from './factory';
-import WebsocketTransport from './WebsocketTransport';
+import AxiosTransport from './AxiosTransport';
 
-export { transportFactory as default, WebsocketTransport };
+export { transportFactory as default, AxiosTransport };
