@@ -8,9 +8,11 @@ class ExpressTransport extends HttpTransport {
 
     addRequestHandler(queueName, handler) {
         const { url } = this.getHttpMethodAndUrlFromQueueName(queueName);
-        this.router.post(url, async (req, res) => {
+        this.router.post(url, (req, res) => {
             handler(req.body)
-                .then(result => res.json(result))
+                .then(result => {
+                    res.json(result)
+                })
                 .catch(error => {
                     res.json(error.__stellarResponse)
                 });

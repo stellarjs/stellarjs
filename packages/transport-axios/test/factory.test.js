@@ -4,9 +4,6 @@ describe('factory', () => {
     const log = console;
     const axios = 'fake';
 
-    beforeEach(() => {
-    });
-
     it('should pass all arguments to AxiosTransport instance', () => {
         const transport = factory({
             axios,

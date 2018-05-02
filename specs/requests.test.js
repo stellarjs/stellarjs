@@ -132,11 +132,9 @@ export function testRequestTimeout(done) {
   stellarRequest
     .get(resourceName, { text: 'hello' }, { headers: { requestTimeout: 500 } })
     .then(() => {
-
       fail()
     })
     .catch(e => {
-
       expect(e.constructor.name).toEqual('StellarError');
       expect(e.message).toMatch(/@RemoteTransport\: TIMEOUT after 500ms. requestId=[a-f0-9\-]*/);
     }).then(done)

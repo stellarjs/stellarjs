@@ -48,10 +48,10 @@
     "stellar",
     "stellarjs"
   ],
-  "author": "Andres Olave",
+  "author": "roeeyud",
   "contributors": [],
   "bugs": {
-    "url": "https://github.com/sloops77/stellarjs/issues"
+    "url": "https://github.com/stellarjs/stellarjs/issues"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

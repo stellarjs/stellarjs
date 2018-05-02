@@ -16,18 +16,16 @@ class AxiosTransport extends HttpTransport {
         this.send(req);
     }
 
-    async send(request) {
+    send(request) {
         const { headers } = request;
         const { queueName, requestTimeout } = headers;
         const { url } = this.getHttpMethodAndUrlFromQueueName(queueName);
 
-        const res = await this.axios.post(url, request, {
+        return this.axios.post(url, request, {
             timeout: requestTimeout || this.defaultRequestTimeout,
             data: request,
             baseUrl: this.baseUrl,
-        });
-        debugger
-        return res;
+        }).then(res => res.data);
     }
 }
 

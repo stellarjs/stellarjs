@@ -49,10 +49,10 @@
     "stellar",
     "stellarjs"
   ],
-  "author": "Andres Olave",
+  "author": "roeeyud",
   "contributors": [],
   "bugs": {
-    "url": "https://github.com/sloops77/stellarjs/issues"
+    "url": "https://github.com/stellarjs/stellarjs/issues"
   },
   "devDependencies": {
     "@stellarjs/transport-axios": "0.0.1",
