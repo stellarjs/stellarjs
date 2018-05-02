@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/transport-axios",
+  "name": "@stellarjs/transport-express",
   "version": "0.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -17,12 +17,12 @@
       "!src/index.js",
       "!src/index.browser.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/transport-axios",
+    "coverageDirectory": "../../.artifacts/coverage/transport-express",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
     "suiteName": "jest tests",
-    "output": "../../.artifacts/test-results/transport-axios.xml",
+    "output": "../../.artifacts/test-results/transport-express.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
@@ -36,7 +36,7 @@
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/transport-axios.xml src"
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/transport-express.xml src"
   },
   "publishConfig": {
     "access": "public"
@@ -65,6 +65,6 @@
     "jest": "^22.0.4"
   },
   "dependencies": {
-    "@stellarjs/transport-http": "^0.0.1"
+    "@stellarjs/transport-http": "0.0.1"
   }
 }

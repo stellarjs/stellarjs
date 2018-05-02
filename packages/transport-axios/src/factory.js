@@ -1,4 +1,4 @@
-import WebsocketTransport from './AxiosTransport';
+import AxiosTransport from './AxiosTransport';
 
 function transportFactory(
   {
@@ -7,7 +7,7 @@ function transportFactory(
     axios,
     requestTimeout,
   }) {
-  return new WebsocketTransport(axios, source, log, requestTimeout);
+  return new AxiosTransport(axios, source, log, requestTimeout);
 }
 transportFactory.type = `axios`;
 
