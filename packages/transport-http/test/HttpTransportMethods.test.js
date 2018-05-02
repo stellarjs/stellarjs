@@ -7,13 +7,13 @@ describe('HttpTransport Methods', () => {
             url: '/a/b/c/get',
         });
         expect(transport.getHttpMethodAndUrlFromQueueName('a:b:c:create')).toEqual({
-            url: '/a/b/c/put',
+            url: '/a/b/c/create',
         });
         expect(transport.getHttpMethodAndUrlFromQueueName('a:b:c:update')).toEqual({
-            url: '/a/b/c/post',
+            url: '/a/b/c/update',
         });
         expect(transport.getHttpMethodAndUrlFromQueueName('a:b:c:remove')).toEqual({
-            url: '/a/b/c/delete',
+            url: '/a/b/c/remove',
         });
     });
 });

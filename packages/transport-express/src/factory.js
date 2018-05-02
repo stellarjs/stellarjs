@@ -6,7 +6,7 @@ function transportFactory(
         source,
         router,
     }) {
-    return new ExpressTransport(router, source, log);
+  return new ExpressTransport(router, source, log);
 }
 transportFactory.type = `express`;
 

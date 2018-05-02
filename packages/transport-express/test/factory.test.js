@@ -1,4 +1,3 @@
-import axiosFactory from '@stellar'
 import factory from '../src/factory';
 
 describe('e2e', () => {
