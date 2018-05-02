@@ -1,12 +1,12 @@
 import ExpressTransport from './ExpressTransport';
 
 function transportFactory(
-  {
-    log,
-    source,
-    express,
-  }) {
-  return new ExpressTransport(express, source, log, requestTimeout);
+    {
+        log,
+        source,
+        router,
+    }) {
+    return new ExpressTransport(router, source, log);
 }
 transportFactory.type = `express`;
 

@@ -1,6 +1,7 @@
+import axiosFactory from '@stellar'
 import factory from '../src/factory';
 
-describe('factory', () => {
+describe('e2e', () => {
     const log = console;
     const express = 'fake';
 

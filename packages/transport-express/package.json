@@ -17,6 +17,7 @@
       "!src/index.js",
       "!src/index.browser.js"
     ],
+    "testEnvironment": "node",
     "coverageDirectory": "../../.artifacts/coverage/transport-express",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
@@ -54,7 +55,10 @@
     "url": "https://github.com/sloops77/stellarjs/issues"
   },
   "devDependencies": {
+    "@stellarjs/transport-axios": "0.0.1",
+    "axios": "^0.18.0",
     "babel-cli": "^6.24.1",
+    "body-parser": "^1.18.2",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-better-mutation": "^1.1.2",
@@ -62,6 +66,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
+    "express": "^4.16.3",
     "jest": "^22.0.4"
   },
   "dependencies": {

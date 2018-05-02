@@ -98,6 +98,7 @@ export async function testMiddlewares() {
 
 export function testRequestErrorResponse(done) {
   const resourceName = getResourceName('app2');
+    debugger
   stellarHandler.get(resourceName, ({ body }) => {
     const errors = new StellarError();
     errors.addPropertyError('x', 'poop');
@@ -127,10 +128,15 @@ export function testRequestTimeout(done) {
       .then(() => ({ text: `${body.text} worlds` }));
   });
 
+
   stellarRequest
     .get(resourceName, { text: 'hello' }, { headers: { requestTimeout: 500 } })
-    .then(() => fail())
+    .then(() => {
+
+      fail()
+    })
     .catch(e => {
+
       expect(e.constructor.name).toEqual('StellarError');
       expect(e.message).toMatch(/@RemoteTransport\: TIMEOUT after 500ms. requestId=[a-f0-9\-]*/);
     }).then(done)

@@ -1,17 +1,19 @@
 import HttpTransport from '@stellarjs/transport-http';
 
 class ExpressTransport extends HttpTransport {
-    constructor(express, source, log) {
+    constructor(router, source, log) {
         super(source, log);
-        this.ExpressTransport = ExpressTransport;
+        this.router = router;
     }
 
     addRequestHandler(queueName, handler) {
-        const { method, url } = this.getHttpMethodAndUrlFromQueueName(queueName);
-        this.express[method](url, async (req, res) => {
-            const { body } = req.body;
-            const result = await handler(body);
-            res.send(result);
+        const { url } = this.getHttpMethodAndUrlFromQueueName(queueName);
+        this.router.post(url, async (req, res) => {
+            handler(req.body)
+                .then(result => res.json(result))
+                .catch(error => {
+                    res.json(error.__stellarResponse)
+                });
         });
     }
 }
