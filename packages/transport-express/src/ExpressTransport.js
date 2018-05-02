@@ -17,4 +17,3 @@ class ExpressTransport extends HttpTransport {
 }
 
 export default ExpressTransport;
-
