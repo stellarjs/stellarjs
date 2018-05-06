@@ -43,12 +43,12 @@ function startSession(log, source, socket) {
     socketId,
     ip: get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
-    logPrefix: `${source} @StellarBridge(${socket.id})`,
+    logPrefix: `${source} @StellarBridge(${socketId}, ${sessionId})`,
     registerStopper(channel, stopperPromise, requestId) {
       assign(session.reactiveStoppers,
         {
           [channel]: [requestId, () => {
-            log.info(`${session.logPrefix}: stopped subscription`, { sessionId: socket.id, channel });
+            log.info(`${session.logPrefix}: stopped subscription`, { channel });
             if (!session.reactiveStoppers[channel]) {
               throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
             }
@@ -60,12 +60,12 @@ function startSession(log, source, socket) {
       );
     },
     offlineFns: [() => {
-      log.info(`${session.logPrefix}: ended session`, { sessionId: socket.id });
-      delete sessions[socket.id];
+      log.info(`${session.logPrefix}: ended session`);
+      delete sessions[socketId];
     }],
   };
 
-  sessions[socket.id] = session;  // eslint-disable-line better-mutation/no-mutation
+  sessions[socketId] = session;  // eslint-disable-line better-mutation/no-mutation
   return session;
 }
 
