@@ -7,7 +7,6 @@ import isUndefined from 'lodash/isUndefined';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
 import head from 'lodash/head';
-import invoke from 'lodash/invoke';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
@@ -34,19 +33,22 @@ const sessions = {};
 function startSession(log, source, socket) {
   const requestUrl = get(socket, 'request.url');
   const parsedUrl = url.parse(requestUrl, true);
-  const sessionId = get(parsedUrl, 'query.x-sessionId');
+  const socketId = socket.id;
+  const sessionId = get(parsedUrl, 'query.x-sessionId') || socketId;
+
 
   const session = {
     source,
-    sessionId: sessionId || socket.id,
+    sessionId,
+    socketId,
     ip: get(socket, 'request.connection.remoteAddress'),
     reactiveStoppers: {},
-    logPrefix: `${source} @StellarBridge(${socket.id})`,
+    logPrefix: `${source} @StellarBridge(${socketId}, ${sessionId})`,
     registerStopper(channel, stopperPromise, requestId) {
       assign(session.reactiveStoppers,
         {
           [channel]: [requestId, () => {
-            log.info(`${session.logPrefix}: stopped subscription`, { sessionId: socket.id, channel });
+            log.info(`${session.logPrefix}: stopped subscription`, { channel });
             if (!session.reactiveStoppers[channel]) {
               throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
             }
@@ -58,12 +60,12 @@ function startSession(log, source, socket) {
       );
     },
     offlineFns: [() => {
-      log.info(`${session.logPrefix}: ended session`, { sessionId: socket.id });
-      delete sessions[socket.id];
+      log.info(`${session.logPrefix}: ended session`);
+      delete sessions[socketId];
     }],
   };
 
-  sessions[socket.id] = session;  // eslint-disable-line better-mutation/no-mutation
+  sessions[socketId] = session;  // eslint-disable-line better-mutation/no-mutation
   return session;
 }
 
@@ -303,7 +305,8 @@ function init({
       }
     });
 
-    forEach(get(sessions, `${session.sessionId}.offlineFns`), invoke);
+    const offlineFns = get(sessions, `${session.socketId}.offlineFns`);
+    forEach(offlineFns, fn => fn());
 
     log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
     delete session.client; // eslint-disable-line no-param-reassign
