@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/server-bridge",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
