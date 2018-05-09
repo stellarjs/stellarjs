@@ -9,11 +9,11 @@ describe('e2e', () => {
 
     it('should pass all arguments to AxiosTransport instance', () => {
         const transport = factory({
-            express,
-            source: 'fake source',
             log,
+            source: 'fake source',
+            router: express,
         });
         expect(transport.constructor.name).toEqual('ExpressTransport');
-        expect(transport.express).toEqual('fake');
+        expect(transport.router).toEqual('fake');
     });
-});
+})

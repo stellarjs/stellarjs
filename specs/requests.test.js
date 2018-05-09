@@ -98,7 +98,6 @@ export async function testMiddlewares() {
 
 export function testRequestErrorResponse(done) {
   const resourceName = getResourceName('app2');
-    debugger
   stellarHandler.get(resourceName, ({ body }) => {
     const errors = new StellarError();
     errors.addPropertyError('x', 'poop');
