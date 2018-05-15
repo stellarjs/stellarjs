@@ -255,10 +255,10 @@ function getTxName(requestHeaders) {
 
 function init({
                 server,
-                stellarFactory,
-                newSessionHandlers = [],
-                errorHandlers = [],
                 log = console,
+                stellarFactory,
+                errorHandlers = [],
+                newSessionHandlers = [],
                 instrumentation = {
                   startTransaction(txName, session, cb) {
                     cb();
