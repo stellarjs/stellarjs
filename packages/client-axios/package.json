@@ -1,5 +1,5 @@
 {
-  "name": "@stellarjs/transport-axios",
+  "name": "@stellarjs/client-axios",
   "version": "0.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
@@ -17,12 +17,12 @@
       "!src/index.js",
       "!src/index.browser.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/transport-axios",
+    "coverageDirectory": "../../.artifacts/coverage/client-axios",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
-    "suiteName": "jest tests",
-    "output": "../../.artifacts/test-results/transport-axios.xml",
+    "suiteName": "tests",
+    "output": "../../.artifacts/test_results/client-axios.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
@@ -36,25 +36,13 @@
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/transport-axios.xml src"
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/client-engine.io.xml src"
   },
   "publishConfig": {
     "access": "public"
   },
-  "repository": "stellarjs/stellarjs",
-  "keywords": [
-    "microservices",
-    "es6",
-    "stellar",
-    "stellarjs",
-    "axios"
-  ],
-  "author": "roeeyud",
-  "contributors": [],
-  "bugs": {
-    "url": "https://github.com/stellarjs/stellarjs/issues"
-  },
   "devDependencies": {
+    "axios-mock-adapter": "^1.15.0",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -63,9 +51,17 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4"
+    "jest": "^22.0.4",
+    "jest-mock-axios": "^2.1.11",
+    "rimraf": "^2.6.1",
+    "uuid": "^3.1.0",
+    "webpack": "2.5.1"
   },
   "dependencies": {
-    "@stellarjs/transport-http": "^0.0.1"
+    "@stellarjs/core": "^0.10.4",
+    "@stellarjs/stellar-error": "^0.10.1",
+    "@stellarjs/transport-axios": "^0.0.1",
+    "axios": "^0.18.0",
+    "lodash": "^4.17.4"
   }
 }
