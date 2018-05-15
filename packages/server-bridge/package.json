@@ -30,7 +30,7 @@
     "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
     "test": "jest --forceExit",
-    "test:coverage": "jest --coverage --runInBand --forceExit",
+    "test:coverage": "jest --coverage --forceExit",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
