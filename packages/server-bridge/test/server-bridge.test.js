@@ -36,15 +36,16 @@ beforeAll((done) => {
     });
 });
 
-afterEach(() => {
-  instrumentation.numOfConnectedClients.mockClear();
+afterEach(async () => {
+  await Promise.delay(2000);
+  instrumentation.numOfConnectedClients.mockReset();
 });
 
-afterAll(() => {
+afterAll(async () => {
   console.error('PROC.KILL');
   shutdown();
   redisClient.defaultConnection.quit();
-  redisClient.closeAll();
+  return redisClient.closeAll();
 });
 
 describe('call server', () => {
@@ -89,25 +90,25 @@ describe('call server', () => {
   });
 
   it('instrumentation numOfConnectedClients should work on connection error', (done) => {
+    expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([]);
     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
     stellarSocket
             .connect('localhost:8091', {
               secure: false,
-              userId: '4',
+              userId: '3',
               token: '123',
               tokenType: 'API',
               eioConfig: { upgrade: false },
             })
-            .catch(Error, (e) => {
-            }).delay(1000)
+            .catch(Error, (e) => {})
+            .delay(1000)
             .then(() => {
               expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
               console.info('3 done');
               done();
             });
   });
-
-
+  
   it('instrumentation numOfConnectedClients should work', (done) => {
     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
     stellarSocket.connect('localhost:8091', {
@@ -120,15 +121,15 @@ describe('call server', () => {
         extraParam: 1,
       },
     })
-        .then(() => {
-          stellarSocket.close();
-        })
-        .delay(1000)
-            .then(() => {
-              expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
-              console.info('4 done');
-              done();
-            });
+      .then(() => {
+        stellarSocket.close();
+      })
+      .delay(1000)
+      .then(() => {
+        expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
+        console.info('4 done');
+        done();
+      });
   });
 
   it('request response should work', (done) => {
@@ -199,46 +200,46 @@ describe('call server', () => {
         });
     });
 
-  it('custom timeout should extend normal timeout', (done) => {
-    const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
-    stellarSocket.connect('localhost:8091', {
-      secure: false,
-      userId: '123',
-      token: '123',
-      tokenType: 'API',
-      eioConfig: { upgrade: false },
-      params: {
-        extraParam: 1,
-      },
-    })
-      .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 32 * 1000 } }))
-      .then(() => {
-        console.info('8 done');
-        done();
-      });
-  }, 40 * 1000);
-
-  it('custom timeout should expire', (done) => {
-    const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
-    stellarSocket.connect('localhost:8091', {
-      secure: false,
-      userId: '123',
-      token: '123',
-      tokenType: 'API',
-      eioConfig: { upgrade: false },
-      params: {
-        extraParam: 1,
-      },
-    })
-      .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 200 } }))
-      .then(() => {
-        fail(`Timeout should have expired.`);
-      })
-      .catch(() => {
-        console.info('9 done');
-        done();
-      });
-  }, 10000);
+  // it('custom timeout should extend normal timeout', (done) => {
+  //   const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+  //   stellarSocket.connect('localhost:8091', {
+  //     secure: false,
+  //     userId: '123',
+  //     token: '123',
+  //     tokenType: 'API',
+  //     eioConfig: { upgrade: false },
+  //     params: {
+  //       extraParam: 1,
+  //     },
+  //   })
+  //     .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 32 * 1000 } }))
+  //     .then(() => {
+  //       console.info('8 done');
+  //       done();
+  //     });
+  // }, 40 * 1000);
+  //
+  // it('custom timeout should expire', (done) => {
+  //   const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+  //   stellarSocket.connect('localhost:8091', {
+  //     secure: false,
+  //     userId: '123',
+  //     token: '123',
+  //     tokenType: 'API',
+  //     eioConfig: { upgrade: false },
+  //     params: {
+  //       extraParam: 1,
+  //     },
+  //   })
+  //     .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 200 } }))
+  //     .then(() => {
+  //       fail(`Timeout should have expired.`);
+  //     })
+  //     .catch(() => {
+  //       console.info('9 done');
+  //       done();
+  //     });
+  // }, 10000);
 
   it('should getReactive calls', (done) => {
     let reactiveResolve;
