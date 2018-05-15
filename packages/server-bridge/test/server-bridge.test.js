@@ -20,16 +20,17 @@ const clearRedis = () => {
 
 let shutdown = null;
 let instrumentation = null;
-beforeAll(async (done) => {
-  return clearRedis()
-    .then(() => {
-      const pinger = require('./examples');
-      instrumentation = require('./examples').instrumentation;
-      instrumentation.numOfConnectedClients = jest.fn();
-      pinger.start();
-      shutdown = pinger.shutdown;
-    })
-    .delay(1000);
+beforeAll(async () => {
+  await clearRedis()
+
+  const pinger = require('./examples');
+  instrumentation = require('./examples').instrumentation;
+  instrumentation.numOfConnectedClients = jest.fn();
+  pinger.start();
+  shutdown = pinger.shutdown;
+
+  await Promise.delay(3500)
+  console.info('beforeAll done');
 });
 
 afterEach(async () => {
