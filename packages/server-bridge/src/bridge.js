@@ -345,7 +345,6 @@ function init({
         instrumentation.sessionFailed(Date.now() - startTime);
         const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
         socket.send(JSON.stringify(errorMessage));
-        throw e;
       });
   }
 
