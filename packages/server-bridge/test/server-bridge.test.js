@@ -20,8 +20,8 @@ const clearRedis = () => {
 
 let shutdown = null;
 let instrumentation = null;
-beforeAll((done) => {
-  clearRedis()
+beforeAll(async (done) => {
+  return clearRedis()
     .then(() => {
       const pinger = require('./examples');
       instrumentation = require('./examples').instrumentation;
@@ -29,15 +29,11 @@ beforeAll((done) => {
       pinger.start();
       shutdown = pinger.shutdown;
     })
-    .delay(3500)
-    .then(() => {
-      console.info('beforeAll done');
-      done();
-    });
+    .delay(1000);
 });
 
 afterEach(async () => {
-  await Promise.delay(2000);
+  await Promise.delay(1000);
   instrumentation.numOfConnectedClients.mockReset();
 });
 
