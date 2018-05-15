@@ -27,7 +27,6 @@ beforeAll(async () => {
   instrumentation = require('./examples').instrumentation;
   instrumentation.numOfConnectedClients = jest.fn();
   pinger.start();
-  shutdown = pinger.shutdown;
 
   await Promise.delay(1000);
   console.info('beforeAll done');
@@ -41,7 +40,6 @@ afterEach(async () => {
 
 afterAll(async () => {
   console.info('afterAll');
-  // shutdown();
   redisClient.defaultConnection.quit();
   return redisClient.closeAll();
 });
@@ -61,7 +59,6 @@ describe('call server', () => {
         fail('error');
       })
       .catch(StellarError, (e) => {
-        console.info('1 done');
         done();
       });
   });
@@ -82,7 +79,6 @@ describe('call server', () => {
       .catch(Error, (e) => {
         expect(e).toBeInstanceOf(Error);
         expect(e.message).toEqual('Authentication Error');
-        console.info('2 done');
         done();
       });
   });
@@ -93,7 +89,7 @@ describe('call server', () => {
     stellarSocket
             .connect('localhost:8091', {
               secure: false,
-              userId: '3',
+              userId: '4',
               token: '123',
               tokenType: 'API',
               eioConfig: { upgrade: false },
@@ -102,7 +98,6 @@ describe('call server', () => {
             .delay(1000)
             .then(() => {
               expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
-              console.info('3 done');
               done();
             });
   });
@@ -125,7 +120,6 @@ describe('call server', () => {
       .delay(1000)
       .then(() => {
         expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
-        console.info('4 done');
         done();
       });
   });
@@ -147,7 +141,6 @@ describe('call server', () => {
         stellarSocket.close();
       })
       .then(() => {
-        console.info('5 done');
         done();
       });
   });
@@ -170,7 +163,6 @@ describe('call server', () => {
             stellarSocket.close();
         })
         .then(() => {
-          console.info('6 done');
           done();
         });
     });
@@ -193,7 +185,6 @@ describe('call server', () => {
             stellarSocket.close();
         })
         .then(() => {
-          console.info('7 done');
           done();
         });
     });
@@ -212,7 +203,6 @@ describe('call server', () => {
     })
       .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 32 * 1000 } }))
       .then(() => {
-        console.info('8 done');
         done();
       });
   }, 40 * 1000);
@@ -234,7 +224,6 @@ describe('call server', () => {
         fail(`Timeout should have expired.`);
       })
       .catch(() => {
-        console.info('9 done');
         done();
       });
   }, 10000);
@@ -278,7 +267,6 @@ describe('call server', () => {
         stellarSocket.close();
       })
       .then(() => {
-        console.info('10 done');
         done()
       });
   });
@@ -337,7 +325,6 @@ describe('call server', () => {
         return retval2.onStop;
       })
       .then(() => {
-        console.info('11 done');
         done()
       });
   });
@@ -356,7 +343,6 @@ describe('call server', () => {
       .catch(Error, (e) => {
         expect(e.message).toBe('pongError');
         stellarSocket.close();
-        console.info('12 done');
         done();
       });
   });
