@@ -16,17 +16,20 @@ import StellarError from '@stellarjs/stellar-error';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 import { mwLogTraceFactory } from '@stellarjs/mw-log-trace';
 
-function createStellarRequest(stellarFactory, middlewares) {
+function createStellarRequest(stellarFactory, middlewares, pattern) {
   const stellarRequest = stellarFactory.stellarRequest();
   const mwLogTrace = mwLogTraceFactory('HEADERS');
   stellarRequest.use(/.*/, mwLogTrace);
+
+  if (pattern) {
+    stellarRequest.use(pattern, (req, next, options) => {
+      assign(req.headers, options.session.headers);
+      return next();
+    });
+  }
+
   forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
   return stellarRequest;
-  // TODO customize
-  // stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
-  //   _.assign(req.headers, options.session.headers);
-  //   return next();
-  // });
 }
 
 const sessions = {};
@@ -35,7 +38,6 @@ function startSession(log, source, socket) {
   const parsedUrl = url.parse(requestUrl, true);
   const socketId = socket.id;
   const sessionId = get(parsedUrl, 'query.x-sessionId') || socketId;
-
 
   const session = {
     source,
@@ -63,6 +65,9 @@ function startSession(log, source, socket) {
       log.info(`${session.logPrefix}: ended session`);
       delete sessions[socketId];
     }],
+    setSessionHeaders(headers) {
+      this.headers = assign({}, headers, { bridges: [source] });
+    },
   };
 
   sessions[socketId] = session;  // eslint-disable-line better-mutation/no-mutation
@@ -250,10 +255,10 @@ function getTxName(requestHeaders) {
 
 function init({
                 server,
-                log = console,
                 stellarFactory,
-                errorHandlers = [],
                 newSessionHandlers = [],
+                errorHandlers = [],
+                log = console,
                 instrumentation = {
                   startTransaction(txName, session, cb) {
                     cb();
