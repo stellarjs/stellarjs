@@ -2,6 +2,9 @@
  * Created by arolave on 21/06/2017.
  */
 import engine from 'engine.io';
+import express from 'express';
+import bodyParser from 'body-parser';
+import http from 'http';
 import assign from 'lodash/assign';
 
 import defaultStellarFactory from './defaultStellarFactory';
@@ -11,13 +14,20 @@ function boot(config = {}) {
   const log = config.log || console;
   const port = process.env.PORT || config.port || 8091;
   log.info('@Bridge: Start initializing server', { port });
-  const server = engine.listen(port, { transports: ['websocket', 'polling'] }, () => {
+
+  const app = express();
+  const server = http.Server(app);
+
+  app.use(bodyParser.json());
+  const socketServer = engine.attach(server, { transports: ['websocket', 'polling'] }, () => {
     log.info('@Bridge: Server is running');
   });
 
-  const originalHandler = server.handleRequest.bind(server);
+  server.listen(port);
+
+  const originalHandler = socketServer.handleRequest.bind(socketServer);
   // eslint-disable-next-line better-mutation/no-mutation
-  server.handleRequest = function handleRequest(req, res) {
+    socketServer.handleRequest = function handleRequest(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -25,13 +35,13 @@ function boot(config = {}) {
     originalHandler(req, res);
   };
 
-  const finalConfig = { server };
+  const finalConfig = { server: socketServer, router: app };
   if (!config.stellarFactory) {
     assign(finalConfig, { stellarFactory: defaultStellarFactory(log) });
   }
 
   attachToServer(assign(finalConfig, config));
-  return server;
+  return socketServer;
 }
 
 export { boot, attachToServer };

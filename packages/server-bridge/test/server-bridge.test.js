@@ -5,6 +5,7 @@ import Promise from 'bluebird';
 import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
 import StellarError from '@stellarjs/stellar-error';
 import _ from 'lodash';
+import axios from 'axios';
 
 jest.unmock('@stellarjs/transport-bull');
 
@@ -328,7 +329,7 @@ describe('call server', () => {
       .then(() => done());
   });
 
-  it('request response should work when errors are thrown', (done) => {
+  it('request response should work when errors are thrown', async (done) => {
     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
     stellarSocket.connect('localhost:8091', {
       secure: false,
@@ -337,6 +338,7 @@ describe('call server', () => {
       tokenType: 'API',
       eioConfig: { upgrade: false },
     });
+    await axios.post('http://localhost:8091/hello', { hello: 'world' });
     return stellarSocket.stellar
       .get('sampleService:pingError')
       .catch(Error, (e) => {
@@ -345,4 +347,16 @@ describe('call server', () => {
         done();
       });
   });
+
+    it('request response should work when errors are thrown', async () => {
+        const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+        stellarSocket.connect('localhost:8091', {
+            secure: false,
+            userId: '123',
+            token: '123',
+            tokenType: 'API',
+            eioConfig: { upgrade: false },
+        });
+        const res = await axios.post('http://localhost:8091/stellarRequest/a/b/c/get', { hello: 'world' });
+    });
 });

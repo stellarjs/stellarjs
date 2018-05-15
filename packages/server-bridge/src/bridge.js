@@ -6,6 +6,7 @@ import isObject from 'lodash/isObject';
 import isUndefined from 'lodash/isUndefined';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
+import join from 'lodash/join';
 import head from 'lodash/head';
 import invoke from 'lodash/invoke';
 import last from 'lodash/last';
@@ -248,6 +249,7 @@ function getTxName(requestHeaders) {
 
 function init({
                 server,
+                router,
                 log = console,
                 stellarFactory,
                 errorHandlers = [],
@@ -339,7 +341,15 @@ function init({
       });
   }
 
+  function onHttpRequest(req, res) {
+    const { body, url } = req;
+    const queueName = join(split(url, '/'), ':');
+    console.log(`I'm lost ¯\\_(ツ)_/¯`);
+    res.send(200);
+  }
+
   server.on('connection', onConnection);
+  router.post('/stellarRequest/*', onHttpRequest)
 }
 
 export default init;
