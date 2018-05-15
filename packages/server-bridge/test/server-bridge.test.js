@@ -21,7 +21,7 @@ const clearRedis = () => {
 let shutdown = null;
 let instrumentation = null;
 beforeAll(async () => {
-  await clearRedis()
+  await clearRedis();
 
   const pinger = require('./examples');
   instrumentation = require('./examples').instrumentation;
@@ -29,18 +29,19 @@ beforeAll(async () => {
   pinger.start();
   shutdown = pinger.shutdown;
 
-  await Promise.delay(3500)
+  await Promise.delay(1000);
   console.info('beforeAll done');
 });
 
 afterEach(async () => {
   await Promise.delay(1000);
   instrumentation.numOfConnectedClients.mockReset();
+  console.info('afterEach done');
 });
 
 afterAll(async () => {
-  console.error('afterAll');
-  shutdown();
+  console.info('afterAll');
+  // shutdown();
   redisClient.defaultConnection.quit();
   return redisClient.closeAll();
 });
