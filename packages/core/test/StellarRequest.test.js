@@ -157,7 +157,7 @@ describe('StellarRequest', () => {
                 _.assign(jobData.headers, { userId: 1 });
                 return next();
             });
-            stellarRequest.use('.*', mw);
+            stellarRequest.use(/.*/, mw);
 
             await stellarRequest.get('testservice:resource', { text: 'toot' });
 
@@ -185,7 +185,7 @@ describe('StellarRequest', () => {
                 'testservice:not:.*': false,
             };
             _.forEach(middlewareRun, (v, k) => {
-                stellarRequest.use(k, (jobData, next) => {
+                stellarRequest.use(new RegExp(k), (jobData, next) => {
                     middlewareRun[k] = true;
                     return next();
                 });
