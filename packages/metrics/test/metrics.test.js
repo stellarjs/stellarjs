@@ -59,7 +59,7 @@ describe('metrics', () => {
 
   it('calls metrics middleware manually', () => {
     runMetrics({ handler: stellar.handler }, service);
-    stellar.handler.use('.*', middleware);
+    stellar.handler.use(/.*/, middleware);
 
     stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)

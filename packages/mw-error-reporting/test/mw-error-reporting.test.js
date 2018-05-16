@@ -18,9 +18,9 @@ describe('Error Reporting middleware', () => {
     const reporterMock = jest.fn();
     const request = new StellarRequest(transport);
     const oneHandler = new StellarHandler(transport);
-    oneHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    oneHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
     const twoHandler = new StellarHandler(transport, 'otherSource');
-    twoHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    twoHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
 
     oneHandler.get('testserviceOne:resource', ({ body }) => {
       const testserviceRequest = new StellarRequest(transport);
@@ -51,11 +51,11 @@ describe('Error Reporting middleware', () => {
     const reporterMock = jest.fn();
     const request = new StellarRequest(transport);
     const oneHandler = new StellarHandler(transport, 'aSource');
-    oneHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    oneHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
     const twoHandler = new StellarHandler(transport, 'bSource');
-    twoHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    twoHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
     const erroringHandler = new StellarHandler(transport, 'cSource');
-    erroringHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    erroringHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
 
     oneHandler.get('testserviceOne:resource', () => {
       const testserviceRequest = new StellarRequest(transport);
@@ -92,11 +92,11 @@ describe('Error Reporting middleware', () => {
     const reporterMock = jest.fn();
     const request = new StellarRequest(transport);
     const oneHandler = new StellarHandler(transport, 'leSource');
-    oneHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    oneHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
     const twoHandler = new StellarHandler(transport, 'leSource');
-    twoHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    twoHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
     const erroringHandler = new StellarHandler(transport, 'leSource');
-    erroringHandler.use('.*', middleware({ reporters: [reporterMock] }));
+    erroringHandler.use(/.*/, middleware({ reporters: [reporterMock] }));
 
     oneHandler.get('testserviceOne:resource', () => {
       const testserviceRequest = new StellarRequest(transport);

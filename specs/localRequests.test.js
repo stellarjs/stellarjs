@@ -43,12 +43,12 @@ export async function testMiddlewares() {
   let handlerMw = 0;
   let requestMw = 0;
 
-  stellarHandler.use('.*', (req, next) => {
+  stellarHandler.use(/.*/, (req, next) => {
     handlerMw += 1;
     return next();
   });
 
-  stellarRequest.use('.*', (req, next) => {
+  stellarRequest.use(/.*/, (req, next) => {
     requestMw += 1;
     return next();
   });
