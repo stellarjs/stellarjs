@@ -9,9 +9,5 @@ export default function match(url, patternOrArray) {
   }
 
   const patternsArray = isArray(patternOrArray) ? patternOrArray : [patternOrArray];
-  return some(
-    map(
-      patternsArray,
-      pattern => (isString(pattern) ? new RegExp(`^${pattern}$`) : pattern)),
-    pattern => url.match(pattern));
+  return some(patternsArray, pattern => (isString(pattern) ? url === pattern : url.match(pattern)));
 }
