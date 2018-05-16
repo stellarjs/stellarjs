@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/server-bridge",
-  "version": "0.10.7",
+  "version": "0.10.8",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -40,7 +40,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/client-engine.io": "^0.10.5",
+    "@stellarjs/client-engine.io": "^0.10.6",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
     "engine.io-client": "3.1.1",
@@ -56,11 +56,11 @@
     "url": "^0.11.0"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.10.4",
-    "@stellarjs/mw-log-trace": "^0.10.0",
-    "@stellarjs/stellar-error": "^0.10.1",
-    "@stellarjs/transport-bull": "^0.10.4",
-    "@stellarjs/transport-socket": "^0.10.4",
+    "@stellarjs/core": "^0.10.6",
+    "@stellarjs/mw-log-trace": "^0.10.6",
+    "@stellarjs/stellar-error": "^0.10.6",
+    "@stellarjs/transport-bull": "^0.10.6",
+    "@stellarjs/transport-socket": "^0.10.6",
     "bluebird": "^3.4.7",
     "engine.io": "~3.2.0",
     "lodash": "^4.17.4",
