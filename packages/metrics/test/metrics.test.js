@@ -34,7 +34,7 @@ describe('metrics', () => {
   });
 
   it('calls metrics middleware by pattern', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
@@ -69,7 +69,7 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 1 after 1 request', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
@@ -79,7 +79,7 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 2 after 2 requests', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => {});
     return Promise.all([stellar.request.get(resource1), stellar.request.get(resource1)])
@@ -89,7 +89,7 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 1 foreach url after 1 request per url', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => {});
     stellar.handler.get(resource2, () => {});
@@ -123,7 +123,7 @@ describe('metrics', () => {
   });
 
   it('sets metrics to 1 after 1 request, a reset and a request', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
@@ -138,7 +138,7 @@ describe('metrics', () => {
   });
 
   it('gets metrics from the metrics endpoint', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => {});
     return stellar.request.get(resource1)
@@ -150,7 +150,7 @@ describe('metrics', () => {
   });
 
   it('sets failed metrics to 1 after 1 failed request', () => {
-    runMetrics({ handler: stellar.handler }, service, '.*');
+    runMetrics({ handler: stellar.handler }, service, /.*/);
 
     stellar.handler.get(resource1, () => { throw new Error(); });
     return stellar.request.get(resource1)
@@ -161,7 +161,7 @@ describe('metrics', () => {
   });
 
   it('gets metrics from the subscription', (done) => {
-    runMetrics({ handler: stellar.handler, pubSub: stellar.pubSub }, service, 100, '.*');
+    runMetrics({ handler: stellar.handler, pubSub: stellar.pubSub }, service, 100, /.*/);
 
     stellar.pubSub.subscribe(`channel:${service}:metrics`, () => {
       done();
