@@ -1,4 +1,4 @@
-import forEach from 'lodash/forEach';
+import isRegExp from 'lodash/isRegExp';
 import isString from 'lodash/isString';
 
 const ONE_MINUTE = 60 * 1000;
@@ -43,7 +43,6 @@ export function middleware(req, next) {
   return next()
       .catch((e) => {
         addFailedRequest(req.headers.queueName);
-
         throw e;
       });
 }
@@ -57,9 +56,7 @@ function init({ handler, pubSub }, microServiceName, publishInterval, urlPattern
 
   resetMetrics();
 
-  forEach(urlPatterns, (pattern) => {
-    handler.use(pattern, middleware);
-  });
+  handler.use(urlPatterns, middleware);
 
   handler.get(`${microServiceName}:metrics`, () => prepareMetrics());
 
@@ -72,7 +69,7 @@ function init({ handler, pubSub }, microServiceName, publishInterval, urlPattern
 }
 
 export default function ({ handler, pubSub }, microServiceName, publishInterval, ...urlPatterns) {
-  if (isString(publishInterval)) {
+  if (isString(publishInterval) || isRegExp(publishInterval)) {
     return init({ handler, pubSub }, microServiceName, PUBLISH_INTERVAL, [publishInterval].concat(urlPatterns));
   }
 

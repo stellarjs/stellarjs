@@ -29,6 +29,12 @@ class StellarCore {
     this.setMiddlewares();
   }
 
+  /**
+   * adds middleware for specified pattern(s)
+   * @param pattern can be a string or RegExp or array of strings or an array of RegExp.
+   *        Strings are expected to be exact matches only
+   * @param fn middleware to run
+   */
   use(pattern, fn) {
     this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
     this.setMiddlewares();

@@ -61,7 +61,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1"
   },
   "dependencies": {

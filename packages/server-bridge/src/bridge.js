@@ -16,17 +16,20 @@ import StellarError from '@stellarjs/stellar-error';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 import { mwLogTraceFactory } from '@stellarjs/mw-log-trace';
 
-function createStellarRequest(stellarFactory, middlewares) {
+function createStellarRequest(stellarFactory, middlewares, pattern) {
   const stellarRequest = stellarFactory.stellarRequest();
   const mwLogTrace = mwLogTraceFactory('HEADERS');
   stellarRequest.use(/.*/, mwLogTrace);
+
+  if (pattern) {
+    stellarRequest.use(pattern, (req, next, options) => {
+      assign(req.headers, options.session.headers);
+      return next();
+    });
+  }
+
   forEach(middlewares, ({ match, mw }) => stellarRequest.use(match, mw));
   return stellarRequest;
-  // TODO customize
-  // stellarRequest.use('^((?!iam:entityOnline).)*$', (req, next, options) => {
-  //   _.assign(req.headers, options.session.headers);
-  //   return next();
-  // });
 }
 
 const sessions = {};
@@ -35,7 +38,6 @@ function startSession(log, source, socket) {
   const parsedUrl = url.parse(requestUrl, true);
   const socketId = socket.id;
   const sessionId = get(parsedUrl, 'query.x-sessionId') || socketId;
-
 
   const session = {
     source,
@@ -63,6 +65,9 @@ function startSession(log, source, socket) {
       log.info(`${session.logPrefix}: ended session`);
       delete sessions[socketId];
     }],
+    setSessionHeaders(headers) {
+      this.headers = assign({}, headers, { bridges: [source] });
+    },
   };
 
   sessions[socketId] = session;  // eslint-disable-line better-mutation/no-mutation
@@ -295,6 +300,7 @@ function init({
   }
 
   function onClose(session) {
+    log.error(`${session.logPrefix}: onClose`);
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
@@ -318,10 +324,15 @@ function init({
     const startTime = Date.now();
 
     const initialSession = startSession(log, stellarRequest.source, socket);
+    socket.on('error', () => log.info(`${initialSession.logPrefix} Error`));
+
+    const initialOnClose = () => onClose(initialSession);
+    socket.on('close', initialOnClose);
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, log, socket, session: initialSession })
       .then((session) => {
         log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
+        socket.removeListener('close', initialOnClose);
         socket.on('close', () => onClose(session));
         socket.on('message', str => onMessage(str, session));
 
@@ -335,7 +346,7 @@ function init({
       })
       .catch((e) => {
         reportError(e, initialSession);
-        log.error(e, 'Connection error');
+        log.error(e, `${initialSession.logPrefix} Connection error`);
         instrumentation.sessionFailed(Date.now() - startTime);
         const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
         socket.send(JSON.stringify(errorMessage));
