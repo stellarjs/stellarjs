@@ -300,6 +300,7 @@ function init({
   }
 
   function onClose(session) {
+    log.error(`${session.logPrefix}: onClose`);
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
@@ -323,10 +324,15 @@ function init({
     const startTime = Date.now();
 
     const initialSession = startSession(log, stellarRequest.source, socket);
+    socket.on('error', () => log.info(`${initialSession.logPrefix} Error`));
+
+    const initialOnClose = () => onClose(initialSession);
+    socket.on('close', initialOnClose);
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, log, socket, session: initialSession })
       .then((session) => {
         log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
+        socket.removeListener('close', initialOnClose);
         socket.on('close', () => onClose(session));
         socket.on('message', str => onMessage(str, session));
 
@@ -340,7 +346,7 @@ function init({
       })
       .catch((e) => {
         reportError(e, initialSession);
-        log.error(e, 'Connection error');
+        log.error(e, `${initialSession.logPrefix} Connection error`);
         instrumentation.sessionFailed(Date.now() - startTime);
         const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
         socket.send(JSON.stringify(errorMessage));

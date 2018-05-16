@@ -56,11 +56,6 @@ function start() {
   });
 }
 
-function shutdown() {
-  server.httpServer.close();
-  server.close();
-}
-
 const PUBLISH_ACTIONS = {
   CREATED: 'CREATED',
   UPDATED: 'UPDATED',
@@ -83,4 +78,4 @@ handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
 
 setTimeout(kongEveryHalfSecond, 500);
 
-export { start, shutdown };
+export { start };
