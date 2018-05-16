@@ -41,9 +41,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "engine.io-client": "2-3"
-  },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
@@ -53,7 +50,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1",
     "uuid": "^3.1.0",
     "webpack": "2.5.1"
@@ -63,6 +60,7 @@
     "@stellarjs/stellar-error": "^0.10.1",
     "@stellarjs/transport-socket": "^0.10.4",
     "bluebird": "^3.4.7",
+    "engine.io-client": "~3.2.1",
     "lodash": "^4.17.4",
     "qs": "^6.5.0",
     "tough-cookie": "^2.3.2"
