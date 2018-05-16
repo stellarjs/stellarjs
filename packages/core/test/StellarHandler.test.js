@@ -114,7 +114,7 @@ describe('StellarHandler', () => {
           return result;
         });
       });
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue({ text: 'world' });
@@ -153,7 +153,7 @@ describe('StellarHandler', () => {
 
       const mw = jest.fn();
       mw.mockImplementation(() => Promise.reject(new StellarError('boo hoo')));
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue({ text: 'world' });
@@ -193,7 +193,7 @@ describe('StellarHandler', () => {
       mw.mockImplementation(() => {
         throw new StellarError('boo hoo');
       });
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue({ text: 'world' });
@@ -238,7 +238,7 @@ describe('StellarHandler', () => {
           return Promise.reject(error);
         });
       });
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue(Promise.reject(error));

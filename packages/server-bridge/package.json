@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/server-bridge",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -44,7 +44,6 @@
     "axios": "^0.18.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
-    "engine.io": "3.1.0",
     "engine.io-client": "3.1.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -53,12 +52,9 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
-  },
-  "peerDependencies": {
-    "engine.io": "2-3"
   },
   "dependencies": {
     "@stellarjs/core": "^0.10.4",
@@ -68,6 +64,7 @@
     "@stellarjs/transport-socket": "^0.10.4",
     "bluebird": "^3.4.7",
     "body-parser": "^1.18.3",
+    "engine.io": "~3.2.0",
     "express": "^4.16.3",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4",

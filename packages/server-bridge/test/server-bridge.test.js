@@ -21,31 +21,28 @@ const clearRedis = () => {
 
 let shutdown = null;
 let instrumentation = null;
-beforeAll((done) => {
-  clearRedis()
-    .then(() => {
-      const pinger = require('./examples');
-      instrumentation = require('./examples').instrumentation;
-      instrumentation.numOfConnectedClients = jest.fn();
-      pinger.start();
-      shutdown = pinger.shutdown;
-    })
-    .delay(3500)
-    .then(() => {
-      console.info('beforeAll done');
-      done();
-    });
+beforeAll(async () => {
+  await clearRedis();
+
+  const pinger = require('./examples');
+  instrumentation = require('./examples').instrumentation;
+  instrumentation.numOfConnectedClients = jest.fn();
+  pinger.start();
+
+  await Promise.delay(1000);
+  console.info('beforeAll done');
 });
 
-afterEach(() => {
-  instrumentation.numOfConnectedClients.mockClear();
+afterEach(async () => {
+  await Promise.delay(1000);
+  instrumentation.numOfConnectedClients.mockReset();
+  console.info('afterEach done');
 });
 
-afterAll(() => {
-  console.error('PROC.KILL');
-  shutdown();
+afterAll(async () => {
+  console.info('afterAll');
   redisClient.defaultConnection.quit();
-  redisClient.closeAll();
+  return redisClient.closeAll();
 });
 
 describe('call server', () => {
@@ -88,6 +85,7 @@ describe('call server', () => {
   });
 
   it('instrumentation numOfConnectedClients should work on connection error', (done) => {
+    expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([]);
     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
     stellarSocket
             .connect('localhost:8091', {
@@ -97,14 +95,13 @@ describe('call server', () => {
               tokenType: 'API',
               eioConfig: { upgrade: false },
             })
-            .catch(Error, (e) => {
-              done();
-            }).delay(1000)
+            .catch(Error, (e) => {})
+            .delay(1000)
             .then(() => {
               expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
+              done();
             });
   });
-
 
   it('instrumentation numOfConnectedClients should work', (done) => {
     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
@@ -118,14 +115,14 @@ describe('call server', () => {
         extraParam: 1,
       },
     })
-        .then(() => {
-          stellarSocket.close();
-        })
-        .delay(1000)
-            .then(() => {
-              expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
-              done();
-            });
+      .then(() => {
+        stellarSocket.close();
+      })
+      .delay(1000)
+      .then(() => {
+        expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([[expect.any(Number), 1], [expect.any(Number), 0]]);
+        done();
+      });
   });
 
   it('request response should work', (done) => {
@@ -167,7 +164,7 @@ describe('call server', () => {
             stellarSocket.close();
         })
         .then(() => {
-                done();
+          done();
         });
     });
 
@@ -189,7 +186,7 @@ describe('call server', () => {
             stellarSocket.close();
         })
         .then(() => {
-                done();
+          done();
         });
     });
 
@@ -270,7 +267,9 @@ describe('call server', () => {
         doStop();
         stellarSocket.close();
       })
-      .then(() => done());
+      .then(() => {
+        done()
+      });
   });
 
   it('should disallow multiple getReactive calls', (done) => {
@@ -326,7 +325,9 @@ describe('call server', () => {
         doStop1();
         return retval2.onStop;
       })
-      .then(() => done());
+      .then(() => {
+        done()
+      });
   });
 
   it('request response should work when errors are thrown', async (done) => {
