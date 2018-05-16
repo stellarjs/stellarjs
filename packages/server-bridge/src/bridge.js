@@ -12,7 +12,9 @@ import invoke from 'lodash/invoke';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
+import drop from 'lodash/drop';
 import split from 'lodash/split';
+import uuid from 'uuid';
 
 import StellarError from '@stellarjs/stellar-error';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
@@ -67,6 +69,19 @@ function startSession(log, source, socket) {
   sessions[socket.id] = session;  // eslint-disable-line better-mutation/no-mutation
   return session;
 }
+
+function startHttpSession(log, source, req) {
+    const sessionId = uuid();
+    const session = {
+        source,
+        sessionId,
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        logPrefix: `${source} @StellarBridge(${sessionId})`,
+    };
+
+    return session;
+}
+
 
 function assignClientToSession({ log, source, socket, session }) {
   return assign(session, { client: new WebsocketTransport(socket, source, log, true) });
@@ -341,9 +356,24 @@ function init({
       });
   }
 
-  function onHttpRequest(req, res) {
+  async function onHttpRequest(req, res) {
     const { body, url } = req;
-    const queueName = join(split(url, '/'), ':');
+    const queueName = join(drop(split(params[0], '/')), ':');
+    const initSession = startHttpSession(log, stellarRequest.source, req);
+
+    await new Promise(function(resolve, reject) {
+        instrumentation.startTransaction(getTxName({ queueName }), initSession, async () => {
+          try {
+              const response =  await sendRequest(log, stellarRequest, initSession, { headers: { queueName, type: 'request' }, body });
+              instrumentation.done();
+          } catch (e) {
+              instrumentation.done(e);
+              reportError(e, session, command);
+          }
+        });
+    });
+
+
     console.log(`I'm lost ¯\\_(ツ)_/¯`);
     res.send(200);
   }

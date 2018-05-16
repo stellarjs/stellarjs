@@ -338,7 +338,6 @@ describe('call server', () => {
       tokenType: 'API',
       eioConfig: { upgrade: false },
     });
-    await axios.post('http://localhost:8091/hello', { hello: 'world' });
     return stellarSocket.stellar
       .get('sampleService:pingError')
       .catch(Error, (e) => {
@@ -348,15 +347,8 @@ describe('call server', () => {
       });
   });
 
-    it('request response should work when errors are thrown', async () => {
-        const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
-        stellarSocket.connect('localhost:8091', {
-            secure: false,
-            userId: '123',
-            token: '123',
-            tokenType: 'API',
-            eioConfig: { upgrade: false },
-        });
-        const res = await axios.post('http://localhost:8091/stellarRequest/a/b/c/get', { hello: 'world' });
+    it('request response using http bridge', async () => {
+        const res = await axios.post('http://localhost:8091/stellarRequest/sampleService/ping/get');
+        expect(res.text).toBe('pong');
     });
 });
