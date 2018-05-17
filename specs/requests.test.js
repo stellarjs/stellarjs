@@ -127,7 +127,6 @@ export function testRequestTimeout(done) {
       .then(() => ({ text: `${body.text} worlds` }));
   });
 
-
   stellarRequest
     .get(resourceName, { text: 'hello' }, { headers: { requestTimeout: 500 } })
     .then(() => fail())
