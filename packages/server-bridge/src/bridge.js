@@ -11,9 +11,9 @@ import head from 'lodash/head';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
-import drop from 'lodash/drop';
 import split from 'lodash/split';
 import uuid from 'uuid';
+import jwt from 'express-jwt';
 
 import StellarError from '@stellarjs/stellar-error';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
@@ -371,28 +371,24 @@ function init({
   }
 
   async function onHttpRequest(req, res) {
-    const { body, url } = req;
-    const queueName = join(drop(split(params[0], '/')), ':');
+    const { body: { body }, params, user } = req;
+    const queueName = join(split(params[0], '/'), ':');
     const initSession = startHttpSession(log, stellarRequest.source, req);
+    const command = { headers: { queueName, type: 'request', ...user }, body };
 
-    await new Promise(function(resolve, reject) {
+    const response = await new Promise((resolve, reject) => {
         instrumentation.startTransaction(getTxName({ queueName }), initSession, async () => {
-          try {
-              const response =  await sendRequest(log, stellarRequest, initSession, { headers: { queueName, type: 'request' }, body });
-              instrumentation.done();
-          } catch (e) {
-              instrumentation.done(e);
-              reportError(e, session, command);
-          }
+        const response =  await sendRequest(log, stellarRequest, initSession, command);
+        instrumentation.done();
+        resolve(response);
         });
     });
 
-
-    console.log(`I'm lost ¯\\_(ツ)_/¯`);
-    res.send(200);
+    res.send(response);
   }
 
   server.on('connection', onConnection);
+  router.use(jwt({ secret: 'not so secret'}));
   router.post('/stellarRequest/*', onHttpRequest)
 }
 

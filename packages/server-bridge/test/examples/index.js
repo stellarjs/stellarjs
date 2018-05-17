@@ -78,4 +78,4 @@ handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
 
 setTimeout(kongEveryHalfSecond, 500);
 
-export { start };
+export { start, handler };

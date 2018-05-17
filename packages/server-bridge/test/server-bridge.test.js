@@ -6,6 +6,9 @@ import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
 import StellarError from '@stellarjs/stellar-error';
 import _ from 'lodash';
 import axios from 'axios';
+import uuid from 'uuid';
+import { handler } from './examples';
+import jwt from 'jsonwebtoken';
 
 jest.unmock('@stellarjs/transport-bull');
 
@@ -349,7 +352,27 @@ describe('call server', () => {
   });
 
     it('request response using http bridge', async () => {
-        const res = await axios.post('http://localhost:8091/stellarRequest/sampleService/ping/get');
-        expect(res.text).toBe('pong');
+        const urlParts = [uuid(), `ping`];
+        const stellarUrl = _.join(urlParts, ':');
+        const headers = {
+            userId: uuid(),
+            operationId: uuid(),
+            what: 'ever',
+        };
+
+        const token = jwt.sign(headers, 'not so secret');
+
+        handler.get(stellarUrl, ({ headers, body}) => {
+            expect(headers).toEqual(expect.objectContaining(headers));
+            expect(body).toEqual('ping');
+            return {
+                text: `pong`,
+            };
+        });
+        const httpUrl = `http://localhost:8091/stellarRequest/${_.join(urlParts, '/')}/get`;
+        const { data } = await axios.post(httpUrl, { body: 'ping' }, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        expect(data.body.text).toBe('pong');
     });
 });
