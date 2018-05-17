@@ -27,7 +27,7 @@ function boot(config = {}) {
 
   const originalHandler = socketServer.handleRequest.bind(socketServer);
   // eslint-disable-next-line better-mutation/no-mutation
-    socketServer.handleRequest = function handleRequest(req, res) {
+  socketServer.handleRequest = function handleRequest(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

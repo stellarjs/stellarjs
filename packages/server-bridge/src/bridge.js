@@ -376,7 +376,7 @@ function init({
     const initSession = startHttpSession(log, stellarRequest.source, req);
     const command = { headers: { queueName, type: 'request', ...user }, body };
 
-    const response = await new Promise((resolve, reject) => {
+    const response = await new Promise((resolve) => {
         instrumentation.startTransaction(getTxName({ queueName }), initSession, async () => {
         const response =  await sendRequest(log, stellarRequest, initSession, command);
         instrumentation.done();
