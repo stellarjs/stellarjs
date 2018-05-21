@@ -354,16 +354,16 @@ describe('call server', () => {
     it('request response using http bridge', async () => {
         const urlParts = [uuid(), `ping`];
         const stellarUrl = _.join(urlParts, ':');
-        const headers = {
+        const originalHeaders = {
             userId: uuid(),
             operationId: uuid(),
             what: 'ever',
         };
 
-        const token = jwt.sign(headers, 'not so secret');
+        const token = jwt.sign(originalHeaders, 'not so secret');
 
         handler.get(stellarUrl, ({ headers, body}) => {
-            expect(headers).toEqual(expect.objectContaining(headers));
+            expect(headers).toEqual(expect.objectContaining(originalHeaders));
             expect(body).toEqual('ping');
             return {
                 text: `pong`,
