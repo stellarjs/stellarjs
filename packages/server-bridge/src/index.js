@@ -3,7 +3,6 @@
  */
 import engine from 'engine.io';
 import express from 'express';
-import bodyParser from 'body-parser';
 import http from 'http';
 import assign from 'lodash/assign';
 
@@ -18,7 +17,6 @@ function boot(config = {}) {
   const app = express();
   const server = http.Server(app);
 
-  app.use(bodyParser.json());
   const socketServer = engine.attach(server, { transports: ['websocket', 'polling'] }, () => {
     log.info('@Bridge: Server is running');
   });

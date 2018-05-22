@@ -32,6 +32,8 @@ export const instrumentation = {
 let server = null;
 function start() {
   server = boot({
+    attachHttp: true,
+    secret: 'not so secret',
     stellarFactory,
     instrumentation,
     newSessionHandlers: [
@@ -39,7 +41,8 @@ function start() {
         const request = socket.request;
         const parsedUrl = url.parse(request.url, true);
         const userId = parsedUrl.query['x-auth-user'];
-        const queryParams = parsedUrl.query;
+        const queryParams =
+            parsedUrl.query;
 
         if (userId === '3') {
           throw new StellarError('Authentication Error');

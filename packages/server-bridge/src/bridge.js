@@ -14,6 +14,7 @@ import size from 'lodash/size';
 import split from 'lodash/split';
 import uuid from 'uuid';
 import jwt from 'express-jwt';
+import bodyParser from 'body-parser';
 
 import StellarError from '@stellarjs/stellar-error';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
@@ -270,8 +271,11 @@ function getTxName(requestHeaders) {
 }
 
 function init({
+                secret,
                 server,
                 router,
+                attachHttp,
+                attachSocket = true,
                 log = console,
                 stellarFactory,
                 errorHandlers = [],
@@ -387,9 +391,17 @@ function init({
     res.send(response);
   }
 
+  if (attachHttp) {
+      router.use(bodyParser.json());
+      router.use(jwt({ secret }));
+      router.post('/stellarRequest/*', onHttpRequest);
+  }
+
+  if (!attachSocket) {
+    return;
+  }
+
   server.on('connection', onConnection);
-  router.use(jwt({ secret: 'not so secret'}));
-  router.post('/stellarRequest/*', onHttpRequest)
 }
 
 export default init;
