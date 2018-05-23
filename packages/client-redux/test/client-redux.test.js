@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import reduxStellar from '../src';
 import { getActionType } from '../src/getActionType';
 import { mockAction, mockRef, mockStellarSocket } from './mocks';

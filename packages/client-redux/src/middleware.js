@@ -4,6 +4,7 @@
 import uuid from 'uuid';
 import unset from 'lodash/unset';
 import isFunction from 'lodash/isFunction';
+import Promise from 'bluebird';
 
 import { getActionType } from './getActionType';
 
