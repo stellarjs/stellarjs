@@ -2,6 +2,7 @@
  * Created by moshekabalo on 5/30/17.
  */
 import uuid from 'uuid';
+import Promise from 'bluebird';
 import unset from 'lodash/unset';
 import isFunction from 'lodash/isFunction';
 import isArray from 'lodash/isArray';
