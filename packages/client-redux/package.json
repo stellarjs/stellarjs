@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/client-redux",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
