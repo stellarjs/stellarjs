@@ -48,16 +48,12 @@ function start() {
         }
 
         console.info(`QueryParams: ${JSON.stringify(queryParams)}`);
-        Object.assign(session, omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']));
+        Object.assign(session, omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']),
+            { authenticatedUserId: userId });
         return session;
       },
     ],
   });
-}
-
-function shutdown() {
-  server.httpServer.close();
-  server.close();
 }
 
 const PUBLISH_ACTIONS = {
@@ -82,4 +78,4 @@ handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
 
 setTimeout(kongEveryHalfSecond, 500);
 
-export { start, shutdown };
+export { start };

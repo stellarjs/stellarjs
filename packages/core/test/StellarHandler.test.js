@@ -5,15 +5,13 @@ import StellarError from '@stellarjs/stellar-error';
 import { transportMockFactory } from './mocks';
 import StellarHandler from '../src/StellarHandler';
 
-const getStellarHandler = () => {
-  return new StellarHandler(transportMockFactory());
-};
-
 describe('StellarHandler', () => {
   let stellarHandler;
+  let transportMock;
 
   beforeEach(() => {
-    stellarHandler = getStellarHandler('testservice:resource:create');
+    transportMock = transportMockFactory();
+    stellarHandler = new StellarHandler(transportMock);
   });
 
   describe('handleRequest calls', () => {
@@ -116,7 +114,7 @@ describe('StellarHandler', () => {
           return result;
         });
       });
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue({ text: 'world' });
@@ -130,7 +128,7 @@ describe('StellarHandler', () => {
       expect(mockFn.mock.calls[0]).toEqual([req]);
 
       expect(mw.mock.calls).toHaveLength(1);
-      expect(mw.mock.calls[0]).toEqual([req, expect.any(Function), {}, console]);
+      expect(mw.mock.calls[0]).toEqual([req, expect.any(Function), {}, console, transportMock]);
       
       await Promise.delay(50);
       expect(mwResult).toEqual(expectedResult);
@@ -155,7 +153,7 @@ describe('StellarHandler', () => {
 
       const mw = jest.fn();
       mw.mockImplementation(() => Promise.reject(new StellarError('boo hoo')));
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue({ text: 'world' });
@@ -172,7 +170,6 @@ describe('StellarHandler', () => {
       expect(mockFn.mock.calls).toHaveLength(0);
 
       expect(mw.mock.calls).toHaveLength(1);
-      expect(mw.mock.calls[0]).toEqual([req, expect.any(Function), {}, console]);
     });
 
     it('throw error from handler mw ', async () => {
@@ -196,7 +193,7 @@ describe('StellarHandler', () => {
       mw.mockImplementation(() => {
         throw new StellarError('boo hoo');
       });
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue({ text: 'world' });
@@ -213,7 +210,6 @@ describe('StellarHandler', () => {
       expect(mockFn.mock.calls).toHaveLength(0);
 
       expect(mw.mock.calls).toHaveLength(1);
-      expect(mw.mock.calls[0]).toEqual([req, expect.any(Function), {}, console]);
     });
 
     it('use handler mw in stellar error state', async () => {
@@ -242,7 +238,7 @@ describe('StellarHandler', () => {
           return Promise.reject(error);
         });
       });
-      stellarHandler.use('.*', mw);
+      stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
       mockFn.mockReturnValue(Promise.reject(error));

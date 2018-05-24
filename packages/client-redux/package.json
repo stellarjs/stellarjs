@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/client-redux",
-  "version": "0.10.2",
+  "version": "0.10.6",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/engine.io-client": "^0.9.3",
+    "@stellarjs/client-engine.io": "^0.10.6",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
     "eslint": "^3.19.0",
@@ -52,17 +52,17 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.10.1",
+    "@stellarjs/core": "^0.10.6",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "uuid": "^3.1.0"
   },
   "peerDependencies": {
-    "@stellarjs/engine.io-client": "^0.9.3",
+    "@stellarjs/client-engine.io": "^0.10.5",
     "redux-promise-middleware": "^4.3.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/abstract-transport-queue",
-  "version": "0.10.1",
+  "version": "0.10.6",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -49,13 +49,13 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
   },
   "dependencies": {
-    "@stellarjs/abstract-transport": "^0.10.1",
-    "@stellarjs/stellar-error": "^0.10.1",
+    "@stellarjs/abstract-transport": "^0.10.6",
+    "@stellarjs/stellar-error": "^0.10.6",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
     "uuid": "^3.1.0"

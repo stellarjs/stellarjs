@@ -1,6 +1,6 @@
 {
-  "name": "@stellarjs/mw-rollbar",
-  "version": "0.10.2",
+  "name": "@stellarjs/mw-error-reporting",
+  "version": "0.10.6",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -14,12 +14,12 @@
     "collectCoverageFrom": [
       "src/*.js"
     ],
-    "coverageDirectory": "../../.artifacts/coverage/mw-rollbar",
+    "coverageDirectory": "../../.artifacts/coverage/mw-error-reporting",
     "testResultsProcessor": "../../node_modules/jest-junit"
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/mw-rollbar.xml",
+    "output": "../../.artifacts/test_results/mw-error-reporting.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
@@ -32,13 +32,13 @@
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/mw-rollbar.xml src"
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/mw-error-reporting.xml src"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/transport-memory": "^0.10.2",
+    "@stellarjs/transport-memory": "^0.10.6",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -47,13 +47,12 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.10.1",
+    "@stellarjs/core": "^0.10.6",
     "bluebird": "^3.4.7",
-    "lodash": "^4.17.4",
-    "rollbar": "^2.2.6"
+    "lodash": "^4.17.4"
   }
 }

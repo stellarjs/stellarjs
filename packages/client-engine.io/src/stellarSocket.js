@@ -5,6 +5,7 @@ import Promise from 'bluebird';
 import qs from 'qs';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
+import defaults from 'lodash/defaults';
 import { configureStellar, uuid } from '@stellarjs/core';
 import StellarError from '@stellarjs/stellar-error';
 import transportFactory from '@stellarjs/transport-socket';
@@ -66,8 +67,10 @@ function stellarSocketFactory(eio, log = console) {
     },
 
     _reconnect(url, options) {
-      log.info(`@StellarSocket._reconnect`, { url, socketId: this.socket && this.socket.id });
-      this._exponentialBackoff(() => this._doConnect(url, options), MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
+      const reconnectOptions = defaults({ userId: this.userId, sessionId: this.sessionId }, options);
+      log.info(`@StellarSocket._reconnect`, { url, socketId: this.socket && this.socket.id, ...reconnectOptions });
+      this._exponentialBackoff(() => this._doConnect(url, reconnectOptions),
+          MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
     },
 
     on(event, handler) {
@@ -131,11 +134,15 @@ function stellarSocketFactory(eio, log = console) {
         }
       });
     },
-    _doConnect(url, { userId, token, secure, tokenType, params, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
-      log.info(`@StellarSocket._doConnect`, { url, userId, secure, tokenType, token });
+    _doConnect(url, { userId, token, secure,
+        tokenType, sessionId, params, eioConfig = { upgrade: true, rememberUpgrade: true } }) {
+      log.info(`@StellarSocket._doConnect`, { url, userId, secure, tokenType, token, sessionId });
       return new Promise((resolve, reject) => {
         this.state = 'connecting';
-        const urlParams = assign({ 'x-auth-user': userId, 'x-auth-token': token, 'x-auth-token-type': tokenType }, params);
+        const urlParams = assign({ 'x-auth-user': userId,
+          'x-auth-token': token,
+          'x-auth-token-type': tokenType,
+          'x-sessionId': sessionId }, params);
         let socketAttempt = null;
         try {
           socketAttempt = new eio.Socket(`${secure ? 'wss' : 'ws'}://${url}?${qs.stringify(urlParams)}`, eioConfig);

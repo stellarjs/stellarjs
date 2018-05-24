@@ -4,6 +4,8 @@
 import uuid from 'uuid';
 import unset from 'lodash/unset';
 import isFunction from 'lodash/isFunction';
+import isArray from 'lodash/isArray';
+import map from 'lodash/map';
 import Promise from 'bluebird';
 
 import { getActionType } from './getActionType';
@@ -16,8 +18,20 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
   return (ref) => {
     const { dispatch, getState } = ref;
     return next => (action) => {
-      const { payload, resource, method, path, channel, reactiveHandler, options } = action;
+      const { payload, resource, method, path, channel, reactiveHandler, Decorator, options } = action;
       const type = getActionType(action);
+
+      const decorate = (response) => {
+        if (!Decorator) {
+          return response;
+        }
+
+        if (isArray(response)) {
+          return map(response, res => new Decorator(res));
+        }
+
+        return new Decorator(response);
+      };
 
       if (!resource && !method) {
         return next(action);
@@ -64,7 +78,12 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
         return next({ type, payload: { promise: getReactivePromise, data: payload } });
       }
 
-      return next({ type, payload: { promise: stellar.request(url, method, payload, options), data: payload } });
+      return next({
+        type,
+        payload: {
+          promise: stellar.request(url, method, payload, options).then(res => decorate(res)),
+          data: payload,
+        } });
     };
   };
 }

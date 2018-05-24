@@ -6,26 +6,39 @@ import { mockAction, mockRef, mockStellarSocket } from './mocks';
 describe('client-redux', () => {
   const mockNext = jest.fn();
 
-  const middleware = reduxStellar(mockStellarSocket);
+  const middleware = reduxStellar(mockStellarSocket());
 
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
   it('should pass the intercepted action to next', () => {
+    const mock = mockStellarSocket({ a: 1 });
+    const middleware = reduxStellar(mock);
+
     expect(middleware).toBeDefined();
-    const action = mockAction({});
+    const action = mockAction({ });
     middleware(mockRef)(mockNext)(action);
 
-    const expectedPayload = {
-      url: action.resource,
-      method: action.method,
-      payload: action.payload,
-      options: action.options,
-    };
+    expect(mockNext.mock.calls[0][0].payload.promise).resolves.toHaveProperty('a', 1);
+  });
 
-    expect(mockNext)
-          .toHaveBeenLastCalledWith({ type: action.type, payload: { promise: expectedPayload, data: expectedPayload.payload } });
+  it('should pass the decorated response to next', () => {
+    const mock = mockStellarSocket({ a: 1 });
+    const middleware = reduxStellar(mock);
+
+    class Decorator {
+      constructor({ a }) {
+        this.a = a;
+      }
+    }
+
+    expect(middleware).toBeDefined();
+    const action = mockAction({ Decorator });
+    middleware(mockRef)(mockNext)(action);
+
+    expect(mockNext.mock.calls[0][0].payload.promise).resolves.toBeInstanceOf(Decorator);
+    expect(mockNext.mock.calls[0][0].payload.promise).resolves.toHaveProperty('a', 1);
   });
 
   it('should pass the intercepted action to next while unsubscribe while !method && !resource', () => {

@@ -23,7 +23,7 @@ describe('factory', () => {
 
   it('should build using the wrap with local optimisation if specified', () => {
     const transport = factory({log, requestTimeout: 500, optimizeLocalHandlers: true});
-    expect(transport.constructor.name).not.toEqual('WebsocketTransport');
+    expect(transport.constructor.name).toEqual('WebsocketTransport');
     expect(transport.socket).resolves.toEqual('fakeSocket');
     expect(transport.defaultRequestTimeout).toEqual(500);
 

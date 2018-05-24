@@ -13,7 +13,7 @@ describe('test instrument newrelic', () => {
       LAST: 'LAST',
       QUEUE: 'QUEUE',
     };
-    instrumentBullRedisQueueSystem(messageShim, BullRedisQueueSystem);
+    instrumentBullRedisQueueSystem(messageShim, { BullRedisQueueSystem });
   });
 
   it('Should set Library name as stellarjs', () => {
@@ -66,5 +66,33 @@ describe('test instrument newrelic', () => {
       destinationType: 'QUEUE',
       headers: job.data.headers,
     });
+  });
+
+  it('Should record transport processGroup', () => {
+    const prototype = BullRedisQueueSystem.prototype;
+    expect(messageShim.recordSubscribedConsume).toBeCalledWith(prototype, 'processGroup', expect.any(Object));
+    const consumeSpec = get(messageShim, 'recordSubscribedConsume.mock.calls[0][2]');
+
+    expect(consumeSpec).toEqual({ consumer: 'LAST', messageHandler: expect.any(Function) });
+
+    const { messageHandler } = consumeSpec;
+
+    const job = {
+      queue: { name: 'queueName' },
+      body: 'body',
+      data: {
+        headers: {
+          queueName: 'queueNameInHeader',
+        },
+      },
+    };
+
+    const recordedMessage = messageHandler(messageShim, null, null, [job]);
+
+    expect(recordedMessage).toEqual({
+                                      destinationName: 'queueNameInHeader',
+                                      destinationType: 'QUEUE',
+                                      headers: job.data.headers,
+                                    });
   });
 });

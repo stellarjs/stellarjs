@@ -89,7 +89,7 @@ describe('mock pubsub', () => {
     expect(subscriberMock.mock.calls[0]).toEqual([{text: 'hello'}]);
 
     expect(mwMock.mock.calls).toHaveLength(1);
-    expect(mwMock.mock.calls[0]).toEqual([message, expect.any(Function), {}, console]);
+    expect(mwMock.mock.calls[0]).toEqual([message, expect.any(Function), {}, console, transportMock]);
 
     expect(mwMock.mock.callsOnResult).toHaveLength(1);
     expect(mwMock.mock.callsOnResult[0]).toEqual([undefined]);
@@ -129,7 +129,7 @@ describe('mock pubsub', () => {
       await Promise.delay(50);
 
       expect(mwMock.mock.calls).toHaveLength(1);
-      expect(mwMock.mock.calls[0]).toEqual([message, expect.any(Function), {}, console]);
+      expect(mwMock.mock.calls[0]).toEqual([message, expect.any(Function), {}, console, transportMock]);
 
       expect(mwMock.mock.callsOnResult).toHaveLength(1);
       expect(mwMock.mock.callsOnResult[0]).toEqual([undefined]);

@@ -14,23 +14,29 @@ describe('factory generation', () => {
     configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env } });
   });
 
+  it('set default stellar request with local dispatch (uuid generation))', () => {
+    const { stellarRequest, source } = configureStellar(
+      { log: console, transportFactory: transportMockFactory, optimizeLocalHandlers: true, stringifyDates: true });
+    const requestObj = stellarRequest();
+    expect(source).toMatch(/^[0-9a-f\-]+$/);
+    expect(requestObj.requestMiddlewares).toHaveLength(2);
+    expect(requestObj.fireAndForgetMiddlewares).toHaveLength(2);
+  });
+
+  it('set standard stellar request (uuid generation , no local dispatch)', () => {
+    const { stellarRequest, source } = configureStellar(
+      { log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
+    const requestObj = stellarRequest();
+    expect(source).toMatch(/^[0-9a-f\-]+$/);
+    expect(requestObj.requestMiddlewares).toHaveLength(1);
+    expect(requestObj.fireAndForgetMiddlewares).toHaveLength(1);
+  });
+
   it('set externalSource generation', () => {
     const { stellarRequest, source } = configureStellar(
       { log: console, transportFactory: transportMockFactory, source: 'external123' });
     const requestObj = stellarRequest();
     expect(source).toBe('external123');
-  });
-
-  it('set uuid generation', (done) => {
-    const { stellarRequest, source } = configureStellar(
-      { log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
-    Promise.delay(50)
-      .then(() => {
-        const requestObj = stellarRequest();
-        requestObj.transport.request.mockReturnValue({ text: 'ooo' });
-        expect(source).toMatch(/^[0-9a-f\-]+$/);
-        done();
-      });
   });
 
   it('a sourcePrefix should be added if requested', (done) => {

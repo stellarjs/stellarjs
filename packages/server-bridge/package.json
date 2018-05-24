@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/server-bridge",
-  "version": "0.10.2",
+  "version": "0.10.8",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -40,10 +40,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/client-engine.io": "^0.10.1",
+    "@stellarjs/client-engine.io": "^0.10.6",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
-    "engine.io": "3.1.0",
     "engine.io-client": "3.1.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -52,20 +51,18 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
   },
-  "peerDependencies": {
-    "engine.io": "2-3"
-  },
   "dependencies": {
-    "@stellarjs/core": "^0.10.1",
-    "@stellarjs/mw-log-trace": "^0.10.0",
-    "@stellarjs/stellar-error": "^0.10.1",
-    "@stellarjs/transport-bull": "^0.10.1",
-    "@stellarjs/transport-socket": "^0.10.1",
+    "@stellarjs/core": "^0.10.6",
+    "@stellarjs/mw-log-trace": "^0.10.6",
+    "@stellarjs/stellar-error": "^0.10.6",
+    "@stellarjs/transport-bull": "^0.10.6",
+    "@stellarjs/transport-socket": "^0.10.6",
     "bluebird": "^3.4.7",
+    "engine.io": "~3.2.0",
     "lodash": "^4.17.4",
     "safe-json-stringify": "^1.0.4"
   }

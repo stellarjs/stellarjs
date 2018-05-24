@@ -1,5 +1,3 @@
-import Promise from 'bluebird';
-
 import transportFactory from '../src';
 import RedisClient from '../src/config-redisclient';
 import { StellarPubSub } from '@stellarjs/core';

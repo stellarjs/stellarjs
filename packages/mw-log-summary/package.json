@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/mw-log-summary",
-  "version": "0.10.0",
+  "version": "0.10.6",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -47,7 +47,7 @@
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
-    "jest": "^22.0.4",
+    "jest": "^22.4.3",
     "newrelic": "^2.2.0",
     "rimraf": "^2.6.1"
   },

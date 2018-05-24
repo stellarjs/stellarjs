@@ -13,7 +13,7 @@ import getUri from './utils/getUri';
 import match from './utils/match';
 
 class StellarCore {
-  constructor(transport, source = transport.source, log = transport.log) {
+  constructor(transport, { source = transport.source, log = transport.log } = {}) {
     this.handlerChain = [];
     this.transport = transport;
     this.log = log;
@@ -29,6 +29,12 @@ class StellarCore {
     this.setMiddlewares();
   }
 
+  /**
+   * adds middleware for specified pattern(s)
+   * @param pattern can be a string or RegExp or array of strings or an array of RegExp.
+   *        Strings are expected to be exact matches only
+   * @param fn middleware to run
+   */
   use(pattern, fn) {
     this.handlerChain = this.handlerChain.concat([{ pattern, fn }]);
     this.setMiddlewares();
@@ -89,7 +95,7 @@ class StellarCore {
 
   _handlerResult(jobData, result) {
     if (get(result, 'headers.type') === 'response'
-      || !includes(['request', 'reactive'], jobData.headers.type)// ) {
+      || !includes(['request', 'reactive', 'fireAndForget'], jobData.headers.type)
       || !jobData.headers.queueName) {
       return result;
     }
@@ -98,7 +104,7 @@ class StellarCore {
 
   _handlerRejection(jobData, error) {
     if (get(error, '__stellarResponse.headers.source') === this.source
-      || !includes(['request', 'reactive'], jobData.headers.type)// ) {
+      || !includes(['request', 'reactive', 'fireAndForget'], jobData.headers.type)
       || !jobData.headers.queueName) {
       throw error;
     }
@@ -125,7 +131,7 @@ class StellarCore {
           // this.log.info(`@StellarCore.executeMiddlewares: run ${i}}`);
         if (match(getUri(jobData.headers), handlers[i].pattern)) {
           return Promise
-                .try(() => handlers[i].fn(jobData, next, options, this.log))
+                .try(() => handlers[i].fn(jobData, next, options, this.log, this.transport))
                 .then(result => this._handlerResult(jobData, result))
                 .catch(error => this._handlerRejection(jobData, error));
         }
