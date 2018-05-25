@@ -79,15 +79,15 @@ function startSession(log, source, socket) {
 }
 
 function startHttpSession(log, source, req) {
-    const sessionId = uuid();
-    const session = {
-        source,
-        sessionId,
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-        logPrefix: `${source} @StellarBridge(${sessionId})`,
-    };
+  const sessionId = uuid();
+  const session = {
+    source,
+    sessionId,
+    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+    logPrefix: `${source} @StellarBridge(${sessionId})`,
+  };
 
-    return session;
+  return session;
 }
 
 
@@ -380,21 +380,22 @@ function init({
     const initSession = startHttpSession(log, stellarRequest.source, req);
     const command = { headers: { queueName, type: 'request', ...user }, body };
 
-    const response = await new Promise((resolve) => {
-        instrumentation.startTransaction(getTxName({ queueName }), initSession, async () => {
-        const response =  await sendRequest(log, stellarRequest, initSession, command);
+    // eslint-disable-next-line promise/avoid-new
+    const responePayload = await new Promise((resolve) => {
+      instrumentation.startTransaction(getTxName({ queueName }), initSession, async () => {
+        const response = await sendRequest(log, stellarRequest, initSession, command);
         instrumentation.done();
         resolve(response);
-        });
+      });
     });
 
-    res.send(response);
+    res.send(responePayload);
   }
 
   if (attachHttp) {
-      router.use(bodyParser.json());
-      router.use(jwt({ secret }));
-      router.post('/stellarRequest/*', onHttpRequest);
+    router.use(bodyParser.json());
+    router.use(jwt({ secret }));
+    router.post('/stellarRequest/*', onHttpRequest);
   }
 
   if (!attachSocket) {
