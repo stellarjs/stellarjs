@@ -6,6 +6,7 @@ import unset from 'lodash/unset';
 import isFunction from 'lodash/isFunction';
 import isArray from 'lodash/isArray';
 import map from 'lodash/map';
+import Promise from 'bluebird';
 
 import { getActionType } from './getActionType';
 
