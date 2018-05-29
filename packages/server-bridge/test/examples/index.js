@@ -38,6 +38,11 @@ function start() {
     instrumentation,
     newSessionHandlers: [
       ({ log, socket, session }) => {
+
+        if (!socket) {
+          return;
+        }
+
         const request = socket.request;
         const parsedUrl = url.parse(request.url, true);
         const userId = parsedUrl.query['x-auth-user'];
