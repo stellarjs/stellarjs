@@ -380,10 +380,16 @@ function init({
     const initSession = startHttpSession(log, stellarRequest.source, req);
     const command = { headers: { queueName, type: 'request', ...user }, body };
 
+    const session = await callHandlersSerially(newSessionHandlers,
+      {
+        log,
+        source: stellarRequest.source,
+        session: initSession,
+      });
     // eslint-disable-next-line promise/avoid-new
     const responePayload = await new Promise((resolve) => {
-      instrumentation.startTransaction(getTxName({ queueName }), initSession, async () => {
-        const response = await sendRequest(log, stellarRequest, initSession, command);
+      instrumentation.startTransaction(getTxName({ queueName }), session, async () => {
+        const response = await sendRequest(log, stellarRequest, session, command);
         instrumentation.done();
         resolve(response);
       });
