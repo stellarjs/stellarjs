@@ -2,11 +2,13 @@ import Promise from 'bluebird';
 import url from 'url';
 import assign from 'lodash/assign';
 import defaults from 'lodash/defaults';
-import isObject from 'lodash/isObject';
-import isUndefined from 'lodash/isUndefined';
+import defaultsDeep from 'lodash/defaultsDeep';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
 import head from 'lodash/head';
+import invoke from 'lodash/invoke';
+import isObject from 'lodash/isObject';
+import isUndefined from 'lodash/isUndefined';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
@@ -16,13 +18,17 @@ import StellarError from '@stellarjs/stellar-error';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 import { mwLogTraceFactory } from '@stellarjs/mw-log-trace';
 
-function createStellarRequest(stellarFactory, middlewares, pattern) {
+function createStellarRequest(stellarFactory, middlewares, bridgedUrlPatterns) {
   const stellarRequest = stellarFactory.stellarRequest();
   const mwLogTrace = mwLogTraceFactory('HEADERS');
   stellarRequest.use(/.*/, mwLogTrace);
 
-  if (pattern) {
-    stellarRequest.use(pattern, (req, next, options) => {
+  if (bridgedUrlPatterns) {
+    stellarRequest.use(bridgedUrlPatterns, (req, next, options) => {
+      if (req.headers.type === 'publish') {
+        return next();
+      }
+
       assign(req.headers, options.session.headers);
       return next();
     });
@@ -44,8 +50,12 @@ function startSession(log, source, socket) {
     sessionId,
     socketId,
     ip: get(socket, 'request.connection.remoteAddress'),
-    reactiveStoppers: {},
     logPrefix: `${source} @StellarBridge(${socketId}, ${sessionId})`,
+    headers: { bridges: [source] },
+    mergeAttributes(...attrs) {
+      return defaultsDeep(session, ...attrs);
+    },
+    reactiveStoppers: {},
     registerStopper(channel, stopperPromise, requestId) {
       assign(session.reactiveStoppers,
         {
@@ -61,56 +71,15 @@ function startSession(log, source, socket) {
         }
       );
     },
-    offlineFns: [() => {
-      log.info(`${session.logPrefix}: ended session`);
-      delete sessions[socketId];
-    }],
-    setSessionHeaders(headers) {
-      this.headers = assign({}, headers, { bridges: [source] });
-    },
+    offlineFn: undefined,
   };
 
-  sessions[socketId] = session;  // eslint-disable-line better-mutation/no-mutation
   return session;
 }
 
 function assignClientToSession({ log, source, socket, session }) {
   return assign(session, { client: new WebsocketTransport(socket, source, log, true) });
 }
-
-// TODO customize
-// function startSession({operation, user}, socket) {
-//   return EntityOnline.online(operation._id, user._id, 'user')
-//     .then((notifyOffline) => {
-//       const onlineData = {
-//         authenticatedUserId: user._id,
-//         requestUserId: user._id,
-//         sessionId: socket.id,
-//         operationId: operation._id,
-//         domain: operation.domain,
-//         ip: socket.request.connection.remoteAddress,
-//         reactiveStoppers: {},
-//         client: new WebsocketTransport(socket, log, true),
-//         registerStopper: (channel, stopper) => _.assign(onlineData.reactiveStoppers, { [channel]: () => {
-//           log.info(`@StellarBridge: Session ${onlineData.sessionId}: stopped subscription ${channel}`);
-//           stopper();
-//           delete onlineData.reactiveStoppers[channel];
-//         } }),
-//         impersonateUserId: requestUserId => _.assign(onlineData, { requestUserId }),
-//         headers: { userId: user._id, operationId: operation.id }),
-//         offlineFn: () => {
-//           log.info(`@StellarBridge: Session ${onlineData.sessionId} ended session`);
-//           delete sessions[user._id];
-//           this.notifyOffline();
-//         },
-//         notifyOffline,
-//       };
-//
-//       sessions[user._id] = onlineData;
-//
-//       return onlineData;
-//     });
-// }
 
 function sendRequest(log, stellarRequest, session, req) {
   return stellarRequest
@@ -122,7 +91,7 @@ function sendRequest(log, stellarRequest, session, req) {
 
 function sendResponse(log, session, requestHeaders, res) {
   if (isUndefined(session.client)) {
-    log.warn(`${session.logPrefix}: Socket was closed before response was sent.`);
+    log.warn(`${session.logPrefix}: Socket was closed before response could be bridged`);
     return Promise.reject(new Error('Socket was closed'));
   }
 
@@ -135,6 +104,11 @@ function sendResponse(log, session, requestHeaders, res) {
 
 function bridgeSubscribe(log, session, requestHeaders) {
   return ({ headers, body }) => {
+    if (isUndefined(session.client)) {
+      log.warn(`${session.logPrefix}: Socket was closed before subscription message could be bridged`);
+      return Promise.reject(new Error('Socket was closed'));
+    }
+
     const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
     const socketHeaders = defaults({ queueName }, headers);
     const obj = { headers: socketHeaders, body };
@@ -274,8 +248,9 @@ function init({
                     log.info(`number of connected clients ${count}`);
                   },
                 },
-                middlewares = [] }) {
-  const stellarRequest = createStellarRequest(stellarFactory, middlewares);
+                middlewares = [],
+                bridgedUrlPatterns = /.*/ }) {
+  const stellarRequest = createStellarRequest(stellarFactory, middlewares, bridgedUrlPatterns);
   const reportError = initErrorHandlers(log, errorHandlers);
   const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
 
@@ -311,11 +286,11 @@ function init({
       }
     });
 
-    const offlineFns = get(sessions, `${session.socketId}.offlineFns`);
-    forEach(offlineFns, fn => fn());
+    delete session.client; // eslint-disable-line no-param-reassign
+    delete session[session.socketId]; // eslint-disable-line no-param-reassign
+    invoke('session.offlineFn', session);
 
     log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
-    delete session.client; // eslint-disable-line no-param-reassign
   }
 
   function onConnection(socket) {
@@ -330,6 +305,7 @@ function init({
     socket.on('close', initialOnClose);
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, log, socket, session: initialSession })
       .then((session) => {
+        sessions[socket.id] = session;  // eslint-disable-line better-mutation/no-mutation
         log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
         socket.removeListener('close', initialOnClose);

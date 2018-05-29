@@ -48,34 +48,38 @@ function start() {
         }
 
         console.info(`QueryParams: ${JSON.stringify(queryParams)}`);
-        Object.assign(session, omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']),
-            { authenticatedUserId: userId });
-        return session;
+        return session.mergeAttributes(omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']), { authenticatedUserId: userId });
       },
     ],
   });
 }
 
-const PUBLISH_ACTIONS = {
-  CREATED: 'CREATED',
-  UPDATED: 'UPDATED',
-  REMOVED: 'REMOVED',
-};
-const publisher = stellarFactory.stellarAppPubSub();
-function kongEveryHalfSecond() {
-  publisher.publish('stellarBridge:kong:stream', { text: `kong` }, { action: PUBLISH_ACTIONS.UPDATED });
-  setTimeout(kongEveryHalfSecond, 500);
+setupHandlers({ reactive: true });
+
+function setupHandlers({ reactive }) {
+  const PUBLISH_ACTIONS = {
+    CREATED: 'CREATED',
+    UPDATED: 'UPDATED',
+    REMOVED: 'REMOVED',
+  };
+  const publisher = stellarFactory.stellarAppPubSub();
+  function kongEveryHalfSecond() {
+    publisher.publish('stellarBridge:kong:stream', { text: `kong` }, { action: PUBLISH_ACTIONS.UPDATED });
+    setTimeout(kongEveryHalfSecond, 500);
+  }
+
+  const handler = stellarFactory.stellarHandler();
+  handler.get('sampleService:ping', () => ({ text: `pong` }));
+
+  handler.update('sampleService:timeout', () => Promise.delay(31 * 1000).then(() => ({ text: `pong` })));
+  handler.get('sampleService:pingError', () => {
+    throw new Error('pongError');
+  });
+  handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
+
+  if (reactive) {
+    setTimeout(kongEveryHalfSecond, 500);
+  }
 }
-
-const handler = stellarFactory.stellarHandler();
-handler.get('sampleService:ping', () => ({ text: `pong` }));
-
-handler.update('sampleService:timeout', () => Promise.delay(31 * 1000).then(() => ({ text: `pong` })));
-handler.get('sampleService:pingError', () => {
-  throw new Error('pongError');
-});
-handler.handleRequest('sampleService:king:subscribe', () => ({ text: `kong` }));
-
-setTimeout(kongEveryHalfSecond, 500);
 
 export { start };
