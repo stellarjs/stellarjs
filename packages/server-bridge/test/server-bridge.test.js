@@ -6,7 +6,7 @@ import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
 import StellarError from '@stellarjs/stellar-error';
 import _ from 'lodash';
 
-// jest.unmock('@stellarjs/transport-bull');
+jest.unmock('@stellarjs/transport-bull');
 
 let redisClient;
 const clearRedis = () => {
