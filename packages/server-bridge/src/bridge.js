@@ -2,7 +2,6 @@ import Promise from 'bluebird';
 import url from 'url';
 import assign from 'lodash/assign';
 import defaults from 'lodash/defaults';
-import defaultsDeep from 'lodash/defaultsDeep';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
 import head from 'lodash/head';
@@ -10,6 +9,7 @@ import invoke from 'lodash/invoke';
 import isObject from 'lodash/isObject';
 import isUndefined from 'lodash/isUndefined';
 import last from 'lodash/last';
+import merge from 'lodash/merge';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
 import split from 'lodash/split';
@@ -53,7 +53,7 @@ function startSession(log, source, socket) {
     logPrefix: `${source} @StellarBridge(${socketId}, ${sessionId})`,
     headers: { bridges: [source] },
     mergeAttributes(...attrs) {
-      return defaultsDeep(session, ...attrs);
+      return merge(session, ...attrs);
     },
     reactiveStoppers: {},
     registerStopper(channel, stopperPromise, requestId) {
