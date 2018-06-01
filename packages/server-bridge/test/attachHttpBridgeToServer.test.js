@@ -27,7 +27,7 @@ describe('attachHttpBridgeToServer', () => {
 
     beforeAll(async () => {
         await clearRedis(redisClient);
-        const port = process.env.PORT || 8091;
+        const port = 8092;
         console.info('@Bridge: Start initializing server', { port });
 
         const app = express();
@@ -79,7 +79,7 @@ describe('attachHttpBridgeToServer', () => {
                     text: `pong`,
                 };
             });
-            const httpUrl = `http://localhost:8091/stellarRequest/${_.join(urlParts, '/')}/get`;
+            const httpUrl = `http://localhost:8092/stellarRequest/${_.join(urlParts, '/')}/get`;
             const { data } = await axios.post(httpUrl, { body: 'ping' }, {
                 headers: { Authorization: "Bearer " + token }
             });

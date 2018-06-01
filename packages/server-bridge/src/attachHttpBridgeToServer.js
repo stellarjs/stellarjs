@@ -12,8 +12,8 @@ import handleMessageFactory from './factories/handleMessageFactory';
 import getTxNameFactory from './factories/getTxNameFactory';
 import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 
-function assignClientToSession({ log, source, socket, session }) {
-    return assign(session, { client: 'http' });
+function assignClientToSession({ session }) {
+  return assign(session, { client: 'http' });
 }
 
 export default function attachHttpBridgeToServer(config) {
@@ -41,7 +41,7 @@ export default function attachHttpBridgeToServer(config) {
 
     const command = { headers: { queueName, type: 'request', ...user }, body };
 
-      const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
+    const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
     const session = await callHandlersSerially(_newSessionHandlers,
       {
         log,

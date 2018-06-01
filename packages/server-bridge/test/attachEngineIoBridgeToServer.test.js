@@ -29,7 +29,7 @@ describe('attachEngineIoBridgeToServer', () => {
         await Promise.delay(100);
         instrumentation = instrumentationMockFactory({ log: console });
         instrumentation.numOfConnectedClients = jest.fn();
-        const port = process.env.PORT || 8091;
+        const port = 8091;
         console.info('@Bridge: Start initializing server', { port });
         server = engine.listen(port, { transports: ['websocket', 'polling'] }, () => {
             console.info('@Bridge: Server is running');
