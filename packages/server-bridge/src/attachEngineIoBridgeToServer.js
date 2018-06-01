@@ -10,31 +10,31 @@ import size from 'lodash/size';
 
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 
-import instrumentationMockFactory from './factories/instrumentationMockFactory';
 import startSessionFactory from './factories/startSessionFactory';
-import stellarRequestFactory from './factories/stellarRequestFactory';
 import handleMessageFactory from './factories/handleMessageFactory';
 import reportErrorFactory from './factories/reportErrorFactory';
 import getSessionFactory from './factories/getSessionFactory';
 import getTxNameFactory from './factories/getTxNameFactory';
 import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
+import getConfigWithDefaults from './getConfigWithDefaults';
 
 function assignClientToSession({ log, source, socket, session }) {
   return assign(session, { client: new WebsocketTransport(socket, source, log, true) });
 }
 
-export default function attachEngineIoBridgeToServer(config) {
+export default function attachEngineIoBridgeToServer(originalConfig) {
+  const config = getConfigWithDefaults(originalConfig);
   const {
         server,
         log,
-        instrumentation = instrumentationMockFactory(config),
-        newSessionHandlers = [],
+        instrumentation,
+        newSessionHandlers,
+        stellarRequest,
     } = config;
 
-  const stellarRequest = stellarRequestFactory(config);
   const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
-  const handleMessage = handleMessageFactory(config);
+  const handleMessage = handleMessageFactory({ stellarRequest, ...config });
   const getSession = getSessionFactory(config);
   const getTxName = getTxNameFactory(config);
   const callHandlersSerially = callHandlersSeriallyFactory(config);
@@ -70,7 +70,7 @@ export default function attachEngineIoBridgeToServer(config) {
 
     instrumentation.startTransaction(getTxName(command.data.headers), session, () => {
       Promise
-                .try(() => handleMessage(stellarRequest, session, command.data))
+                .try(() => handleMessage(session, command.data))
                 .then(() => instrumentation.done())
                 .catch((e) => {
                   instrumentation.done(e);

@@ -1,8 +1,6 @@
 import get from 'lodash/get';
 
-import sessions from './sessions';
-
-export default function getSessionFactory() {
+export default function getSessionFactory({ sessions }) {
   return function getSession(path) {
     return get(sessions, path);
   };

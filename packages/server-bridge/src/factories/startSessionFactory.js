@@ -1,9 +1,7 @@
 import uuid from 'uuid';
 import assign from 'lodash/assign';
 
-import sessions from './sessions';
-
-export default function startSessionFactory({ log, source }) {
+export default function startSessionFactory({ log, source, sessions }) {
   return function startSession(defaultSession) {
     const sessionId = defaultSession.sessionId || uuid();
     const session = {
@@ -28,7 +26,7 @@ export default function startSessionFactory({ log, source }) {
       },
       offlineFns: [() => {
         log.info(`${session.logPrefix}: ended session`);
-        delete sessions[sessionId];
+        delete sessions[sessionId]; // eslint-disable-line no-param-reassign
       }],
       setSessionHeaders(headers) {
         this.headers = assign({}, headers, { bridges: [source] });
@@ -36,7 +34,7 @@ export default function startSessionFactory({ log, source }) {
       ...defaultSession,
     };
 
-    sessions[session.sessionId] = session;  // eslint-disable-line better-mutation/no-mutation
+    sessions[session.sessionId] = session;  // eslint-disable-line no-param-reassign, better-mutation/no-mutation
     return session;
   };
 }
