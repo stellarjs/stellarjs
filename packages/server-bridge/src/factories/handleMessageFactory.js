@@ -6,6 +6,10 @@ import isUndefined from 'lodash/isUndefined';
 import defaults from 'lodash/defaults';
 
 function sendResponse(log, session, requestHeaders, res) {
+  if (session.client === 'http') {
+    return res;
+  }
+
   if (isUndefined(session.client)) {
     log.warn(`${session.logPrefix}: Socket was closed before response was sent.`);
     return Promise.reject(new Error('Socket was closed'));

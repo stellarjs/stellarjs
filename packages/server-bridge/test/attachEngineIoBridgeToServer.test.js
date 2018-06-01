@@ -21,6 +21,7 @@ const clearRedis = (redisClient) => {
 describe('attachEngineIoBridgeToServer', () => {
     let redisClient;
     let instrumentation = null;
+    let server;
 
     beforeAll(async () => {
         jest.unmock('@stellarjs/transport-bull');
@@ -30,7 +31,7 @@ describe('attachEngineIoBridgeToServer', () => {
         instrumentation.numOfConnectedClients = jest.fn();
         const port = process.env.PORT || 8091;
         console.info('@Bridge: Start initializing server', { port });
-        const server = engine.listen(port, { transports: ['websocket', 'polling'] }, () => {
+        server = engine.listen(port, { transports: ['websocket', 'polling'] }, () => {
             console.info('@Bridge: Server is running');
         });
 
@@ -110,6 +111,7 @@ describe('attachEngineIoBridgeToServer', () => {
 
     afterAll(async () => {
         console.info('afterAll');
+        server.close();
         redisClient.defaultConnection.quit();
         return redisClient.closeAll();
     });
@@ -418,28 +420,3 @@ describe('attachEngineIoBridgeToServer', () => {
         });
     });
 });
-
-// it('request response using http bridge', async () => {
-//     const urlParts = [uuid(), `ping`];
-//     const stellarUrl = _.join(urlParts, ':');
-//     const originalHeaders = {
-//         userId: uuid(),
-//         operationId: uuid(),
-//         what: 'ever',
-//     };
-//
-//     const token = jwt.sign(originalHeaders, 'not so secret');
-//
-//     handler.get(stellarUrl, ({ headers, body}) => {
-//         expect(headers).toEqual(expect.objectContaining(originalHeaders));
-//         expect(body).toEqual('ping');
-//         return {
-//             text: `pong`,
-//         };
-//     });
-//     const httpUrl = `http://localhost:8091/stellarRequest/${_.join(urlParts, '/')}/get`;
-//     const { data } = await axios.post(httpUrl, { body: 'ping' }, {
-//         headers: { Authorization: "Bearer " + token }
-//     });
-//     expect(data.body.text).toBe('pong');
-// });

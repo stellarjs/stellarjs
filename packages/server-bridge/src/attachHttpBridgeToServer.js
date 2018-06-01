@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 
 import split from 'lodash/split';
 import join from 'lodash/join';
+import assign from 'lodash/assign';
 
 import instrumentationMockFactory from './factories/instrumentationMockFactory';
 import startSessionFactory from './factories/startSessionFactory';
@@ -10,6 +11,10 @@ import stellarRequestFactory from './factories/stellarRequestFactory';
 import handleMessageFactory from './factories/handleMessageFactory';
 import getTxNameFactory from './factories/getTxNameFactory';
 import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
+
+function assignClientToSession({ log, source, socket, session }) {
+    return assign(session, { client: 'http' });
+}
 
 export default function attachHttpBridgeToServer(config) {
   const {
@@ -36,8 +41,8 @@ export default function attachHttpBridgeToServer(config) {
 
     const command = { headers: { queueName, type: 'request', ...user }, body };
 
-
-    const session = await callHandlersSerially(newSessionHandlers,
+      const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
+    const session = await callHandlersSerially(_newSessionHandlers,
       {
         log,
         source: stellarRequest.source,
@@ -46,7 +51,7 @@ export default function attachHttpBridgeToServer(config) {
         // eslint-disable-next-line promise/avoid-new
     const responePayload = await new Promise((resolve) => {
       instrumentation.startTransaction(getTxName({ queueName }), session, async () => {
-        const response = await handleMessage(log, stellarRequest, session, command);
+        const response = await handleMessage(stellarRequest, session, command);
         instrumentation.done();
         resolve(response);
       });

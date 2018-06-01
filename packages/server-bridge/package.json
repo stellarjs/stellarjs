@@ -13,8 +13,8 @@
       "^.+\\.jsx?$": "babel-jest"
     },
     "collectCoverageFrom": [
-      "src/*.js",
-      "!src/index.js"
+      "!src/index.js",
+      "src/**/*"
     ],
     "coverageDirectory": "../../.artifacts/coverage/server-bridge",
     "testResultsProcessor": "../../node_modules/jest-junit"
