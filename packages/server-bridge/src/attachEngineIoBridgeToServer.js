@@ -4,6 +4,7 @@ import url from 'url';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
+import invoke from 'lodash/invoke';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
@@ -13,7 +14,6 @@ import { WebsocketTransport } from '@stellarjs/transport-socket';
 import startSessionFactory from './factories/startSessionFactory';
 import handleMessageFactory from './factories/handleMessageFactory';
 import reportErrorFactory from './factories/reportErrorFactory';
-import getSessionFactory from './factories/getSessionFactory';
 import getTxNameFactory from './factories/getTxNameFactory';
 import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getConfigWithDefaults from './getConfigWithDefaults';
@@ -31,11 +31,11 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
         newSessionHandlers,
         stellarRequest,
     } = config;
+  const sessions = {};
 
   const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
   const handleMessage = handleMessageFactory({ stellarRequest, ...config });
-  const getSession = getSessionFactory(config);
   const getTxName = getTxNameFactory(config);
   const callHandlersSerially = callHandlersSeriallyFactory(config);
 
@@ -52,11 +52,11 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       }
     });
 
-    const offlineFns = getSession(`${session.socketId}.offlineFns`);
-    forEach(offlineFns, fn => fn());
+    delete session.client; // eslint-disable-line no-param-reassign
+    delete sessions[session.socketId]; // eslint-disable-line no-param-reassign
+    invoke('session.offlineFn', session);
 
     log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
-    delete session.client; // eslint-disable-line no-param-reassign
   }
 
   function onMessage(str, session) {
@@ -102,6 +102,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
     socket.on('close', initialOnClose);
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, socket, session: initialSession })
             .then((session) => {
+              sessions[socket.id] = session;
               log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
               socket.removeListener('close', initialOnClose);

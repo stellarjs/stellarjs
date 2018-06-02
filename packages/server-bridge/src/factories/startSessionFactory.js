@@ -1,14 +1,20 @@
 import uuid from 'uuid';
 import assign from 'lodash/assign';
+import merge from 'lodash/merge';
 
-export default function startSessionFactory({ log, source, sessions }) {
+export default function startSessionFactory({ log, source }) {
   return function startSession(defaultSession) {
     const sessionId = defaultSession.sessionId || uuid();
     const session = {
       source,
-      sessionId,
-      reactiveStoppers: {},
+      sessionId,      
       logPrefix: `${source} @StellarBridge(${sessionId})`,
+      headers: { bridges: [source] },
+      mergeAttributes(...attrs) {
+        return merge(session, ...attrs);
+      },
+      reactiveStoppers: {},
+      offlineFn: undefined,
       registerStopper(channel, stopperPromise, requestId) {
         assign(session.reactiveStoppers,
           {
@@ -24,17 +30,12 @@ export default function startSessionFactory({ log, source, sessions }) {
           }
                 );
       },
-      offlineFns: [() => {
-        log.info(`${session.logPrefix}: ended session`);
-        delete sessions[sessionId]; // eslint-disable-line no-param-reassign
-      }],
       setSessionHeaders(headers) {
         this.headers = assign({}, headers, { bridges: [source] });
       },
       ...defaultSession,
     };
 
-    sessions[session.sessionId] = session;  // eslint-disable-line no-param-reassign, better-mutation/no-mutation
     return session;
   };
 }

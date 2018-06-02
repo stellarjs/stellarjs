@@ -40,9 +40,9 @@ function start() {
         }
 
         console.info(`QueryParams: ${JSON.stringify(queryParams)}`);
-        Object.assign(session, omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']),
-            { authenticatedUserId: userId });
-        return session;
+        return session.mergeAttributes(
+          omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']), 
+          { authenticatedUserId: userId });
       },
     ],
   });
