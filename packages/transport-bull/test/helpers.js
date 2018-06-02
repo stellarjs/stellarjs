@@ -1,6 +1,7 @@
+import { StellarPubSub } from '@stellarjs/core';
+
 import transportFactory from '../src';
 import RedisClient from '../src/config-redisclient';
-import { StellarPubSub } from '@stellarjs/core';
 
 const log = console;
 
@@ -29,7 +30,7 @@ function subscriber(source, channel, app) {
 }
 
 async function onClose(transports) {
-  return closeRedis(transports)
+  return closeRedis(transports);
 }
 
 export { log, closeRedis, factory, onClose, subscriber };
