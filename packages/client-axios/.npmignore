@@ -1,0 +1,6 @@
+src/
+coverage/
+test/
+webpack.config.js
+.babelrc
+.eslintrc

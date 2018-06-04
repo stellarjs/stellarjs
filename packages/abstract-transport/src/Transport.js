@@ -84,7 +84,7 @@ export default class Transport {
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
-    throw new Error('"generateId" was called but was not implemented!');
+    return uuid();
   }
 
   reset() {

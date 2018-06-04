@@ -1,0 +1,75 @@
+{
+  "name": "@stellarjs/transport-express",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "lib-es6/index.js",
+  "browser": "lib/index.browser.js",
+  "src": [
+    "src/**/*"
+  ],
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/*.js",
+      "!src/index.js",
+      "!src/index.browser.js"
+    ],
+    "testEnvironment": "node",
+    "coverageDirectory": "../../.artifacts/coverage/transport-express",
+    "testResultsProcessor": "../../node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "suiteName": "jest tests",
+    "output": "../../.artifacts/test-results/transport-express.xml",
+    "usePathForSuiteName": "true"
+  },
+  "scripts": {
+    "ci": "yarn run lint:ci && yarn run test-coverage",
+    "clean": "rimraf lib lib-es6",
+    "compile": "yarn run compile:es6 && yarn run compile:umd",
+    "compile:es6": "babel ./src --ignore src/index.browser.js --out-dir ./lib-es6",
+    "compile:umd": "webpack -p",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublish": "yarn run compile",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "lint:ci": "eslint --quiet --format junit --output-file ../../.artifacts/lint_results/transport-express.xml src"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "stellarjs/stellarjs",
+  "keywords": [
+    "microservices",
+    "es6",
+    "stellar",
+    "stellarjs"
+  ],
+  "author": "roeeyud",
+  "contributors": [],
+  "bugs": {
+    "url": "https://github.com/stellarjs/stellarjs/issues"
+  },
+  "devDependencies": {
+    "@stellarjs/transport-axios": "0.0.1",
+    "axios": "^0.18.0",
+    "babel-cli": "^6.24.1",
+    "body-parser": "^1.18.2",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-better-mutation": "^1.1.2",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-lodash": "2.4.4",
+    "eslint-plugin-promise": "3.5.0",
+    "express": "^4.16.3",
+    "jest": "^22.0.4"
+  },
+  "dependencies": {
+    "@stellarjs/transport-http": "0.0.1"
+  }
+}
