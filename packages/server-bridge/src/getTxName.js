@@ -1,7 +1,7 @@
 export default function getTxName(requestHeaders) {
-    if (requestHeaders.queueName) {
-        return `${requestHeaders.queueName}`;
-    }
+  if (requestHeaders.queueName) {
+    return `${requestHeaders.queueName}`;
+  }
 
-    return requestHeaders.type;
+  return requestHeaders.type;
 }

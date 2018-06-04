@@ -20,7 +20,6 @@ export default function attachHttpBridgeToServer(originalConfig) {
   const {
         router,
         secret,
-        log,
         instrumentation,
         newSessionHandlers,
         stellarRequest,
