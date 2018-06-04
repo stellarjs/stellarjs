@@ -13,8 +13,7 @@ import { WebsocketTransport } from '@stellarjs/transport-socket';
 import startSessionFactory from './factories/startSessionFactory';
 import handleMessageFactory from './factories/handleMessageFactory';
 import reportErrorFactory from './factories/reportErrorFactory';
-import getSessionFactory from './factories/getSessionFactory';
-import getTxNameFactory from './factories/getTxNameFactory';
+import getTxName from './getTxName';
 import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getConfigWithDefaults from './getConfigWithDefaults';
 
@@ -35,11 +34,10 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
   const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
   const handleMessage = handleMessageFactory({ stellarRequest, ...config });
-  const getSession = getSessionFactory(config);
-  const getTxName = getTxNameFactory(config);
   const callHandlersSerially = callHandlersSeriallyFactory(config);
 
   const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
+
   function onClose(session) {
     log.error(`${session.logPrefix}: onClose`);
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
@@ -52,7 +50,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       }
     });
 
-    const offlineFns = getSession(`${session.socketId}.offlineFns`);
+    const offlineFns = get(session, 'offlineFns');
     forEach(offlineFns, fn => fn());
 
     log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
@@ -100,6 +98,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
     const initialOnClose = () => onClose(initialSession);
     socket.on('close', initialOnClose);
+
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, socket, session: initialSession })
             .then((session) => {
               log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));

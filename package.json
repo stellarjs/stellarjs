@@ -43,8 +43,5 @@
     "uglifyjs-webpack-plugin": "^0.4.3",
     "webpack": "2.5.1",
     "webpack-node-externals": "^1.6.0"
-  },
-  "dependencies": {
-    "node-gyp": "^3.6.2"
   }
 }
