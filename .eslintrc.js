@@ -57,6 +57,7 @@ module.exports = {
         // 'lodash/prefer-lodash-method': ['error', {ignoreMethods: ['isError']}],
         'lodash/prefer-lodash-typecheck': ['warn'],
     },
+    parser: 'babel-eslint',
     "parserOptions": {
         "ecmaVersion": 2017,
         "sourceType": "module"
