@@ -103,7 +103,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, socket, session: initialSession })
             .then((session) => {
-              sessions[socket.id] = session;
+              sessions[socket.id] = session; // eslint-disable-line better-mutation/no-mutation
               log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
               socket.removeListener('close', initialOnClose);
