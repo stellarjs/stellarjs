@@ -7,7 +7,7 @@ export default function startSessionFactory({ log, source }) {
     const sessionId = defaultSession.sessionId || uuid();
     const session = {
       source,
-      sessionId,      
+      sessionId,
       logPrefix: `${source} @StellarBridge(${sessionId})`,
       headers: { bridges: [source] },
       mergeAttributes(...attrs) {

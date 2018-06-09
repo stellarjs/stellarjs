@@ -7,7 +7,7 @@ import assign from 'lodash/assign';
 
 import startSessionFactory from './factories/startSessionFactory';
 import handleMessageFactory from './factories/handleMessageFactory';
-import getTxNameFactory from './factories/getTxNameFactory';
+import getTxName from './getTxName';
 import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getConfigWithDefaults from './getConfigWithDefaults';
 
@@ -20,7 +20,6 @@ export default function attachHttpBridgeToServer(originalConfig) {
   const {
         router,
         secret,
-        log,
         instrumentation,
         newSessionHandlers,
         stellarRequest,
@@ -28,7 +27,6 @@ export default function attachHttpBridgeToServer(originalConfig) {
 
   const startSession = startSessionFactory(config);
   const handleMessage = handleMessageFactory(config);
-  const getTxName = getTxNameFactory(config);
   const callHandlersSerially = callHandlersSeriallyFactory(config);
 
   async function onHttpRequest(req, res) {
@@ -37,14 +35,13 @@ export default function attachHttpBridgeToServer(originalConfig) {
 
     const initialSession = startSession({
       ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-    }, { log, source: stellarRequest.source });
+    }, { source: stellarRequest.source });
 
     const command = { headers: { queueName, type: 'request', ...user }, body };
 
     const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
     const session = await callHandlersSerially(_newSessionHandlers,
       {
-        log,
         source: stellarRequest.source,
         session: initialSession,
       });
