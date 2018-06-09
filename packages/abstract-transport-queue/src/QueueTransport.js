@@ -20,7 +20,7 @@ export default class QueueTransport extends RemoteTransport {
     this.inboxes = {};
 
     // Request (Client) stuff
-    this.nodeResponseInbox = `stlr:n:${source}:responseInbox`;
+    this.nodeResponseIn`box = `stlr:n:${source}:responseInbox`;
   }
 
   request({ headers = {}, body }, requestTimeout) {
