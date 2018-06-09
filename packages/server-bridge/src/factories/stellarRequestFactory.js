@@ -19,7 +19,7 @@ export default function stellarRequestFactory({
       if (req.headers.type === 'publish') {
         return next();
       }
-    }
+    });
 
     assign(req.headers, options.session.headers);
     return next();
