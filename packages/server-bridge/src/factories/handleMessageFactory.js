@@ -13,7 +13,7 @@ export default function handleMessageFactory({ log, stellarRequest }) {
     }
 
     if (isUndefined(session.client)) {
-      log.warn(`${session.logPrefix}: Socket was closed before response was sent.`);
+      log.warn(`${session.logPrefix}: Socket was closed before response could be bridged.`);
       return Promise.reject(new Error('Socket was closed'));
     }
 
@@ -34,6 +34,11 @@ export default function handleMessageFactory({ log, stellarRequest }) {
 
   function bridgeSubscribe(session, requestHeaders) {
     return ({ headers, body }) => {
+      if (isUndefined(session.client)) {
+        log.warn(`${session.logPrefix}: Socket was closed before subscription message could be bridged`);
+        return Promise.reject(new Error('Socket was closed'));
+      }
+
       const queueName = `stlr:n:${requestHeaders.source}:subscriptionInbox`; // queueName hard coded from StellarPubSub pattern
       const socketHeaders = defaults({ queueName }, headers);
       const obj = { headers: socketHeaders, body };

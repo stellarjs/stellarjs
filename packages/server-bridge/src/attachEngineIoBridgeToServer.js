@@ -4,6 +4,7 @@ import url from 'url';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
+import invoke from 'lodash/invoke';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
@@ -30,6 +31,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
         newSessionHandlers,
         stellarRequest,
     } = config;
+  const sessions = {};
 
   const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
@@ -50,11 +52,11 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       }
     });
 
-    const offlineFns = get(session, 'offlineFns');
-    forEach(offlineFns, fn => fn());
+    delete session.client; // eslint-disable-line no-param-reassign
+    delete sessions[session.socketId]; // eslint-disable-line no-param-reassign
+    invoke('session.offlineFn', session);
 
     log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
-    delete session.client; // eslint-disable-line no-param-reassign
   }
 
   function onMessage(str, session) {
@@ -101,6 +103,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
     callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, socket, session: initialSession })
             .then((session) => {
+              sessions[socket.id] = session; // eslint-disable-line better-mutation/no-mutation
               log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
 
               socket.removeListener('close', initialOnClose);
