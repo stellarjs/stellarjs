@@ -2,12 +2,8 @@ import Promise from 'bluebird';
 import isUndefined from 'lodash/isUndefined';
 import defaults from 'lodash/defaults';
 
-export default function sendResponseFactory({ log }) {
+export default function socketSendResponseFactory({ log }) {
   return function sendResponse(session, requestHeaders, res) {
-    if (session.client === 'http') {
-      return res;
-    }
-
     if (isUndefined(session.client)) {
       log.warn(`${session.logPrefix}: Socket was closed before response could be bridged.`);
       return Promise.reject(new Error('Socket was closed'));

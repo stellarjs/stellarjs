@@ -1,15 +1,15 @@
 import Promise from 'bluebird';
-
 import forEach from 'lodash/forEach';
 import invoke from 'lodash/invoke';
 import last from 'lodash/last';
 import pick from 'lodash/pick';
 import size from 'lodash/size';
+import { WebsocketTransport } from '@stellarjs/transport-socket';
 
 import defaultStartSessionFactory from './factories/startSessionFactory';
 import defaultHandleMessageFactory from './factories/handleMessageFactory';
 import defaultReportErrorFactory from './factories/reportErrorFactory';
-import defaultSendResponseFactory from './factories/sendResponseFactory';
+import defaultSendResponseFactory from './factories/socketSendResponseFactory';
 import defaultCallHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getTxName from './getTxName';
 import getConfigWithDefaults from './getConfigWithDefaults';
@@ -81,8 +81,14 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
   function onConnection(socket) {
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
-    const startTime = Date.now();
-    const initialSession = startSession(socket);
+
+    const socketSession = {
+      socketId: socket.id,
+      defaultSessionId: socket.id,
+      client: new WebsocketTransport(socket, stellarRequest.source, log, true),
+    };
+
+    const initialSession = startSession(socket.request, socketSession);
 
     socket.on('error', () => log.info(`${initialSession.logPrefix} Error`));
 
@@ -98,7 +104,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
         socket.on('close', () => onClose(session));
         socket.on('message', str => onMessage(str, session));
 
-        instrumentation.sessionStarted(Date.now() - startTime, session);
+        instrumentation.sessionStarted(Date.now() - session.startTime, session);
         const hiMessage = {
           messageType: 'connected',
           message: 'connected to stellar bridge',
@@ -109,7 +115,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       .catch((e) => {
         reportError(e, initialSession);
         log.error(e, `${initialSession.logPrefix} Connection error`);
-        instrumentation.sessionFailed(Date.now() - startTime);
+        instrumentation.sessionFailed(Date.now() - initialSession.startTime);
         const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
         socket.send(JSON.stringify(errorMessage));
       });

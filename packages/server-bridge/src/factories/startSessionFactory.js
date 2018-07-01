@@ -1,25 +1,23 @@
 import assign from 'lodash/assign';
 import get from 'lodash/get';
 import url from 'url';
-import { WebsocketTransport } from '@stellarjs/transport-socket';
 
 export default function startSessionFactory({ log, source }) {
-  return function startSession(socket) {
-    const requestUrl = get(socket, 'request.url');
+  return function startSession(req, baseSession) {
+    const { defaultSessionId } = baseSession;
+    const requestUrl = get(req, 'url');
     const parsedUrl = url.parse(requestUrl, true);
-    const socketId = socket.id;
-    const sessionId = get(parsedUrl, 'query.x-sessionId') || socketId;
+    const sessionId = get(parsedUrl, 'query.x-sessionId') || defaultSessionId;
 
     const session = {
+      startTime: Date.now(),
       source,
       sessionId,
-      socketId,
       logPrefix: `${source} @StellarBridge(${sessionId})`,
-      ip: get(socket, 'request.connection.remoteAddress'),
+      ip: get(req, 'headers.x-forwarded-for') || get(req, 'connection.remoteAddress'),
       headers: { bridges: [source] },
       reactiveStoppers: {},
       offlineFn: undefined,
-      client: new WebsocketTransport(socket, source, log, true),
       registerStopper(channel, stopperPromise, requestId) {
         assign(session.reactiveStoppers,
           {
@@ -34,6 +32,7 @@ export default function startSessionFactory({ log, source }) {
             }],
           });
       },
+      ...baseSession,
     };
 
     return session;
