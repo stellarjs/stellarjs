@@ -1,6 +1,7 @@
 import jwt from 'express-jwt';
 import bodyParser from 'body-parser';
 
+import Promise from 'bluebird';
 import join from 'lodash/join';
 import split from 'lodash/split';
 import uuid from 'uuid/v4';
@@ -12,7 +13,6 @@ import defaultStartSessionFactory from './factories/startSessionFactory';
 import defaultCallHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getTxName from './getTxName';
 import getConfigWithDefaults from './getConfigWithDefaults';
-import Promise from 'bluebird';
 
 export default function attachHttpBridgeToServer(originalConfig) {
   const config = getConfigWithDefaults(originalConfig);
