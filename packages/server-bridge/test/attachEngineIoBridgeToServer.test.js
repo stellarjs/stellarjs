@@ -8,7 +8,7 @@ import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 
 import attachEngineIoBridgeToServer from '../src/attachEngineIoBridgeToServer';
 import instrumentationMockFactory from '../src/factories/instrumentationMockFactory';
-import defaultHandleMessageFactory from '../src/factories/handleMessageFactory';
+import handleMessageFactory from './utils/handleMessageFactory';
 
 const clearRedis = (redisClient) => {
     redisClient = new RedisClient(console);
@@ -34,16 +34,6 @@ describe('attachEngineIoBridgeToServer', () => {
         server = engine.listen(8091, { transports: ['websocket', 'polling'] }, () => {
             console.info('@Bridge: Server is running');
         });
-
-        function handleMessageFactory(config) {
-          const defaultHandleMessage = defaultHandleMessageFactory(config);
-          return function handleMessage(session, req) {
-            if (req.headers.fakeHandleMessageError === true) {
-              throw new Error('handleMessage DIED!');
-            }
-            return defaultHandleMessage(session, req);
-          }
-        }
 
         attachEngineIoBridgeToServer({
                                        server,
@@ -203,9 +193,9 @@ describe('attachEngineIoBridgeToServer', () => {
             }
             const result = await stellarSocket.stellar.get('sampleService:ping');
             expect(result.text).toBe('pong');
-          expect(errorHandler).not.toHaveBeenCalled();
+            expect(errorHandler).not.toHaveBeenCalled();
 
-          await stellarSocket.close();
+            await stellarSocket.close();
         });
 
         it('sessionId set - sessionId should equal sessionId header', async () => {
@@ -250,44 +240,44 @@ describe('attachEngineIoBridgeToServer', () => {
           await stellarSocket.close();
         });
 
-        // it('custom timeout should extend normal timeout', (done) => {
-        //     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
-        //     stellarSocket.connect('localhost:8091', {
-        //         secure: false,
-        //         userId: '123',
-        //         token: '123',
-        //         tokenType: 'API',
-        //         eioConfig: { upgrade: false },
-        //         params: {
-        //             extraParam: 1,
-        //         },
-        //     })
-        //         .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 32 * 1000 } }))
-        //         .then(() => {
-        //             done();
-        //         });
-        // }, 40 * 1000);
+        it('custom timeout should extend normal timeout', (done) => {
+            const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+            stellarSocket.connect('localhost:8091', {
+                secure: false,
+                userId: '123',
+                token: '123',
+                tokenType: 'API',
+                eioConfig: { upgrade: false },
+                params: {
+                    extraParam: 1,
+                },
+            })
+                .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 32 * 1000 } }))
+                .then(() => {
+                    done();
+                });
+        }, 40 * 1000);
 
-        // it('custom timeout should expire', (done) => {
-        //     const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
-        //     stellarSocket.connect('localhost:8091', {
-        //         secure: false,
-        //         userId: '123',
-        //         token: '123',
-        //         tokenType: 'API',
-        //         eioConfig: { upgrade: false },
-        //         params: {
-        //             extraParam: 1,
-        //         },
-        //     })
-        //         .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 200 } }))
-        //         .then(() => {
-        //             fail(`Timeout should have expired.`);
-        //         })
-        //         .catch(() => {
-        //             done();
-        //         });
-        // }, 10000);
+        it('custom timeout should expire', (done) => {
+            const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+            stellarSocket.connect('localhost:8091', {
+                secure: false,
+                userId: '123',
+                token: '123',
+                tokenType: 'API',
+                eioConfig: { upgrade: false },
+                params: {
+                    extraParam: 1,
+                },
+            })
+                .then(() => stellarSocket.stellar.update('sampleService:timeout', {}, { headers: { requestTimeout: 200 } }))
+                .then(() => {
+                    fail(`Timeout should have expired.`);
+                })
+                .catch(() => {
+                    done();
+                });
+        }, 10000);
 
         it('should getReactive calls', (done) => {
             let reactiveResolve;
