@@ -33,7 +33,7 @@ export default function startSessionFactory({ log, source }) {
               return stopperPromise.then(stopper => stopper());
             }],
           });
-      }
+      },
     };
 
     return session;

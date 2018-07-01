@@ -25,7 +25,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
     startSessionFactory = defaultStartSessionFactory,
     handleMessageFactory = defaultHandleMessageFactory,
     callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
-    sendResponseFactory = defaultSendResponseFactory
+    sendResponseFactory = defaultSendResponseFactory,
   } = config;
 
   const reportError = reportErrorFactory(config);

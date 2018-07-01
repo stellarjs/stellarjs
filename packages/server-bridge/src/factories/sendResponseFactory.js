@@ -18,5 +18,5 @@ export default function sendResponseFactory({ log }) {
     const obj = { headers, body: res.body };
     log.info(`${session.logPrefix} BRIDGE RESPONSE`, { queueName, obj });
     return session.client.send(obj);
-  }
+  };
 }

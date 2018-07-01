@@ -4,6 +4,7 @@ import head from 'lodash/head';
 import last from 'lodash/last';
 import isUndefined from 'lodash/isUndefined';
 import defaults from 'lodash/defaults';
+
 export default function handleMessageFactory({ log, stellarRequest, sendResponse }) {
   function sendRequest(session, req) {
     return stellarRequest
@@ -81,5 +82,5 @@ export default function handleMessageFactory({ log, stellarRequest, sendResponse
         throw new Error(`Invalid stellar bridge message: ${JSON.stringify(req)}`);
       }
     }
-  }
+  };
 }
