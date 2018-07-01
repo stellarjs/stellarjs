@@ -4,26 +4,7 @@ import head from 'lodash/head';
 import last from 'lodash/last';
 import isUndefined from 'lodash/isUndefined';
 import defaults from 'lodash/defaults';
-
-
-export default function handleMessageFactory({ log, stellarRequest }) {
-  function sendResponse(session, requestHeaders, res) {
-    if (session.client === 'http') {
-      return res;
-    }
-
-    if (isUndefined(session.client)) {
-      log.warn(`${session.logPrefix}: Socket was closed before response could be bridged.`);
-      return Promise.reject(new Error('Socket was closed'));
-    }
-
-    const queueName = requestHeaders.respondTo;
-    const headers = defaults({ requestId: requestHeaders.id, queueName }, res.headers);
-    const obj = { headers, body: res.body };
-    log.info(`${session.logPrefix} BRIDGE RESPONSE`, { queueName, obj });
-    return session.client.send(obj);
-  }
-
+export default function handleMessageFactory({ log, stellarRequest, sendResponse }) {
   function sendRequest(session, req) {
     return stellarRequest
             ._doQueueRequest(req.headers.queueName,
@@ -100,5 +81,5 @@ export default function handleMessageFactory({ log, stellarRequest }) {
         throw new Error(`Invalid stellar bridge message: ${JSON.stringify(req)}`);
       }
     }
-  };
+  }
 }

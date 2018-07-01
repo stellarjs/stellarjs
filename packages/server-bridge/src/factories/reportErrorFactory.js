@@ -1,4 +1,3 @@
-import assign from 'lodash/assign';
 import isObject from 'lodash/isObject';
 import forEach from 'lodash/forEach';
 import get from 'lodash/get';
@@ -22,15 +21,16 @@ export default function reportErrorFactory({ log, errorHandlers = [] }) {
       const path = `${bridgeRequestType}/${queueName || channel || ''}`;
       const method = queueName ? last(split(queueName, ':')) : undefined;
       const dataHeaders = get(command, 'data.headers');
-
-      forEach(errorHandlers, errorHandler => errorHandler({
-        headers: assign({}, sessionVars, dataHeaders),
+      const request = {
+        headers: { ...sessionVars, ...dataHeaders },
         method,
         route: { path },
         body: get(command, 'data.body', JSON.stringify(command)),
-      }));
+      };
+
+      forEach(errorHandlers, errorHandler => errorHandler(e, request));
     } else {
-      forEach(errorHandlers, errorHandler => errorHandler({ headers: sessionVars, body: command }));
+      forEach(errorHandlers, errorHandler => errorHandler(e, { headers: sessionVars }, command));
     }
   };
 }
