@@ -24,7 +24,7 @@ class AxiosTransport extends HttpTransport {
     return this.axios.post(url, request, {
       timeout: requestTimeout || this.defaultRequestTimeout,
       data: request,
-      baseUrl: this.baseUrl,
+      baseURL: this.baseUrl,
     }).then(res => res.data);
   }
 }
