@@ -10,7 +10,7 @@ export default function callHandlersSeriallyFactory({ log, newSessionHandlers })
 
     return Promise
           .try(() => newSessionHandlers[index]({ log, session, request }))
-          .then((updates) => merge(session, updates))
+          .then(updates => merge(session, updates))
           .then(nextSession => doCallHandlers(index + 1, { session: nextSession, request }))
           .catch((e) => {
             log.error(e, 'error calling handlers');

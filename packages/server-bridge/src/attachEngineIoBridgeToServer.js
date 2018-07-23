@@ -2,7 +2,6 @@ import Promise from 'bluebird';
 import forEach from 'lodash/forEach';
 import invoke from 'lodash/invoke';
 import last from 'lodash/last';
-import pick from 'lodash/pick';
 import size from 'lodash/size';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 

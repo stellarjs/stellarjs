@@ -15,9 +15,7 @@ import getConfigWithDefaults from './getConfigWithDefaults';
 export default function attachHttpBridgeToServer(originalConfig) {
   const config = getConfigWithDefaults(originalConfig);
   const {
-    log,
     router,
-    secret,
     instrumentation,
     stellarRequest,
     reportErrorFactory = defaultReportErrorFactory,
@@ -32,7 +30,7 @@ export default function attachHttpBridgeToServer(originalConfig) {
   const callHandlersSerially = callHandlersSeriallyFactory(config);
   const sendResponse = sendResponseFactory(config);
   const handleMessage = handleMessageFactory({ ...config, sendResponse });
-  
+
   function handleProcessingError(e, session, command, next) {
     instrumentation.done(e);
     reportError(e, session, command);
@@ -48,9 +46,9 @@ export default function attachHttpBridgeToServer(originalConfig) {
   function callHandleMessage(session, command, next) {
     return handleMessage(session, command)
       .then(() => instrumentation.done())
-      .catch((e) => handleProcessingError(e, session, command, next));
+      .catch(e => handleProcessingError(e, session, command, next));
   }
-  
+
   function onHttpRequest(req, res, next) {
     const { body: { body, headers }, params } = req;
     const queueName = join(split(params[0], '/'), ':');
@@ -61,11 +59,11 @@ export default function attachHttpBridgeToServer(originalConfig) {
 
     return instrumentation.startTransaction(getTxName({ queueName }), initialSession, () =>
       callHandlersSerially({
-                             session: initialSession,
-                             request: req,
-                           })
-        .then((session) => callHandleMessage(session, command, next))
-        .catch((e) => handleProcessingError(e, initialSession, command, next))
+        session: initialSession,
+        request: req,
+      })
+        .then(session => callHandleMessage(session, command, next))
+        .catch(e => handleProcessingError(e, initialSession, command, next))
     );
   }
 
