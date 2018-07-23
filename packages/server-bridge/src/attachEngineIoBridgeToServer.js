@@ -36,22 +36,21 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
   const sessions = {};
   function onClose(session) {
-    log.error(`${session.logPrefix}: onClose`);
+    log.info(`onClose`, session.logPrefix);
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
         last(stopper)();
       } else {
-        log.error(`${session.logPrefix}: Unable to find stopper for ${channel}`,
-                    { sessionId: session.sessionId, channel });
+        log.error(`Unable to find stopper for ${channel}`, { channel, ...session.logPrefix });
       }
     });
 
     delete session.client; // eslint-disable-line no-param-reassign
     delete sessions[session.socketId]; // eslint-disable-line no-param-reassign
-    invoke('session.offlineFn', session);
+    invoke(session, 'offlineFn');
 
-    log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
+    log.info(`onclose: Deleting stellar websocket client`, session.logPrefix);
   }
 
   function onMessage(str, session) {
@@ -90,15 +89,15 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
     const initialSession = startSession(socket.request, socketSession);
 
-    socket.on('error', () => log.info(`${initialSession.logPrefix} Error`));
+    socket.on('error', () => log.info(`Error`, initialSession.logPrefix));
 
     const initialOnClose = () => onClose(initialSession);
     socket.on('close', initialOnClose);
 
-    callHandlersSerially({ source: stellarRequest.source, socket, session: initialSession })
+    callHandlersSerially({ request: socket.request, session: initialSession })
       .then((session) => {
         sessions[socket.id] = session; // eslint-disable-line better-mutation/no-mutation
-        log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
+        log.info(`Connected`, session.logPrefix);
 
         socket.removeListener('close', initialOnClose);
         socket.on('close', () => onClose(session));
@@ -114,7 +113,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       })
       .catch((e) => {
         reportError(e, initialSession);
-        log.error(e, `${initialSession.logPrefix} Connection error`);
+        log.error(e, `Connection error`, initialSession.logPrefix);
         instrumentation.sessionFailed(Date.now() - initialSession.startTime);
         const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
         socket.send(JSON.stringify(errorMessage));

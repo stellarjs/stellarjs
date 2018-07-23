@@ -1,5 +1,5 @@
-import Promise from 'bluebird';
 import _ from 'lodash';
+import Promise from 'bluebird';
 import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
 import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 import express from 'express';
@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import uuid from 'uuid';
 import clientFactory from '@stellarjs/client-axios';
+import StellarError from '@stellarjs/stellar-error';
 
 import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';
 import handleMessageFactory from './utils/handleMessageFactory';
@@ -27,16 +28,32 @@ describe('attachHttpBridgeToServer', () => {
   const stellarFactory = defaultStellarFactory({ log: console });
   const handler = stellarFactory.stellarHandler();
   let errorHandler = jest.fn();
-  const pingUrl = `${uuid()}:ping`;
+  const pingUrl = `${Date.now()}:ping`;
+
+  function extractToken(req) {
+    var parts = req.headers.authorization.split(' ');
+    if (parts.length != 2) {
+      throw new Error('credentials_bad_format', { message: 'Format is Authorization: Bearer [token]' });
+    }
+
+    const [scheme, credentials] = parts;
+    if (!/^Bearer$/i.test(scheme)) {
+      throw new Error('credentials_bad_scheme', { message: 'Format is Authorization: Bearer [token]' });
+    }
+    
+    return credentials;
+  }
+
+  function checkJwtRevoked(payload) {
+    console.log('checkJwtRevoked', payload);
+  }
 
   beforeAll(async () => {
     await clearRedis(redisClient);
-    const port = 8092;
-    console.info('@Bridge: Start initializing server', { port });
 
     const app = express();
     const server = http.Server(app);
-    server.listen(port);
+    server.listen(8092);
 
     attachHttpBridgeToServer({
                                router: app,
@@ -44,11 +61,24 @@ describe('attachHttpBridgeToServer', () => {
                                log: console,
                                errorHandlers: [errorHandler],
                                handleMessageFactory,
+                               newSessionHandlers: [
+                                 async ({ log, request, session }) => {
+                                   const token = extractToken(request);
+                                   try {
+                                     const decoded = await jwt.verify(token, secret);
+                                     await checkJwtRevoked(decoded);
+                                     return { headers: _.pick(decoded, 'what') };
+                                   } catch(err) {
+                                     throw new StellarError(`Authentication Error ${err.message}`);
+                                   }
+                                 }
+                               ],
                              });
 
     handler.get(pingUrl, ({ headers, body }) => {
       return {
         text: `pong`,
+        whatRequest: headers.what,
       };
     });
   });
@@ -63,11 +93,60 @@ describe('attachHttpBridgeToServer', () => {
     return redisClient.closeAll();
   });
 
-  describe('call server', () => {
-    it('request response using http bridge', async () => {
-      const originalHeaders = {
+  describe('axios server call', () => {
+    it('send invalid request to http bridge', async () => {
+      const headers = {
         userId: uuid(),
-        operationId: uuid(),
+        what: 'ever',
+      };
+
+      const token = jwt.sign(headers, secret);
+
+      const httpUrl = `http://localhost:8092/stellarRequest/${pingUrl.replace(/:/, '/')}/get`;
+      try {
+        await axios.post(httpUrl, { body: 'ping' }, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        fail();
+      } catch(e) {
+        expect(e.response.status).toEqual(500);
+        expect(errorHandler).toHaveBeenCalled();
+      }
+    });
+
+    it('http client using http bridge', async () => {
+      const headers = {
+        userId: uuid(),
+        what: 'ever',
+      };
+
+      const token = jwt.sign(headers, secret);
+
+      const httpUrl = `http://localhost:8092/stellarRequest/${pingUrl.replace(/:/, '/')}/get`;
+      const { data } = await axios.post(httpUrl, { body: 'ping', headers: { queueName: `${pingUrl}:get`, type: 'request', id: '1'} }, {
+        headers: { Authorization: "Bearer " + token }
+      });
+      expect(data.body.text).toBe('pong');
+      expect(errorHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Auth`d HTTP Bridge', () => {
+    it('should fail with auth error if no jwt headers', async () => {
+      const stellarHttp = clientFactory({ baseUrl: 'http://localhost:8092/stellarRequest' }, console);
+
+      try {
+        const result = await stellarHttp.stellar.get(pingUrl);
+        fail();
+      } catch (e) {
+        expect(e).toBeInstanceOf(StellarError);
+        expect(e.message).toEqual('Authentication Error jwt malformed');
+        // expect(errorHandler).toHaveBeenCalled();
+      }
+    });
+    
+    it('should bridge request response with jwt headers', async () => {
+      const originalHeaders = {
         what: 'ever',
       };
 
@@ -77,14 +156,30 @@ describe('attachHttpBridgeToServer', () => {
 
       const result = await stellarHttp.stellar.get(pingUrl);
       expect(result.text).toBe('pong');
+      expect(result.whatRequest).toBe('ever');
       expect(errorHandler).not.toHaveBeenCalled();
     });
 
+    it('should raise an Authentication exception of the token is invalid', async () => {
+      const originalHeaders = {
+        what: 'ever',
+      };
+
+      const token = jwt.sign(originalHeaders, 'not the secret');
+      const stellarHttp = clientFactory({ token, baseUrl: 'http://localhost:8092/stellarRequest' }, console);
+
+      try {
+        await stellarHttp.stellar.get('sampleService:ping');
+        fail();
+      } catch (e) {
+        expect(e).toBeInstanceOf(StellarError);
+        expect(e.message).toEqual('Authentication Error invalid signature');
+        // expect(errorHandler).toHaveBeenCalled();
+      }
+    });
 
     it('should report bridge messageHandling errors', async () => {
       const originalHeaders = {
-        userId: uuid(),
-        operationId: uuid(),
         what: 'ever',
       };
 

@@ -22,7 +22,7 @@ export default function startSessionFactory({ log, source }) {
         assign(session.reactiveStoppers,
           {
             [channel]: [requestId, () => {
-              log.info(`${session.logPrefix}: stopped subscription`, { channel });
+              log.info(`stopped subscription`, { channel, ...session.logPrefix });
               if (!session.reactiveStoppers[channel]) {
                 throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
               }

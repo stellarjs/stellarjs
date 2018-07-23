@@ -1,7 +1,5 @@
-import jwt from 'express-jwt';
 import bodyParser from 'body-parser';
 
-import Promise from 'bluebird';
 import join from 'lodash/join';
 import split from 'lodash/split';
 import uuid from 'uuid/v4';
@@ -17,51 +15,60 @@ import getConfigWithDefaults from './getConfigWithDefaults';
 export default function attachHttpBridgeToServer(originalConfig) {
   const config = getConfigWithDefaults(originalConfig);
   const {
-        router,
-        secret,
-        instrumentation,
-        stellarRequest,
-        reportErrorFactory = defaultReportErrorFactory,
-        startSessionFactory = defaultStartSessionFactory,
-        handleMessageFactory = defaultHandleMessageFactory,
-        callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
-        sendResponseFactory = defaultSendResponseFactory,
-    } = config;
+    log,
+    router,
+    secret,
+    instrumentation,
+    stellarRequest,
+    reportErrorFactory = defaultReportErrorFactory,
+    startSessionFactory = defaultStartSessionFactory,
+    handleMessageFactory = defaultHandleMessageFactory,
+    callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
+    sendResponseFactory = defaultSendResponseFactory,
+  } = config;
 
   const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
   const callHandlersSerially = callHandlersSeriallyFactory(config);
   const sendResponse = sendResponseFactory(config);
   const handleMessage = handleMessageFactory({ ...config, sendResponse });
+  
+  function handleProcessingError(e, session, command, next) {
+    instrumentation.done(e);
+    reportError(e, session, command);
 
-  async function onHttpRequest(req, res) {
-    const { body: { body }, params, user } = req;
+    if (!command.headers) {
+      next(e);
+    }
+
+    const errorResponse = stellarRequest._prepareResponse(command, e);
+    sendResponse(session, command.headers, errorResponse);
+  }
+
+  function callHandleMessage(session, command, next) {
+    return handleMessage(session, command)
+      .then(() => instrumentation.done())
+      .catch((e) => handleProcessingError(e, session, command, next));
+  }
+  
+  function onHttpRequest(req, res, next) {
+    const { body: { body, headers }, params } = req;
     const queueName = join(split(params[0], '/'), ':');
 
     const initialSession = startSession(req, { defaultSessionId: uuid(), client: res });
 
-    const command = { headers: { queueName, type: 'request', ...user }, body };
+    const command = { headers, body };
 
-    const session = await callHandlersSerially({
-      source: stellarRequest.source,
-      session: initialSession,
-    });
-
-    instrumentation.startTransaction(getTxName({ queueName }), session, () => {
-      Promise
-        .try(() => handleMessage(session, command))
-        .then(() => instrumentation.done())
-        .catch((e) => {
-          const errorResponse = stellarRequest._prepareResponse(command, e);
-          sendResponse(session, command.headers, errorResponse);
-          instrumentation.done(e);
-          reportError(e, session, command);
-        });
-    });
+    return instrumentation.startTransaction(getTxName({ queueName }), initialSession, () =>
+      callHandlersSerially({
+                             session: initialSession,
+                             request: req,
+                           })
+        .then((session) => callHandleMessage(session, command, next))
+        .catch((e) => handleProcessingError(e, initialSession, command, next))
+    );
   }
 
-
   router.use(bodyParser.json());
-  router.use(jwt({ secret }));
   router.post('/stellarRequest/*', onHttpRequest);
 }

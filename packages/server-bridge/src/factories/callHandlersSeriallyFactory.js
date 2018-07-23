@@ -3,17 +3,15 @@ import merge from 'lodash/merge';
 import size from 'lodash/size';
 
 export default function callHandlersSeriallyFactory({ log, newSessionHandlers }) {
-  function doCallHandlers(index, { session, socket }) {
+  function doCallHandlers(index, { session, request }) {
     if (size(newSessionHandlers) === index) {
-      return session;
+      return Promise.resolve(session);
     }
 
     return Promise
-          .try(() => {
-            const updates = newSessionHandlers[index]({ log, session, socket });
-            return merge(session, updates);
-          })
-          .then(nextSession => doCallHandlers(index + 1, { session: nextSession, socket }))
+          .try(() => newSessionHandlers[index]({ log, session, request }))
+          .then((updates) => merge(session, updates))
+          .then(nextSession => doCallHandlers(index + 1, { session: nextSession, request }))
           .catch((e) => {
             log.error(e, 'error calling handlers');
             throw e;
