@@ -59,7 +59,7 @@ describe('getActionType', () => {
       expect(x).toBe('ACTION_TYPE');
     });
     it('should return action type when getting object', () => {
-        function testFn(payload, options, dispatch = () => null) {
+        function testFn(payload, options) {
             return {
                 resource: 'resource',
                 method: 'get',
