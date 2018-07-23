@@ -4,7 +4,7 @@ import clientFactory from '../src';
 
 describe('axios client', () => {
     it('should use the axios passed on to client factory', async () => {
-        const { stellar } = clientFactory({ baseUrl: 'http://not.real', token: 'xxxx' }, console)
+        const { stellar } = clientFactory({ baseURL: 'http://not.real', token: 'xxxx' }, console)
         const expectedBody = { hello: 'world' };
 
         await stellar.get('a:b:c', expectedBody);

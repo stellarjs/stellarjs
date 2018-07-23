@@ -39,7 +39,7 @@ describe('Unauth`d Bridge', () => {
   });
 
   it('should bridge request response without jwt headers', async () => {
-    const stellarHttp = clientFactory({ baseUrl: 'http://localhost:8093/stellarRequest' }, console);
+    const stellarHttp = clientFactory({ baseURL: 'http://localhost:8093/stellarRequest' }, console);
 
     const result = await stellarHttp.stellar.get(pingUrl);
     expect(result.text).toBe('pong');

@@ -1,11 +1,11 @@
 import HttpTransport from '@stellarjs/transport-http';
 
 class AxiosTransport extends HttpTransport {
-  constructor(axios, source, log, requestTimeout, baseUrl) {
+  constructor(axios, source, log, requestTimeout, baseURL) {
     super(source, log);
     this.defaultRequestTimeout = requestTimeout;
     this.axios = axios;
-    this.baseUrl = baseUrl;
+    this.baseURL = baseURL;
   }
 
   request(req) {
@@ -24,7 +24,7 @@ class AxiosTransport extends HttpTransport {
     return this.axios.post(url, request, {
       timeout: requestTimeout || this.defaultRequestTimeout,
       data: request,
-      baseURL: this.baseUrl,
+      baseURL: this.baseURL,
     }).then(res => res.data);
   }
 }

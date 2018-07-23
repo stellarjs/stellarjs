@@ -133,7 +133,7 @@ describe('attachHttpBridgeToServer', () => {
 
   describe('Auth`d HTTP Bridge', () => {
     it('should fail with auth error if no jwt headers', async () => {
-      const stellarHttp = clientFactory({ baseUrl: 'http://localhost:8092/stellarRequest' }, console);
+      const stellarHttp = clientFactory({ baseURL: 'http://localhost:8092/stellarRequest' }, console);
 
       try {
         const result = await stellarHttp.stellar.get(pingUrl);
@@ -152,7 +152,7 @@ describe('attachHttpBridgeToServer', () => {
 
       const token = jwt.sign(originalHeaders, secret);
 
-      const stellarHttp = clientFactory({ token, baseUrl: 'http://localhost:8092/stellarRequest' }, console);
+      const stellarHttp = clientFactory({ token, baseURL: 'http://localhost:8092/stellarRequest' }, console);
 
       const result = await stellarHttp.stellar.get(pingUrl);
       expect(result.text).toBe('pong');
@@ -166,7 +166,7 @@ describe('attachHttpBridgeToServer', () => {
       };
 
       const token = jwt.sign(originalHeaders, 'not the secret');
-      const stellarHttp = clientFactory({ token, baseUrl: 'http://localhost:8092/stellarRequest' }, console);
+      const stellarHttp = clientFactory({ token, baseURL: 'http://localhost:8092/stellarRequest' }, console);
 
       try {
         await stellarHttp.stellar.get('sampleService:ping');
@@ -184,7 +184,7 @@ describe('attachHttpBridgeToServer', () => {
       };
 
       const token = jwt.sign(originalHeaders, secret);
-      const stellarHttp = clientFactory({ token, baseUrl: 'http://localhost:8092/stellarRequest' }, console);
+      const stellarHttp = clientFactory({ token, baseURL: 'http://localhost:8092/stellarRequest' }, console);
 
       try {
         await stellarHttp.stellar.get('sampleService:ping', {}, { headers: { fakeHandleMessageError: true} });

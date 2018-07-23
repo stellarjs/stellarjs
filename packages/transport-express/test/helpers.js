@@ -16,11 +16,9 @@ function factory(config) {
         return expressTransport;
     }
 
-    const instance = axios.create({
-        baseURL: 'http://localhost:9887',
-    });
+    const instance = axios.create();
 
-    return axiosFactory({ ...config, axios: instance }, true);
+    return axiosFactory({ ...config, axios: instance, baseURL: 'http://localhost:9887' }, true);
 }
 
 export { log, factory };
