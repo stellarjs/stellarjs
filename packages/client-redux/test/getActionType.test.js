@@ -72,20 +72,4 @@ describe('getActionType', () => {
         
         expect(x).toBe('resource:path:get');
     });
-    it('should fail, payload has to many fields', () => {
-        const fakeArgsArray = times(11, () => (action => action));
-
-        function testFn({ ...fakeArgsArray }, options, dispatch = () => null) {
-            return dispatch({
-                resource: 'resource',
-                method: 'get',
-                path: 'path',
-                payload,
-                options,
-            });
-        }
-        const x = getActionType(testFn);
-
-        expect(x).toBe('resource:path:get');
-    });
 });
