@@ -11,11 +11,9 @@ describe('getActionType', () => {
             options,
           });
       }
-    const x = getActionType(testFn);
-
-    expect(x).toEqual('resource:path:get');
+    const actionPath = getActionType(testFn);
+    expect(actionPath).toEqual('resource:path:get');
   });
-
   it('should return action type, no path - 4 parameters', () => {
     function testFn({ id }, { bla }, options, dispatch = () => null) {
         return dispatch({
@@ -25,9 +23,8 @@ describe('getActionType', () => {
             options,
           });
       }
-    const x = getActionType(testFn);
-
-    expect(x).toEqual('resource:get');
+    const actionPath = getActionType(testFn);
+    expect(actionPath).toEqual('resource:get');
   });
   it('should return action type - 4 parameters', () => {
       function testFn({ id }, { bla }, options, dispatch = () => null) {
@@ -39,9 +36,9 @@ describe('getActionType', () => {
               options,
             });
         }
-      const x = getActionType(testFn);
+      const actionPath = getActionType(testFn);
 
-      expect(x).toEqual('resource:path:get');
+      expect(actionPath).toEqual('resource:path:get');
     });
   it('should return action type by action type', () => {
       function testFn(payload, options, dispatch = () => null) {
@@ -54,9 +51,8 @@ describe('getActionType', () => {
               options,
             });
         }
-      const x = getActionType(testFn);
-
-      expect(x).toEqual('ACTION_TYPE');
+      const actionPath = getActionType(testFn);
+      expect(actionPath).toEqual('ACTION_TYPE');
     });
     it('should return action type when getting object', () => {
         function testFn(payload, options) {
@@ -68,8 +64,7 @@ describe('getActionType', () => {
                 options,
             };
         }
-        const x = getActionType(testFn);
-        
-        expect(x).toEqual('resource:path:get');
+        const actionPath = getActionType(testFn);
+        expect(actionPath).toEqual('resource:path:get');
     });
 });
