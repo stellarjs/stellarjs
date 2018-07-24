@@ -17,13 +17,11 @@ function getActionProps(action) {
 }
 
 export function getActionType(action) {
-  const theAction = isFunction(action) ? getActionProps(action) : action;
-  if (theAction.type) {
-    return theAction.type;
+  const { type, resource, path, method } = isFunction(action) ? getActionProps(action) : action;
+  if (type) {
+    return type;
   }
-
-  const pathSuffix = theAction.path ? `:${theAction.path}` : '';
-  return `${theAction.resource}:${theAction.method}${pathSuffix}`;
+  return `${resource}${path ? `:${path}` : ''}:${method}`;
 }
 
 export function getPendingActionType(action) {
