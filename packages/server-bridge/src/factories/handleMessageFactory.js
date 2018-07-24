@@ -5,25 +5,7 @@ import last from 'lodash/last';
 import isUndefined from 'lodash/isUndefined';
 import defaults from 'lodash/defaults';
 
-
-export default function handleMessageFactory({ log, stellarRequest }) {
-  function sendResponse(session, requestHeaders, res) {
-    if (session.client === 'http') {
-      return res;
-    }
-
-    if (isUndefined(session.client)) {
-      log.warn(`${session.logPrefix}: Socket was closed before response could be bridged.`);
-      return Promise.reject(new Error('Socket was closed'));
-    }
-
-    const queueName = requestHeaders.respondTo;
-    const headers = defaults({ requestId: requestHeaders.id, queueName }, res.headers);
-    const obj = { headers, body: res.body };
-    log.info(`${session.logPrefix} BRIDGE RESPONSE`, { queueName, obj });
-    return session.client.send(obj);
-  }
-
+export default function handleMessageFactory({ log, stellarRequest, sendResponse }) {
   function sendRequest(session, req) {
     return stellarRequest
             ._doQueueRequest(req.headers.queueName,
@@ -35,7 +17,7 @@ export default function handleMessageFactory({ log, stellarRequest }) {
   function bridgeSubscribe(session, requestHeaders) {
     return ({ headers, body }) => {
       if (isUndefined(session.client)) {
-        log.warn(`${session.logPrefix}: Socket was closed before subscription message could be bridged`);
+        log.warn(`Socket was closed before subscription message could be bridged`, session.logContext);
         return Promise.reject(new Error('Socket was closed'));
       }
 
@@ -43,7 +25,7 @@ export default function handleMessageFactory({ log, stellarRequest }) {
       const socketHeaders = defaults({ queueName }, headers);
       const obj = { headers: socketHeaders, body };
 
-      log.info(`${session.logPrefix} BRIDGE SUBSCRIBE`, { queueName, obj });
+      log.info(`BRIDGE SUBSCRIBE`, { queueName, obj, ...session.logContext });
       return session.client.send(obj);
     };
   }
@@ -54,7 +36,7 @@ export default function handleMessageFactory({ log, stellarRequest }) {
       const message = `Multiple subscriptions to same channel (${
                 req.headers.channel}) not supported. First subscription sent ${stopper}`;
 
-      log.warn(session.logPrefix, message);
+      log.warn(message, session.logContext);
       const errorResponse = stellarRequest._prepareResponse(req, new StellarError(message));
       return sendResponse(session, req.headers, errorResponse);
     }

@@ -6,9 +6,9 @@ function transportFactory(
     source,
     axios,
     requestTimeout,
-      baseUrl,
+    baseURL,
   }) {
-  return new AxiosTransport(axios, source, log, requestTimeout, baseUrl);
+  return new AxiosTransport(axios, source, log, requestTimeout, baseURL);
 }
 transportFactory.type = `axios`;
 

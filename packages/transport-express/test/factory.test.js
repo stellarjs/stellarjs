@@ -16,4 +16,4 @@ describe('e2e', () => {
         expect(transport.constructor.name).toEqual('ExpressTransport');
         expect(transport.router).toEqual('fake');
     });
-})
+});

@@ -5,7 +5,6 @@ import StellarError from '@stellarjs/stellar-error';
 import { stellarAppPubSub, stellarHandler } from '@stellarjs/core';
 import url from 'url';
 import omit from 'lodash/omit';
-import Promise from 'bluebird';
 
 import defaultStellarFactory from '../../src/lib/defaultStellarFactory';
 import { boot } from '../../src';
@@ -22,7 +21,6 @@ function start() {
     instrumentation,
     newSessionHandlers: [
       ({ log, socket, session }) => {
-
         if (!socket) {
           return;
         }
@@ -30,8 +28,7 @@ function start() {
         const request = socket.request;
         const parsedUrl = url.parse(request.url, true);
         const userId = parsedUrl.query['x-auth-user'];
-        const queryParams =
-            parsedUrl.query;
+        const queryParams = parsedUrl.query;
 
         if (userId === '3') {
           throw new StellarError('Authentication Error');
@@ -40,11 +37,11 @@ function start() {
         }
 
         console.info(`QueryParams: ${JSON.stringify(queryParams)}`);
-        return session.mergeAttributes(
+        return assign({},
           omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']),
           { authenticatedUserId: userId });
       },
     ],
   });
 }
-export { start, handler };
+export { start };

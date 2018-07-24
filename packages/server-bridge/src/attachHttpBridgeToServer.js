@@ -1,64 +1,72 @@
-import jwt from 'express-jwt';
 import bodyParser from 'body-parser';
 
-import split from 'lodash/split';
 import join from 'lodash/join';
-import assign from 'lodash/assign';
+import split from 'lodash/split';
+import uuid from 'uuid/v4';
 
-import startSessionFactory from './factories/startSessionFactory';
-import handleMessageFactory from './factories/handleMessageFactory';
+import defaultHandleMessageFactory from './factories/handleMessageFactory';
+import defaultReportErrorFactory from './factories/reportErrorFactory';
+import defaultSendResponseFactory from './factories/httpSendResponseFactory';
+import defaultStartSessionFactory from './factories/startSessionFactory';
+import defaultCallHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getTxName from './getTxName';
-import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getConfigWithDefaults from './getConfigWithDefaults';
-
-function assignClientToSession({ session }) {
-  return assign(session, { client: 'http' });
-}
 
 export default function attachHttpBridgeToServer(originalConfig) {
   const config = getConfigWithDefaults(originalConfig);
   const {
-        router,
-        secret,
-        instrumentation,
-        newSessionHandlers,
-        stellarRequest,
-    } = config;
+    router,
+    instrumentation,
+    stellarRequest,
+    reportErrorFactory = defaultReportErrorFactory,
+    startSessionFactory = defaultStartSessionFactory,
+    handleMessageFactory = defaultHandleMessageFactory,
+    callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
+    sendResponseFactory = defaultSendResponseFactory,
+  } = config;
 
+  const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
-  const handleMessage = handleMessageFactory(config);
   const callHandlersSerially = callHandlersSeriallyFactory(config);
+  const sendResponse = sendResponseFactory(config);
+  const handleMessage = handleMessageFactory({ ...config, sendResponse });
 
-  async function onHttpRequest(req, res) {
-    const { body: { body }, params, user } = req;
-    const queueName = join(split(params[0], '/'), ':');
+  function handleProcessingError(e, session, command, next) {
+    instrumentation.done(e);
+    reportError(e, session, command);
 
-    const initialSession = startSession({
-      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-    }, { source: stellarRequest.source });
+    if (!command.headers) {
+      next(e);
+    }
 
-    const command = { headers: { queueName, type: 'request', ...user }, body };
-
-    const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
-    const session = await callHandlersSerially(_newSessionHandlers,
-      {
-        source: stellarRequest.source,
-        session: initialSession,
-      });
-        // eslint-disable-next-line promise/avoid-new
-    const responePayload = await new Promise((resolve) => {
-      instrumentation.startTransaction(getTxName({ queueName }), session, async () => {
-        const response = await handleMessage(session, command);
-        instrumentation.done();
-        resolve(response);
-      });
-    });
-
-    res.send(responePayload);
+    const errorResponse = stellarRequest._prepareResponse(command, e);
+    sendResponse(session, command.headers, errorResponse);
   }
 
+  function callHandleMessage(session, command, next) {
+    return handleMessage(session, command)
+      .then(() => instrumentation.done())
+      .catch(e => handleProcessingError(e, session, command, next));
+  }
+
+  function onHttpRequest(req, res, next) {
+    const { body: { body, headers }, params } = req;
+    const queueName = join(split(params[0], '/'), ':');
+
+    const initialSession = startSession(req, { defaultSessionId: uuid(), client: res });
+
+    const command = { headers, body };
+
+    return instrumentation.startTransaction(getTxName({ queueName }), initialSession, () =>
+      callHandlersSerially({
+        session: initialSession,
+        request: req,
+      })
+        .then(session => callHandleMessage(session, command, next))
+        .catch(e => handleProcessingError(e, initialSession, command, next))
+    );
+  }
 
   router.use(bodyParser.json());
-  router.use(jwt({ secret }));
   router.post('/stellarRequest/*', onHttpRequest);
 }

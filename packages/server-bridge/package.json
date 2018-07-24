@@ -41,6 +41,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@stellarjs/client-axios": "^0.11.0",
     "@stellarjs/client-engine.io": "^0.11.0",
     "axios": "^0.18.0",
     "babel-cli": "^6.24.1",

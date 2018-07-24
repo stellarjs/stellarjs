@@ -1,62 +1,54 @@
-import Promise from 'bluebird';
-import url from 'url';
-
-import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
-import get from 'lodash/get';
 import invoke from 'lodash/invoke';
 import last from 'lodash/last';
-import pick from 'lodash/pick';
 import size from 'lodash/size';
-
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 
-import startSessionFactory from './factories/startSessionFactory';
-import handleMessageFactory from './factories/handleMessageFactory';
-import reportErrorFactory from './factories/reportErrorFactory';
+import defaultStartSessionFactory from './factories/startSessionFactory';
+import defaultHandleMessageFactory from './factories/handleMessageFactory';
+import defaultReportErrorFactory from './factories/reportErrorFactory';
+import defaultSendResponseFactory from './factories/socketSendResponseFactory';
+import defaultCallHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getTxName from './getTxName';
-import callHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getConfigWithDefaults from './getConfigWithDefaults';
-
-function assignClientToSession({ log, source, socket, session }) {
-  return assign(session, { client: new WebsocketTransport(socket, source, log, true) });
-}
 
 export default function attachEngineIoBridgeToServer(originalConfig) {
   const config = getConfigWithDefaults(originalConfig);
   const {
-        server,
-        log,
-        instrumentation,
-        newSessionHandlers,
-        stellarRequest,
-    } = config;
-  const sessions = {};
+    server,
+    log,
+    instrumentation,
+    stellarRequest,
+    reportErrorFactory = defaultReportErrorFactory,
+    startSessionFactory = defaultStartSessionFactory,
+    handleMessageFactory = defaultHandleMessageFactory,
+    callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
+    sendResponseFactory = defaultSendResponseFactory,
+  } = config;
 
   const reportError = reportErrorFactory(config);
   const startSession = startSessionFactory(config);
-  const handleMessage = handleMessageFactory({ stellarRequest, ...config });
   const callHandlersSerially = callHandlersSeriallyFactory(config);
+  const sendResponse = sendResponseFactory(config);
+  const handleMessage = handleMessageFactory({ ...config, sendResponse });
 
-  const _newSessionHandlers = [assignClientToSession].concat(newSessionHandlers);
-
+  const sessions = {};
   function onClose(session) {
-    log.error(`${session.logPrefix}: onClose`);
+    log.info(`onClose`, session.logContext);
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
         last(stopper)();
       } else {
-        log.error(`${session.logPrefix}: Unable to find stopper for ${channel}`,
-                    { sessionId: session.sessionId, channel });
+        log.error(`Unable to find stopper for ${channel}`, { channel, ...session.logContext });
       }
     });
 
     delete session.client; // eslint-disable-line no-param-reassign
     delete sessions[session.socketId]; // eslint-disable-line no-param-reassign
-    invoke('session.offlineFn', session);
+    invoke(session, 'offlineFn');
 
-    log.info(`${session.logPrefix}.onclose: Deleting stellar websocket client`, pick(session, ['sessionId']));
+    log.info(`onclose: Deleting stellar websocket client`, session.logContext);
   }
 
   function onMessage(str, session) {
@@ -68,63 +60,61 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       return;
     }
 
-    instrumentation.startTransaction(getTxName(command.data.headers), session, () => {
-      Promise
-                .try(() => handleMessage(session, command.data))
-                .then(() => instrumentation.done())
-                .catch((e) => {
-                  instrumentation.done(e);
-                  reportError(e, session, command);
-                });
+    const req = command.data;
+
+    instrumentation.startTransaction(getTxName(req.headers), session, () => {
+      handleMessage(session, req)
+        .then(() => instrumentation.done())
+        .catch((e) => {
+          const errorResponse = stellarRequest._prepareResponse(req, e);
+          sendResponse(session, req.headers, errorResponse);
+          instrumentation.done(e);
+          reportError(e, session, command);
+        });
     });
   }
 
   function onConnection(socket) {
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     log.info(`${stellarRequest.source} @StellarBridge: New Connection`);
-    const startTime = Date.now();
 
-    const requestUrl = get(socket, 'request.url');
-    const parsedUrl = url.parse(requestUrl, true);
-    const socketId = socket.id;
-    const sessionId = get(parsedUrl, 'query.x-sessionId') || socketId;
+    const socketSession = {
+      socketId: socket.id,
+      defaultSessionId: socket.id,
+      client: new WebsocketTransport(socket, stellarRequest.source, log, true),
+    };
 
-    const initialSession = startSession({
-      ip: get(socket, 'request.connection.remoteAddress'),
-      sessionId,
-      socketId,
-      logPrefix: `${stellarRequest.source} @StellarBridge(${socketId}, ${sessionId})`,
-    });
+    const initialSession = startSession(socket.request, socketSession);
 
-    socket.on('error', () => log.info(`${initialSession.logPrefix} Error`));
+    socket.on('error', () => log.info(`Error`, initialSession.logContext));
 
     const initialOnClose = () => onClose(initialSession);
     socket.on('close', initialOnClose);
 
-    callHandlersSerially(_newSessionHandlers, { source: stellarRequest.source, socket, session: initialSession })
-            .then((session) => {
-              sessions[socket.id] = session; // eslint-disable-line better-mutation/no-mutation
-              log.info(`${session.logPrefix} Connected`, pick(session, ['sessionId']));
+    callHandlersSerially({ request: socket.request, session: initialSession })
+      .then((session) => {
+        sessions[socket.id] = session; // eslint-disable-line better-mutation/no-mutation
+        log.info(`Connected`, session.logContext);
 
-              socket.removeListener('close', initialOnClose);
-              socket.on('close', () => onClose(session));
-              socket.on('message', str => onMessage(str, session));
+        socket.removeListener('close', initialOnClose);
+        socket.on('close', () => onClose(session));
+        socket.on('message', str => onMessage(str, session));
 
-              instrumentation.sessionStarted(Date.now() - startTime, session);
-              const hiMessage = {
-                messageType: 'connected',
-                message: 'connected to stellar bridge',
-                userId: session.authenticatedUserId,
-                sessionId: session.sessionId };
-              return socket.send(JSON.stringify(hiMessage));
-            })
-            .catch((e) => {
-              reportError(e, initialSession);
-              log.error(e, `${initialSession.logPrefix} Connection error`);
-              instrumentation.sessionFailed(Date.now() - startTime);
-              const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
-              socket.send(JSON.stringify(errorMessage));
-            });
+        instrumentation.sessionStarted(Date.now() - session.startTime, session);
+        const hiMessage = {
+          messageType: 'connected',
+          message: 'connected to stellar bridge',
+          userId: session.authenticatedUserId,
+          sessionId: session.sessionId };
+        return socket.send(JSON.stringify(hiMessage));
+      })
+      .catch((e) => {
+        reportError(e, initialSession);
+        log.error(e, `Connection error`, initialSession.logContext);
+        instrumentation.sessionFailed(Date.now() - initialSession.startTime);
+        const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
+        socket.send(JSON.stringify(errorMessage));
+      });
   }
 
   server.on('connection', onConnection);
