@@ -1,4 +1,3 @@
-import Promise from 'bluebird';
 import forEach from 'lodash/forEach';
 import invoke from 'lodash/invoke';
 import last from 'lodash/last';
@@ -35,13 +34,13 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
   const sessions = {};
   function onClose(session) {
-    log.info(`onClose`, session.logPrefix);
+    log.info(`onClose`, session.logContext);
     instrumentation.numOfConnectedClients(Date.now(), size(server.clients));
     forEach(session.reactiveStoppers, (stopper, channel) => {
       if (last(stopper)) {
         last(stopper)();
       } else {
-        log.error(`Unable to find stopper for ${channel}`, { channel, ...session.logPrefix });
+        log.error(`Unable to find stopper for ${channel}`, { channel, ...session.logContext });
       }
     });
 
@@ -49,7 +48,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
     delete sessions[session.socketId]; // eslint-disable-line no-param-reassign
     invoke(session, 'offlineFn');
 
-    log.info(`onclose: Deleting stellar websocket client`, session.logPrefix);
+    log.info(`onclose: Deleting stellar websocket client`, session.logContext);
   }
 
   function onMessage(str, session) {
@@ -64,8 +63,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
     const req = command.data;
 
     instrumentation.startTransaction(getTxName(req.headers), session, () => {
-      Promise
-        .try(() => handleMessage(session, req))
+      handleMessage(session, req)
         .then(() => instrumentation.done())
         .catch((e) => {
           const errorResponse = stellarRequest._prepareResponse(req, e);
@@ -88,7 +86,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
 
     const initialSession = startSession(socket.request, socketSession);
 
-    socket.on('error', () => log.info(`Error`, initialSession.logPrefix));
+    socket.on('error', () => log.info(`Error`, initialSession.logContext));
 
     const initialOnClose = () => onClose(initialSession);
     socket.on('close', initialOnClose);
@@ -96,7 +94,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
     callHandlersSerially({ request: socket.request, session: initialSession })
       .then((session) => {
         sessions[socket.id] = session; // eslint-disable-line better-mutation/no-mutation
-        log.info(`Connected`, session.logPrefix);
+        log.info(`Connected`, session.logContext);
 
         socket.removeListener('close', initialOnClose);
         socket.on('close', () => onClose(session));
@@ -112,7 +110,7 @@ export default function attachEngineIoBridgeToServer(originalConfig) {
       })
       .catch((e) => {
         reportError(e, initialSession);
-        log.error(e, `Connection error`, initialSession.logPrefix);
+        log.error(e, `Connection error`, initialSession.logContext);
         instrumentation.sessionFailed(Date.now() - initialSession.startTime);
         const errorMessage = { messageType: 'error', errorType: e.constructor.name, message: e.message, status: 401 };
         socket.send(JSON.stringify(errorMessage));

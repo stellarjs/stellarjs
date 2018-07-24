@@ -6,7 +6,7 @@ import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';
 import handleMessageFactory from './utils/handleMessageFactory';
 import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 
-describe('Unauth`d Bridge', () => {
+describe('Unauthed Bridge', () => {
 
   let errorHandler = jest.fn();
   const pingUrl = `${Date.now()}:ping`;

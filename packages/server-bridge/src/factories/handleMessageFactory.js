@@ -17,7 +17,7 @@ export default function handleMessageFactory({ log, stellarRequest, sendResponse
   function bridgeSubscribe(session, requestHeaders) {
     return ({ headers, body }) => {
       if (isUndefined(session.client)) {
-        log.warn(`Socket was closed before subscription message could be bridged`, session.logPrefix);
+        log.warn(`Socket was closed before subscription message could be bridged`, session.logContext);
         return Promise.reject(new Error('Socket was closed'));
       }
 
@@ -25,7 +25,7 @@ export default function handleMessageFactory({ log, stellarRequest, sendResponse
       const socketHeaders = defaults({ queueName }, headers);
       const obj = { headers: socketHeaders, body };
 
-      log.info(`BRIDGE SUBSCRIBE`, { queueName, obj, ...session.logPrefix });
+      log.info(`BRIDGE SUBSCRIBE`, { queueName, obj, ...session.logContext });
       return session.client.send(obj);
     };
   }
@@ -36,7 +36,7 @@ export default function handleMessageFactory({ log, stellarRequest, sendResponse
       const message = `Multiple subscriptions to same channel (${
                 req.headers.channel}) not supported. First subscription sent ${stopper}`;
 
-      log.warn(message, session.logPrefix);
+      log.warn(message, session.logContext);
       const errorResponse = stellarRequest._prepareResponse(req, new StellarError(message));
       return sendResponse(session, req.headers, errorResponse);
     }

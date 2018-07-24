@@ -2,7 +2,7 @@ import assign from 'lodash/assign';
 import get from 'lodash/get';
 import url from 'url';
 
-export default function startSessionFactory({ log, source }) {
+export default function startSessionFactory({ log, stellarRequest: { source } }) {
   return function startSession(req, baseSession) {
     const { defaultSessionId } = baseSession;
     const requestUrl = get(req, 'url');
@@ -13,7 +13,7 @@ export default function startSessionFactory({ log, source }) {
       startTime: Date.now(),
       source,
       sessionId,
-      logPrefix: `${source} @StellarBridge(${sessionId})`,
+      logContext: `${source} @StellarBridge(${sessionId})`,
       ip: get(req, 'headers.x-forwarded-for') || get(req, 'connection.remoteAddress'),
       headers: { bridges: [source] },
       reactiveStoppers: {},
@@ -22,7 +22,7 @@ export default function startSessionFactory({ log, source }) {
         assign(session.reactiveStoppers,
           {
             [channel]: [requestId, () => {
-              log.info(`stopped subscription`, { channel, ...session.logPrefix });
+              log.info(`stopped subscription`, { channel, ...session.logContext });
               if (!session.reactiveStoppers[channel]) {
                 throw new Error(`ReactiveStopper for channel=${channel} requestId=${requestId} not found`);
               }

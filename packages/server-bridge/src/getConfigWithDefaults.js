@@ -7,7 +7,6 @@ export default function getConfigWithDefaults(config) {
     instrumentation: instrumentationMockFactory(config),
     stellarRequest,
     newSessionHandlers: [],
-    source: stellarRequest.source,
     ...config,
   };
 }

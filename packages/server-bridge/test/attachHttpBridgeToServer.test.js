@@ -131,7 +131,7 @@ describe('attachHttpBridgeToServer', () => {
     });
   });
 
-  describe('Auth`d HTTP Bridge', () => {
+  describe('Authed HTTP Bridge', () => {
     it('should fail with auth error if no jwt headers', async () => {
       const stellarHttp = clientFactory({ baseURL: 'http://localhost:8092/stellarRequest' }, console);
 
