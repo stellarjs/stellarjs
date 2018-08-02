@@ -92,9 +92,9 @@ function stellarSocketFactory(eio, log = console) {
       this.tryToReconnect = options.tryToReconnect !== false;
 
       this.options = options;
+
       return this
-        ._closeIfNeeded()
-        .then(() => {
+        ._closeIfNeeded().then(() => {
           this.connectedOnce = false;
           return this._doConnect(url, options);
         })
@@ -111,9 +111,14 @@ function stellarSocketFactory(eio, log = console) {
         });
     },
     _closeIfNeeded() {
+      if (!this.socket) {
+        log.info('@StellarSocket.closeIfNeeded: Clean slate');
+        this.state = 'connecting'; // aggressively set state to connecting so that is happens synchronously
+        Promise.resolve(this.state);
+      }
+
       return new Promise((resolve) => {
         try {
-          if (this.socket) {
             log.info('@StellarSocket.closeIfNeeded: Already open socket. Closing it before reconnect.',
               { socketId: this.socket && this.socket.id });
             this.socket.off('close');
@@ -124,10 +129,6 @@ function stellarSocketFactory(eio, log = console) {
               resolve(this.state);
             });
             this.socket.close();
-          } else {
-            log.info('@StellarSocket.closeIfNeeded: Clean slate');
-            resolve(this.state);
-          }
         } catch (e) {
           log.warn(e, '@StellarSocket.closeIfNeeded: unable to close socket');
           resolve(this.state);
