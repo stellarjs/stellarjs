@@ -76,8 +76,9 @@ describe('engine-io client', () => {
       triggers.close = Date.now();
     });
 
-    stellarSocket
-      .connect('myurl')
+    const connection = stellarSocket.connect('myurl');
+    expect(stellarSocket.state).toEqual('connecting'); // must be synchronous
+    connection
       .then(() => {
         expect(triggers.open).toBeTruthy();
         expect(triggers.reconnect).toBeFalsy();
