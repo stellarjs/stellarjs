@@ -126,6 +126,7 @@ function stellarSocketFactory(eio, log = console) {
             this.socket.off('close');
             log.info(`@StellarSocket.closeIfNeeded: Socket Closed`, { socketId: this.socket && this.socket.id });
             this.stellar.transport.onClose();
+            this.state = 'connecting'; // aggressively set state to connecting so that is happens synchronously
             resolve(this.state);
           });
           this.socket.close();
