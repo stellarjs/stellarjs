@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/client-engine.io",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
