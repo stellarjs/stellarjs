@@ -2,7 +2,7 @@ import bodyParser from 'body-parser';
 
 import join from 'lodash/join';
 import split from 'lodash/split';
-import uuid from 'uuid/v4';
+import nanoid from 'nanoid';
 
 import defaultHandleMessageFactory from './factories/handleMessageFactory';
 import defaultReportErrorFactory from './factories/reportErrorFactory';
@@ -53,7 +53,7 @@ export default function attachHttpBridgeToServer(originalConfig) {
     const { body: { body, headers }, params } = req;
     const queueName = join(split(params[0], '/'), ':');
 
-    const initialSession = startSession(req, { defaultSessionId: uuid(), client: res });
+    const initialSession = startSession(req, { defaultSessionId: nanoid(), client: res });
 
     const command = { headers, body };
 

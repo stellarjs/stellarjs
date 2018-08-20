@@ -5,7 +5,7 @@ import _ from 'lodash';
 import Promise from 'bluebird';
 import qs from 'qs';
 import stellarSocketFactory from '../src/stellarSocket';
-import uuid from 'uuid/v4';
+import nanoid from 'nanoid';
 
 let lastInstance;
 
@@ -47,7 +47,7 @@ function mockEio(trigger) {
           });
         },
         close: jest.fn(),
-        id: uuid(),
+        id: nanoid(),
       };
 
       trigger(socketInstance, url);

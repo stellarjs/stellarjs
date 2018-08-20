@@ -16,11 +16,11 @@ export default class QueueTransport extends RemoteTransport {
     this.queueSystem = queueSystem;
 
     // Subscription Stuff
-    this.nodeSubscriptionInbox = `stlr:n:${source}:subscriptionInbox`;
+    this.nodeSubscriptionInbox = `stlr:n:${source}:subscriptions`;
     this.inboxes = {};
 
     // Request (Client) stuff
-    this.nodeResponseInbox = `stlr:n:${source}:responseInbox`;
+    this.nodeResponseInbox = `stlr:n:${source}:responses`;
   }
 
   request({ headers = {}, body }, requestTimeout) {
@@ -46,7 +46,7 @@ export default class QueueTransport extends RemoteTransport {
 
   subscribeGroup(groupId, channel, messageHandler) {
     const removeHandlerFn = this.registerSubscriberGroupHandler(groupId, channel, messageHandler);
-    const groupInbox = `stlr:s:${groupId}:subscriptionInbox`;
+    const groupInbox = `stlr:s:${groupId}:subscriptions`;
     return this._subscribe(groupInbox, channel, removeHandlerFn, groupId);
   }
 

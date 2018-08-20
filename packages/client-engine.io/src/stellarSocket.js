@@ -6,7 +6,7 @@ import qs from 'qs';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import defaults from 'lodash/defaults';
-import { configureStellar, uuid } from '@stellarjs/core';
+import { configureStellar } from '@stellarjs/core';
 import StellarError from '@stellarjs/stellar-error';
 import transportFactory from '@stellarjs/transport-socket';
 
@@ -26,7 +26,6 @@ function _calcNextDelay(maxDelay, delay) {
 function stellarSocketFactory(eio, log = console) {
   const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
-  const stellarRequestOptions = typeof window === 'undefined' ? { sourceOverride: uuid() } : {};
 
   return {
     socket: null,
@@ -35,7 +34,7 @@ function stellarSocketFactory(eio, log = console) {
     connectedOnce: false,
     userId: null,
     sessionId: null,
-    stellar: stellarRequest(stellarRequestOptions),
+    stellar: stellarRequest(),
     tryToReconnect: true,
 
     // A function that keeps trying, "toTry" until it returns true or has

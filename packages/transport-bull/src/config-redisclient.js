@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import uuid from 'uuid';
+import nanoid from 'nanoid';
 import assign from 'lodash/assign';
 import filter from 'lodash/fp/filter';
 import flow from 'lodash/fp/flow';
@@ -14,7 +14,7 @@ let connectionInterval = null;
 
 class RedisClient {
   constructor(log) {
-    this.id = uuid.v4();
+    this.id = nanoid();
     this.log = log;
 
     assign(this, {
@@ -28,7 +28,7 @@ class RedisClient {
 
   newConnection() {
     const client = new Redis(redisConfig);
-    assign(client, { id: uuid.v1() });
+    assign(client, { id: nanoid() });
 
     const prefix = `@RedisClient(${this.id}).${client.id}`;
 

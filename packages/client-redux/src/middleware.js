@@ -1,12 +1,12 @@
 /**
  * Created by moshekabalo on 5/30/17.
  */
-import uuid from 'uuid';
 import unset from 'lodash/unset';
 import isFunction from 'lodash/isFunction';
 import isArray from 'lodash/isArray';
 import map from 'lodash/map';
 import Promise from 'bluebird';
+import nanoid from 'nanoid';
 
 import { getActionType } from './getActionType';
 
@@ -70,7 +70,7 @@ export default function (stellarSocket, mwOptions = { transformChannel: undefine
         const response = stellar.getReactive(url, finalChannel, payload, handler, options);
         const getReactivePromise = Promise.all([response.onStop, response.results])
                   .then(([stopper, results]) => {
-                    const stopperId = uuid();
+                    const stopperId = nanoid();
                     stoppersMap[stopperId] = stopper; // eslint-disable-line better-mutation/no-mutation
                     return ({ stopperId, results });
                   });

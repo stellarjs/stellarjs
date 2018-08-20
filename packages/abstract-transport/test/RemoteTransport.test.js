@@ -25,7 +25,7 @@ describe('RemoteTransport', () => {
       const response = instance.request(req, 100);
       await Promise.delay(50);
 
-      expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Number)] });
+      expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Object)] });
 
       instance._responseHandler(res);
 
@@ -46,7 +46,7 @@ describe('RemoteTransport', () => {
       const response = instance.request(req, 500);
       await Promise.delay(50);
 
-      expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Number)] });
+      expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Object)] });
 
       await expect(response).rejects.toEqual(timeoutError);
       expect(instance.remoteRequest.mock.calls).toEqual([[req]]);
