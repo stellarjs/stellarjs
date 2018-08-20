@@ -5,38 +5,33 @@ import Promise from 'bluebird';
 import preconfigure from '../src/factory';
 import { transportMockFactory } from './mocks';
 import nanoid from '../src/source-generators/nanoid';
-import uuid from '../src/source-generators/uuid';
 import browser from '../src/source-generators/browser';
 import env from '../src/source-generators/env';
+
+const NANO_ID_REGEX = /^[0-9a-zA-Z_~]+$/;
 
 describe('factory generation', () => {
   let configureStellar;
   beforeEach(() => {
-    configureStellar = preconfigure({ defaultSourceGenerator: 'uuid', sourceGenerators: { uuid, browser, env, nanoid } });
+    configureStellar = preconfigure({ defaultSourceGenerator: 'nanoid', sourceGenerators: { browser, env, nanoid } });
   });
 
-  it('set default stellar request with local dispatch (uuid generation))', () => {
+  it('set default stellar request with local dispatch (nanoid generation))', () => {
     const { stellarRequest, source } = configureStellar(
       { log: console, transportFactory: transportMockFactory, optimizeLocalHandlers: true, stringifyDates: true });
     const requestObj = stellarRequest();
-    expect(source).toMatch(/^[0-9a-f\-]+$/);
+    expect(source).toMatch(NANO_ID_REGEX);
     expect(requestObj.requestMiddlewares).toHaveLength(2);
     expect(requestObj.fireAndForgetMiddlewares).toHaveLength(2);
   });
 
-  it('set standard stellar request (uuid generation , no local dispatch)', () => {
+  it('set standard stellar request (nanoid generation , no local dispatch)', () => {
     const { stellarRequest, source } = configureStellar(
-      { log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid' });
+      { log: console, transportFactory: transportMockFactory, sourceGenerator: 'nanoid' });
     const requestObj = stellarRequest();
-    expect(source).toMatch(/^[0-9a-f\-]+$/);
+    expect(source).toMatch(NANO_ID_REGEX);
     expect(requestObj.requestMiddlewares).toHaveLength(1);
     expect(requestObj.fireAndForgetMiddlewares).toHaveLength(1);
-  });
-
-  it('set nanoid generation', () => {
-    const { source } = configureStellar(
-      { log: console, transportFactory: transportMockFactory, sourceGenerator: 'nanoid' });
-    expect(source).toMatch(/^[0-9a-zA-Z_~]+$/);
   });
 
   it('set externalSource generation', () => {
@@ -47,7 +42,7 @@ describe('factory generation', () => {
   });
 
   it('a sourcePrefix should be added if requested', () => {
-    const { stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'uuid', sourcePrefix: 'testies-' });
+    const { stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'nanoid', sourcePrefix: 'testies-' });
     const requestObj = stellarRequest();
     requestObj.transport.request.mockReturnValue(Promise.resolve({ text: 'ooo' }));
 
