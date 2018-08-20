@@ -35,9 +35,8 @@ describe('factory generation', () => {
   });
 
   it('set externalSource generation', () => {
-    const { stellarRequest, source } = configureStellar(
+    const { source } = configureStellar(
       { log: console, transportFactory: transportMockFactory, source: 'external123' });
-    const requestObj = stellarRequest();
     expect(source).toBe('external123');
   });
 
@@ -51,16 +50,14 @@ describe('factory generation', () => {
 
   it('set browser generation', () => {
     global.window = { localStorage: {} };
-    const { source, stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'browser' });
-    const requestObj = stellarRequest();
+    const { source } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'browser' });
     expect(source).toMatch(/^browser:[0-9A-Za-z\/\+]+$/);
     global.window = null;
   });
 
   it('set env generation', () => {
     process.env.STELLAR_SOURCE = '12345ABCDE';
-    const { source, stellarRequest } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'env' });
-    const requestObj = stellarRequest();
+    const { source } = configureStellar({ log: console, transportFactory: transportMockFactory, sourceGenerator: 'env' });
     expect(source).toBe('12345ABCDE');
   });
 });
