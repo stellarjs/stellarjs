@@ -46,7 +46,7 @@ describe('factory generation', () => {
     const requestObj = stellarRequest();
     requestObj.transport.request.mockReturnValue(Promise.resolve({ text: 'ooo' }));
 
-    expect(requestObj.source).toMatch(/^testies-[0-9a-f\-]+$/)
+    expect(requestObj.source).toMatch(/^testies-[0-9a-zA-Z_~]+$/)
   });
 
   it('set browser generation', () => {
