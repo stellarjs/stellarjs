@@ -15,7 +15,7 @@ describe('factory', () => {
     const factory = factoryConfigurer({queueSystemFactory});
     const transport = factory({source, log, requestTimeout: 1000, optimizeLocalHandlers: false});
     expect(transport.constructor.name).toEqual('QueueTransport');
-    expect(transport.nodeSubscriptionInbox).toEqual(`stlr:n:${source}:subscriptions`);
+    expect(transport.nodeSubscriptionInbox).toEqual(`stlr:n:${source}:sub`);
     expect(transport.queueSystem).toEqual('fakeQueueSystem');
     expect(transport.defaultRequestTimeout).toEqual(1000);
   });
@@ -24,7 +24,7 @@ describe('factory', () => {
     const factory = factoryConfigurer({queueSystem: 'foobar'});
     const transport = factory({source, log, requestTimeout: 500, optimizeLocalHandlers: false});
     expect(transport.constructor.name).toEqual('QueueTransport');
-    expect(transport.nodeSubscriptionInbox).toEqual(`stlr:n:${source}:subscriptions`);
+    expect(transport.nodeSubscriptionInbox).toEqual(`stlr:n:${source}:sub`);
     expect(transport.queueSystem).toEqual('foobar');
     expect(transport.defaultRequestTimeout).toEqual(500);
   });
@@ -33,7 +33,7 @@ describe('factory', () => {
     const factory = factoryConfigurer({queueSystem: 'foobar'});
     const transport = factory({source, log, requestTimeout: 500, optimizeLocalHandlers: true});
     expect(transport.constructor.name).toEqual('QueueTransport');
-    expect(transport.nodeSubscriptionInbox).toEqual(`stlr:n:${source}:subscriptions`);
+    expect(transport.nodeSubscriptionInbox).toEqual(`stlr:n:${source}:sub`);
     expect(transport.queueSystem).toEqual('foobar');
     expect(transport.defaultRequestTimeout).toEqual(500);
 

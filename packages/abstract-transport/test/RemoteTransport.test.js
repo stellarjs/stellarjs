@@ -5,7 +5,7 @@ import StellarError from '../../stellar-error/lib-es6';
 
 describe('RemoteTransport', () => {
   let instance;
-  
+
   beforeEach(() => {
     instance = new RemoteTransport('source', console);
     instance.remoteRequest = jest.fn();
@@ -16,7 +16,7 @@ describe('RemoteTransport', () => {
     it('Should call enqueue, await a response, and then resolve once the response is received', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const responseInbox = `stlr:n:source:responseInbox`;
+      const responseInbox = `stlr:n:source:res`;
       const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
       const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' }};
 
@@ -37,7 +37,6 @@ describe('RemoteTransport', () => {
     it('Should call enqueue, await a response, and then timeout', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const responseInbox = `stlr:n:source:responseInbox`;
       const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
       const timeoutError = new StellarError(`@RemoteTransport: TIMEOUT after 500ms. requestId=1`);
 
@@ -56,12 +55,11 @@ describe('RemoteTransport', () => {
     it('Should call enqueue, await a response, and never timeout', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const responseInbox = `stlr:n:source:responseInbox`;
       const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
-      const response = instance.request(req);
+      instance.request(req);
       await Promise.delay(50);
 
       expect(instance.remoteRequest.mock.calls).toEqual([[req]]);
