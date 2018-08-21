@@ -5,7 +5,7 @@ import map from 'lodash/map';
 import set from 'lodash/set';
 import split from 'lodash/split';
 
-import uuid from 'uuid/v1';
+import nanoid from 'nanoid';
 
 function unset([k, ...vs], obj) {
   const isDeleteK = isEmpty(vs) || unset(vs, obj[k]);
@@ -46,7 +46,7 @@ export default class Transport {
   }
 
   registerSubscriberHandler(channel, handler) {
-    const subscriberId = uuid();
+    const subscriberId = nanoid();
     return this._registerHandler('subscribers', `${channel}.${subscriberId}`, handler);
   }
 
@@ -84,7 +84,7 @@ export default class Transport {
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
-    return uuid();
+    return nanoid();
   }
 
   reset() {

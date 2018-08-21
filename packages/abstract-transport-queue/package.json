@@ -29,8 +29,8 @@
     "compile": "yarn run compile:es6",
     "compile:es6": "babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
-    "test": "jest --forceExit",
-    "test:coverage": "jest --coverage --forceExit",
+    "test": "jest --forceExit --env=node",
+    "test:coverage": "jest --coverage --forceExit --env=node",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -58,6 +58,6 @@
     "@stellarjs/stellar-error": "^0.11.0",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
-    "uuid": "^3.1.0"
+    "nanoid": "^1.2.1"
   }
 }

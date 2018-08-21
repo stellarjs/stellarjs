@@ -24,11 +24,11 @@ describe('utils', () => {
     });
 
     it('works with simple strings', () => {
-      expect(getServiceInbox('test')).toEqual('stlr:s:test:inbox');
+      expect(getServiceInbox('test')).toEqual('stlr:s:test:req');
     });
 
     it('works with complex strings', () => {
-      expect(getServiceInbox('test.fred:blah:tag')).toEqual('stlr:s:test.fred:inbox');
+      expect(getServiceInbox('test.fred:blah:tag')).toEqual('stlr:s:test.fred:req');
     });
   });
 });

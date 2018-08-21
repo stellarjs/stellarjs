@@ -13,8 +13,8 @@
     "compile": "yarn run compile:es6 && yarn run compile:umd",
     "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
     "compile:umd": "webpack -p",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "jest --env=node --colors",
+    "test:coverage": "jest --env=node --coverage",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -71,7 +71,7 @@
     "@stellarjs/stellar-error": "^0.11.0",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
-    "safe-json-stringify": "^1.0.4",
-    "uuid": "^3.1.0"
+    "nanoid": "^1.2.1",
+    "safe-json-stringify": "^1.0.4"
   }
 }

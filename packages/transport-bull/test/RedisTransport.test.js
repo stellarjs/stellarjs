@@ -79,7 +79,7 @@ describe('redis transport queue resources', () => {
 
 describe('removing unused queues', () => {
   beforeEach(clearRedis);
-  const queue = 'testQueue:inbox';
+  const queue = 'testQueue:req';
 
   it('_removeUnusedQueues should automatically remove queues that have been deregistered', (done) => {
     const context = {};
@@ -92,7 +92,7 @@ describe('removing unused queues', () => {
       .then(() => redisTransport.enqueue(queue, { message: 'test' }))
       .then(() => redisTransport._getQueues())
       .then(queues => expect(queues).toEqual([queue]))
-      .then(() => redisTransport._removeUnusedQueues('*:inbox'))
+      .then(() => redisTransport._removeUnusedQueues('*:req'))
       .then(res => expect(res).toBe(0))
       .then(() => expect(redisTransport.redis.countConnections()).toBe(baseConnections))
       .then(() => connection.keys(`bull:${queue}:*`))
@@ -106,7 +106,7 @@ describe('removing unused queues', () => {
         console.log(keys);
         expect(_.size(keys)).toBe(3)
       })
-      .then(() => redisTransport._removeUnusedQueues('*:inbox'))
+      .then(() => redisTransport._removeUnusedQueues('*:req'))
       .then(res => expect(res).toBe(1))
       .then(() => connection.keys(`bull:*`))
       .then(keys => {
