@@ -13,7 +13,7 @@ export default function startSessionFactory({ log, stellarRequest: { source } })
       startTime: Date.now(),
       source,
       sessionId,
-      logContext: `${source} @StellarBridge(${sessionId})`,
+      logContext: { source, sessionId },
       ip: get(req, 'headers.x-forwarded-for') || get(req, 'connection.remoteAddress'),
       headers: { bridges: [source] },
       reactiveStoppers: {},
