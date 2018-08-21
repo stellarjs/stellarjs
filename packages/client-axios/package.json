@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/client-axios",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -51,14 +51,14 @@
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
     "jest": "^22.0.4",
-    "rimraf": "^2.6.1",    
     "nanoid": "^1.2.1",
+    "rimraf": "^2.6.1",
     "webpack": "2.5.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.11.0",
-    "@stellarjs/stellar-error": "^0.11.0",
-    "@stellarjs/transport-axios": "^0.11.1",
+    "@stellarjs/core": "^0.11.2",
+    "@stellarjs/stellar-error": "^0.11.2",
+    "@stellarjs/transport-axios": "^0.11.2",
     "axios": "^0.18.0",
     "lodash": "^4.17.4"
   }

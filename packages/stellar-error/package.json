@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/stellar-error",
-  "version": "0.11.0",
+  "version": "0.11.2",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
