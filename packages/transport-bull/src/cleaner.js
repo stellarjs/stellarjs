@@ -22,7 +22,7 @@ function runSubscriberCleaning(transport, log) {
 
   RedisExclusiveTask.run(
     'stlr:queues:remover',
-    () => transport._removeUnusedQueues('stlr:*:inbox'),
+    () => transport._removeUnusedQueues('stlr:*:req'),
     DEFAULT_INTERVAL
   );
 }

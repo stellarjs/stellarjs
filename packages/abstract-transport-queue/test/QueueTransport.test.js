@@ -101,7 +101,7 @@ describe('QueueTransport tests', () => {
           await expect(instance.subscribe(channel, mockHandler)).resolves.toBeInstanceOf(Function);
 
           expect(mockHandler).not.toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
           
@@ -111,7 +111,7 @@ describe('QueueTransport tests', () => {
           subscriptionHandler({ data }, _.noop);
 
           expect(mockHandler).toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance);
       });
@@ -130,7 +130,7 @@ describe('QueueTransport tests', () => {
 
           expect(mockHandler1).not.toHaveBeenCalled();
           expect(mockHandler2).not.toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
 
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 2 });
 
@@ -143,7 +143,7 @@ describe('QueueTransport tests', () => {
 
           expect(mockHandler1).toHaveBeenCalled();
           expect(mockHandler2).toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 2 });
           expectTransportMocksToHaveBeeenCalled(instance);
       });
@@ -166,7 +166,7 @@ describe('QueueTransport tests', () => {
 
           expect(mockHandler).not.toHaveBeenCalled();
           expect(mockHandler).not.toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
 
           expectSubscriberRegistry(instance.registries.subscribers,
                                    { channel: channel1, numSubscribers: 1 },
@@ -189,7 +189,7 @@ describe('QueueTransport tests', () => {
 
           expect(mockHandler).not.toHaveBeenCalled();
           expect(unsubscribeMock).not.toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
           expectTransportMocksToHaveBeeenCalled(instance, { name: 'process', numCalls: 1 }, { name: 'registerSubscriber', numCalls: 1 });
           clearTransportMocks(instance);
@@ -197,7 +197,7 @@ describe('QueueTransport tests', () => {
           unsubscriber();
           expect(mockHandler).not.toHaveBeenCalled();
           expect(unsubscribeMock).toHaveBeenCalled();
-          expect(instance.inboxes).toEqual({[`stlr:n:source:subscriptionInbox`]: true});
+          expect(instance.inboxes).toEqual({[`stlr:n:source:sub`]: true});
           expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 0 });
       });
   });
@@ -208,14 +208,14 @@ describe('QueueTransport tests', () => {
         const groupId = 'groupId';
         const mockHandler = jest.fn();
         const data = { headers: { channel }, body: { message: "Hello World"} };
-        
+
         instance.queueSystem.registerSubscriber.mockReturnValue(Promise.resolve(_.noop));
         instance.queueSystem.process.mockReturnValue(Promise.resolve(_.noop));
 
         await expect(instance.subscribeGroup(groupId, channel, mockHandler)).resolves.toBeInstanceOf(Function);
 
         expect(mockHandler).not.toHaveBeenCalled();
-        expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
+        expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:sub`]: true });
 
         expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
 
@@ -226,7 +226,7 @@ describe('QueueTransport tests', () => {
         subscriptionHandler({ data });
 
         expect(mockHandler.mock.calls).toHaveLength(1);
-        expect(instance.inboxes).toEqual({[`stlr:s:${groupId}:subscriptionInbox`]: true});
+        expect(instance.inboxes).toEqual({[`stlr:s:${groupId}:sub`]: true});
         expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 1 });
         expectTransportMocksToHaveBeeenCalled(instance);
       });
@@ -248,7 +248,7 @@ describe('QueueTransport tests', () => {
           .toBeInstanceOf(Function);
 
         expect(mockHandler).not.toHaveBeenCalled();
-        expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:subscriptionInbox`]: true });
+        expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}:sub`]: true });
 
         expectSubscriberRegistry(instance.registries.subscribers,
                                  {
@@ -272,7 +272,7 @@ describe('QueueTransport tests', () => {
         subscriptionHandler({ data }, groupId);
 
         expect(mockHandler.mock.calls).toHaveLength(1);
-        expect(instance.inboxes).toEqual({[`stlr:s:${groupId}:subscriptionInbox`]: true});
+        expect(instance.inboxes).toEqual({[`stlr:s:${groupId}:sub`]: true});
         expectSubscriberRegistry(instance.registries.subscribers,
                                  {
                                    channel: `${channelPrefix}1`,
@@ -288,7 +288,7 @@ describe('QueueTransport tests', () => {
                                  });
         expectTransportMocksToHaveBeeenCalled(instance);
       });
-      
+
     it('Subscribe on different channels with multiple groups', async () => {
       const channel = 'sub-multiple-channels-one-group-';
       const groupId = 'sub-group-id-';
@@ -306,9 +306,9 @@ describe('QueueTransport tests', () => {
         .toBeInstanceOf(Function);
 
       expect(mockHandler).not.toHaveBeenCalled();
-      expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}1:subscriptionInbox`]: true,
-                                         [`stlr:s:${groupId}2:subscriptionInbox`]: true,
-                                         [`stlr:s:${groupId}3:subscriptionInbox`]: true });
+      expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}1:sub`]: true,
+                                         [`stlr:s:${groupId}2:sub`]: true,
+                                         [`stlr:s:${groupId}3:sub`]: true });
 
       expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 3 });
 
@@ -324,17 +324,17 @@ describe('QueueTransport tests', () => {
       subscriptionHandler3({ data });
 
       expect(mockHandler.mock.calls).toHaveLength(3);
-      expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}1:subscriptionInbox`]: true,
-                                         [`stlr:s:${groupId}2:subscriptionInbox`]: true,
-                                         [`stlr:s:${groupId}3:subscriptionInbox`]: true });
+      expect(instance.inboxes).toEqual({ [`stlr:s:${groupId}1:sub`]: true,
+                                         [`stlr:s:${groupId}2:sub`]: true,
+                                         [`stlr:s:${groupId}3:sub`]: true });
       expectSubscriberRegistry(instance.registries.subscribers, { channel, numSubscribers: 3 });
       expectTransportMocksToHaveBeeenCalled(instance);
     });
-      
+
     it('Subscribe on the same channel multiple times causes an error', async () => {
       const channel = 'channelName';
       const groupId = 'sub-group-id-1';
-      const inbox = `stlr:s:${groupId}:subscriptionInbox`;
+      const inbox = `stlr:s:${groupId}:sub`;
 
       const mockHandler1 = jest.fn();
       const mockHandler2 = jest.fn();
@@ -420,13 +420,13 @@ describe('QueueTransport tests', () => {
 
           await expect(instance.fireAndForget(req)).resolves.toBe(true);
 
-          expect(instance.inboxes).toEqual({ [`stlr:n:source:responseInbox`]: true });
+          expect(instance.inboxes).toEqual({ [`stlr:n:source:res`]: true });
 
           expect(instance.inflightRequests).toEqual({});
 
           expectTransportMocksToHaveBeeenCalled(
             instance,
-            { name: 'enqueue', numCalls: 1, args: [['stlr:s:serviceName:inbox', req]] },
+            { name: 'enqueue', numCalls: 1, args: [['stlr:s:serviceName:req', req]] },
             { name: 'process', numCalls: 1 }
           );
       });
@@ -442,24 +442,24 @@ describe('QueueTransport tests', () => {
           await expect(instance.fireAndForget(req)).resolves.toBe(true);
           await expect(instance.fireAndForget(req)).resolves.toBe(true);
 
-          expect(instance.inboxes).toEqual({ [`stlr:n:source:responseInbox`]: true });
+          expect(instance.inboxes).toEqual({ [`stlr:n:source:res`]: true });
 
           expect(instance.inflightRequests).toEqual({});
 
           expectTransportMocksToHaveBeeenCalled(
             instance,
-            { name: 'enqueue', numCalls: 3, args: [['stlr:s:serviceName:inbox', req], ['stlr:s:serviceName:inbox', req], ['stlr:s:serviceName:inbox', req]] },
+            { name: 'enqueue', numCalls: 3, args: [['stlr:s:serviceName:req', req], ['stlr:s:serviceName:req', req], ['stlr:s:serviceName:req', req]] },
             { name: 'process', numCalls: 1 }
           );
       });
   });
-    
+
     describe('request', () => {
         it('Should call enqueue, await a response, and then resolve once the response is received', async () => {
             const serviceName = 'serviceName';
             const queueName = `${serviceName}:queueName`;
-            const requestInbox = 'stlr:s:serviceName:inbox';
-            const responseInbox = `stlr:n:source:responseInbox`;
+            const requestInbox = 'stlr:s:serviceName:req';
+            const responseInbox = `stlr:n:source:res`;
             const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
             const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' }};
 
@@ -469,7 +469,7 @@ describe('QueueTransport tests', () => {
             await Promise.delay(50);
 
             expect(instance.inboxes).toEqual({ [responseInbox]: true });
-            expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Number)] });
+            expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Object)] });
 
             instance._responseHandler(res);
 
@@ -485,8 +485,8 @@ describe('QueueTransport tests', () => {
         it('Should call enqueue, await a response, and then timeout', async () => {
             const serviceName = 'serviceName';
             const queueName = `${serviceName}:queueName`;
-            const requestInbox = 'stlr:s:serviceName:inbox';
-            const responseInbox = `stlr:n:source:responseInbox`;
+            const requestInbox = 'stlr:s:serviceName:req';
+            const responseInbox = `stlr:n:source:res`;
             const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
             const timeoutError = new StellarError(`@RemoteTransport: TIMEOUT after 500ms. requestId=1`);
 
@@ -496,7 +496,7 @@ describe('QueueTransport tests', () => {
             await Promise.delay(50);
 
             expect(instance.inboxes).toEqual({ [responseInbox]: true });
-            expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Number)] });
+            expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Object)] });
 
             await expect(response).rejects.toEqual(timeoutError);
             expectTransportMocksToHaveBeeenCalled(
@@ -510,8 +510,8 @@ describe('QueueTransport tests', () => {
       it('Should call enqueue, await a response, and never timeout', async () => {
         const serviceName = 'serviceName';
         const queueName = `${serviceName}:queueName`;
-        const requestInbox = 'stlr:s:serviceName:inbox';
-        const responseInbox = `stlr:n:source:responseInbox`;
+        const requestInbox = 'stlr:s:serviceName:req';
+        const responseInbox = `stlr:n:source:res`;
         const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
 
         instance.queueSystem.enqueue.mockReturnValue(Promise.resolve(true));
@@ -538,8 +538,8 @@ describe('QueueTransport tests', () => {
     describe('addRequestHandler', () => {
         it('should add a request handler successfully and send responses if respondTo set', async () => {
             const serviceName = 'serviceName';
-            const requestInbox = 'stlr:s:serviceName:inbox';
-            const responseInbox = `stlr:n:source:responseInbox`;
+            const requestInbox = 'stlr:s:serviceName:req';
+            const responseInbox = `stlr:n:source:res`;
             const url = `${serviceName}:users:get`;
             const mockHandler = jest.fn();
             const req = { headers: { id: 1, queueName: url, respondTo: responseInbox }, body: { message: 'hello' }};
@@ -559,7 +559,7 @@ describe('QueueTransport tests', () => {
 
             instance.queueSystem.processGroup.mock.calls[0][2]({ data: req });
             await Promise.delay(50);
-            
+
             expect(mockHandler).toHaveBeenCalled();
             expectTransportMocksToHaveBeeenCalled(
               instance,
@@ -570,8 +570,8 @@ describe('QueueTransport tests', () => {
 
       it('should add a request handler successfully and send responses if respondTo set', async () => {
         const serviceName = 'serviceName';
-        const requestInbox = 'stlr:s:serviceName:inbox';
-        const responseInbox = `stlr:n:source:responseInbox`;
+        const requestInbox = 'stlr:s:serviceName:req';
+        const responseInbox = `stlr:n:source:res`;
         const url = `${serviceName}:users:get`;
         const mockHandler = jest.fn();
         const req = { headers: { id: 1, queueName: url, respondTo: responseInbox }, body: { message: 'hello' }};
@@ -604,8 +604,8 @@ describe('QueueTransport tests', () => {
 
       it('should add a request handler successfully without respondTo set', async () => {
         const serviceName = 'serviceName';
-        const requestInbox = 'stlr:s:serviceName:inbox';
-        const responseInbox = `stlr:n:source:responseInbox`;
+        const requestInbox = 'stlr:s:serviceName:req';
+        const responseInbox = `stlr:n:source:res`;
         const url = `${serviceName}:users:get`;
         const mockHandler = jest.fn();
         const req = { headers: { id: 1, queueName: url }, body: { message: 'hello' }};
@@ -635,8 +635,8 @@ describe('QueueTransport tests', () => {
     });
 
   describe('generateId', () => {
-    it('should generate uuids', () => {
-     expect(instance.generateId()).toMatch(/[a-z0-9]+/)
+    it('should generate ids', () => {
+     expect(instance.generateId()).toMatch(/[a-zA-Z0-9_~]+/)
     })
   });
 

@@ -28,8 +28,8 @@
     "clean": "rimraf lib lib-es6",
     "compile": "yarn run compile:es6",
     "compile:es6": "BABEL_ENV=production babel ./src  --out-dir ./lib-es6",
-    "test": "jest --runInBand --forceExit",
-    "test:coverage": "jest --coverage --runInBand --forceExit",
+    "test": "jest --env=node --runInBand --forceExit",
+    "test:coverage": "jest --env=node --coverage --runInBand --forceExit",
     "prepublish": "yarn run compile",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -72,6 +72,6 @@
     "ioredis": "^2.4.0",
     "lodash": "^4.17.4",
     "redis-exclusive-task": "^0.1.0",
-    "uuid": "^3.1.0"
+    "nanoid": "^1.2.1"
   }
 }

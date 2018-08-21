@@ -6,7 +6,7 @@ import express from 'express';
 import http from 'http';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
-import uuid from 'uuid';
+import nanoid from 'nanoid';
 import clientFactory from '@stellarjs/client-axios';
 import StellarError from '@stellarjs/stellar-error';
 
@@ -96,7 +96,7 @@ describe('attachHttpBridgeToServer', () => {
   describe('axios server call', () => {
     it('send invalid request to http bridge', async () => {
       const headers = {
-        userId: uuid(),
+        userId: nanoid(),
         what: 'ever',
       };
 
@@ -116,7 +116,7 @@ describe('attachHttpBridgeToServer', () => {
 
     it('http client using http bridge', async () => {
       const headers = {
-        userId: uuid(),
+        userId: nanoid(),
         what: 'ever',
       };
 

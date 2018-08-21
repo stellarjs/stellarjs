@@ -1,7 +1,7 @@
 /**
  * Created by ozsayag on 26/06/2017.
  */
-import uuid from 'uuid/v1';
+import nanoid from 'nanoid';
 import values from 'lodash/values';
 import isFunction from 'lodash/isFunction';
 
@@ -17,7 +17,7 @@ class MemoryTransport extends Transport {
   }
 
   generateId() { // eslint-disable-line class-methods-use-this
-    return uuid();
+    return nanoid();
   }
 
   publish(channel, payload) { // eslint-disable-line class-methods-use-this, no-unused-vars

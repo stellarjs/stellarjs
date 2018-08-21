@@ -5,7 +5,7 @@ function getServiceName(queueName) {
 }
 
 function getServiceInbox(queueName) {
-  return `stlr:s:${getServiceName(queueName)}:inbox`;
+  return `stlr:s:${getServiceName(queueName)}:req`;
 }
 
 export { getServiceName, getServiceInbox as default };
