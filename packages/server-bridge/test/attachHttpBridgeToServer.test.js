@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
-import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 import express from 'express';
 import http from 'http';
 import jwt from 'jsonwebtoken';
@@ -10,6 +9,7 @@ import nanoid from 'nanoid';
 import clientFactory from '@stellarjs/client-axios';
 import StellarError from '@stellarjs/stellar-error';
 
+import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';
 import handleMessageFactory from './utils/handleMessageFactory';
 
@@ -27,11 +27,11 @@ describe('attachHttpBridgeToServer', () => {
   const secret = 'not so secret';
   const stellarFactory = defaultStellarFactory({ log: console });
   const handler = stellarFactory.stellarHandler();
-  let errorHandler = jest.fn();
+  const errorHandler = jest.fn();
   const pingUrl = `${Date.now()}:ping`;
 
   function extractToken(req) {
-    var parts = req.headers.authorization.split(' ');
+    const parts = req.headers.authorization.split(' ');
     if (parts.length != 2) {
       throw new Error('credentials_bad_format', { message: 'Format is Authorization: Bearer [token]' });
     }
@@ -40,7 +40,7 @@ describe('attachHttpBridgeToServer', () => {
     if (!/^Bearer$/i.test(scheme)) {
       throw new Error('credentials_bad_scheme', { message: 'Format is Authorization: Bearer [token]' });
     }
-    
+
     return credentials;
   }
 
@@ -56,31 +56,29 @@ describe('attachHttpBridgeToServer', () => {
     server.listen(8092);
 
     attachHttpBridgeToServer({
-                               router: app,
-                               secret,
-                               log: console,
-                               errorHandlers: [errorHandler],
-                               handleMessageFactory,
-                               newSessionHandlers: [
-                                 async ({ log, request, session }) => {
-                                   const token = extractToken(request);
-                                   try {
-                                     const decoded = await jwt.verify(token, secret);
-                                     await checkJwtRevoked(decoded);
-                                     return { headers: _.pick(decoded, 'what') };
-                                   } catch(err) {
-                                     throw new StellarError(`Authentication Error ${err.message}`);
-                                   }
-                                 }
-                               ],
-                             });
-
-    handler.get(pingUrl, ({ headers, body }) => {
-      return {
-        text: `pong`,
-        whatRequest: headers.what,
-      };
+      router: app,
+      secret,
+      log: console,
+      errorHandlers: [errorHandler],
+      handleMessageFactory,
+      newSessionHandlers: [
+        async ({ log, request, session }) => {
+          const token = extractToken(request);
+          try {
+            const decoded = await jwt.verify(token, secret);
+            await checkJwtRevoked(decoded);
+            return { headers: _.pick(decoded, 'what') };
+          } catch (err) {
+            throw new StellarError(`Authentication Error ${err.message}`);
+          }
+        },
+      ],
     });
+
+    handler.get(pingUrl, ({ headers, body }) => ({
+      text: `pong`,
+      whatRequest: headers.what,
+    }));
   });
 
   afterEach(async () => {
@@ -105,10 +103,10 @@ describe('attachHttpBridgeToServer', () => {
       const httpUrl = `http://localhost:8092/stellarRequest/${pingUrl.replace(/:/, '/')}/get`;
       try {
         await axios.post(httpUrl, { body: 'ping' }, {
-          headers: { Authorization: "Bearer " + token }
+          headers: { Authorization: `Bearer ${token}` },
         });
         fail();
-      } catch(e) {
+      } catch (e) {
         expect(e.response.status).toEqual(500);
         expect(errorHandler).toHaveBeenCalled();
       }
@@ -123,8 +121,8 @@ describe('attachHttpBridgeToServer', () => {
       const token = jwt.sign(headers, secret);
 
       const httpUrl = `http://localhost:8092/stellarRequest/${pingUrl.replace(/:/, '/')}/get`;
-      const { data } = await axios.post(httpUrl, { body: 'ping', headers: { queueName: `${pingUrl}:get`, type: 'request', id: '1'} }, {
-        headers: { Authorization: "Bearer " + token }
+      const { data } = await axios.post(httpUrl, { body: 'ping', headers: { queueName: `${pingUrl}:get`, type: 'request', id: '1' } }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       expect(data.body.text).toBe('pong');
       expect(errorHandler).not.toHaveBeenCalled();
@@ -144,7 +142,7 @@ describe('attachHttpBridgeToServer', () => {
         // expect(errorHandler).toHaveBeenCalled();
       }
     });
-    
+
     it('should bridge request response with jwt headers', async () => {
       const originalHeaders = {
         what: 'ever',
@@ -187,7 +185,7 @@ describe('attachHttpBridgeToServer', () => {
       const stellarHttp = clientFactory({ token, baseURL: 'http://localhost:8092/stellarRequest' }, console);
 
       try {
-        await stellarHttp.stellar.get('sampleService:ping', {}, { headers: { fakeHandleMessageError: true} });
+        await stellarHttp.stellar.get('sampleService:ping', {}, { headers: { fakeHandleMessageError: true } });
         fail();
       } catch (e) {
         expect(e).toBeInstanceOf(Error);
