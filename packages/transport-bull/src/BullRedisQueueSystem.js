@@ -228,7 +228,7 @@ class BullRedisQueueSystem extends QueueSystem {
   }
 
   static _subscribersKey(channel) {
-    return this._resourceKey(`sub:${channel}`);
+    return this._resourceKey(`subscribers:${channel}`);
   }
 
   static _queueKey() {
@@ -236,7 +236,7 @@ class BullRedisQueueSystem extends QueueSystem {
   }
 
   static _resourceKey(resource) {
-    return `stlr:res:${resource}`;
+    return `stlr:resources:${resource}`;
   }
 }
 

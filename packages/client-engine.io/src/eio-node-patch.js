@@ -16,18 +16,16 @@ if (get(process, 'versions.node')) {
   const _onLoad = Request.prototype.onLoad;
   const _request = XHR.prototype.request;
 
-// eslint-disable-next-line better-mutation/no-mutation
+  // eslint-disable-next-line better-mutation/no-mutation
   XHR.prototype.request = function request(opts) {
     const req = _request.call(this, opts);
-
-        // for accessing the transport (which stores the http headers) later
-        // eslint-disable-next-line better-mutation/no-mutation
+    // for accessing the transport (which stores the http headers) later
+    // eslint-disable-next-line better-mutation/no-mutation
     req.transport = this;
-
     return req;
   };
 
-// eslint-disable-next-line better-mutation/no-mutation
+  // eslint-disable-next-line better-mutation/no-mutation
   Request.prototype.onLoad = function onLoad() {
     const content = this.xhr.getResponseHeader('Set-Cookie');
 
