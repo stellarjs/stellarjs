@@ -10,10 +10,11 @@ import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';
 import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 import attachEngineIoBridgeToServer from '../src/attachEngineIoBridgeToServer';
 
+const PORT = 8095;
 
 function startServer({ errorHandler }) {
   const app = express();
-  const server = http.createServer(app).listen(8093);
+  const server = http.createServer(app).listen(PORT);
 
   // http server
   const httpRouter = express.Router();
@@ -66,7 +67,7 @@ describe('Combined Engineio/Http Bridge', () => {
   });
 
   it('should bridge http', async () => {
-    const stellarHttp = httpClient({ baseURL: 'http://localhost:8093/http' }, console);
+    const stellarHttp = httpClient({ baseURL: `http://localhost:${PORT}/http` }, console);
 
     const result = await stellarHttp.stellar.get(pingUrl);
     expect(result.text).toBe('pong-express');
@@ -78,7 +79,7 @@ describe('Combined Engineio/Http Bridge', () => {
   it('should bridge engine.io', async () => {
     const socketClient = stellarSocket();
     try {
-      await socketClient.connect('localhost:8093', { secure: false });
+      await socketClient.connect(`localhost:${PORT}`, { secure: false });
     } catch (e) {
       console.error(e);
     }

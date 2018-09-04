@@ -52,8 +52,7 @@ describe('attachHttpBridgeToServer', () => {
     await clearRedis(redisClient);
 
     const app = express();
-    const server = http.Server(app);
-    server.listen(8092);
+    const server = http.Server(app).listen(8092);
 
     attachHttpBridgeToServer({
       router: app,
