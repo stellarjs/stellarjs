@@ -18,7 +18,7 @@ function factory(config) {
 
     const instance = axios.create();
 
-    return axiosFactory({ ...config, axios: instance, baseURL: 'http://localhost:9887' }, true);
+    return axiosFactory({ ...config, axios: instance, baseURL: 'http://localhost:9888' }, true);
 }
 
 export { log, factory };
