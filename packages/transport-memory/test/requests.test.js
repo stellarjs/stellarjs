@@ -5,7 +5,7 @@ import {
 
 import _ from 'lodash';
 
-import { factory, jsonifiedFactory } from './helpers';
+import { factory } from './helpers';
 
 describe('MEMORY full integration req/response', () => {
   beforeAll(() => {
