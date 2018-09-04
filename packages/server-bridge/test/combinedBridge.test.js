@@ -2,10 +2,12 @@ import _ from 'lodash';
 import http from 'http';
 import express from 'express';
 import engine from 'engine.io';
+import httpClient from '@stellarjs/client-axios';
+import { stellarSocket } from '@stellarjs/client-engine.io';
+
 import handleMessageFactory from './utils/handleMessageFactory';
 import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';
 import defaultStellarFactory from '../src/factories/defaultStellarFactory';
-import clientFactory from '@stellarjs/client-axios';
 import attachEngineIoBridgeToServer from '../src/attachEngineIoBridgeToServer';
 
 
@@ -64,7 +66,7 @@ describe('Combined Engineio/Http Bridge', () => {
   });
 
   it('should bridge http', async () => {
-    const stellarHttp = clientFactory({ baseURL: 'http://localhost:8093/http' }, console);
+    const stellarHttp = httpClient({ baseURL: 'http://localhost:8093/http' }, console);
 
     const result = await stellarHttp.stellar.get(pingUrl);
     expect(result.text).toBe('pong-express');
@@ -74,13 +76,13 @@ describe('Combined Engineio/Http Bridge', () => {
 
 
   it('should bridge engine.io', async () => {
-    const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+    const socketClient = stellarSocket();
     try {
-      await stellarSocket.connect('localhost:8093', { secure: false });
+      await socketClient.connect('localhost:8093', { secure: false });
     } catch (e) {
       console.error(e);
     }
-    const result = await stellarSocket.stellar.get(pingUrl);
+    const result = await socketClient.stellar.get(pingUrl);
     expect(result.text).toBe('pong-engineio');
     expect(result.when).toBeUndefined();
     expect(errorHandler).not.toHaveBeenCalled();
