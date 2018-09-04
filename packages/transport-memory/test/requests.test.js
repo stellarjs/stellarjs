@@ -5,7 +5,7 @@ import {
 
 import _ from 'lodash';
 
-import { factory } from './helpers';
+import { factory, jsonifiedFactory } from './helpers';
 
 describe('MEMORY full integration req/response', () => {
   beforeAll(() => {
@@ -22,3 +22,20 @@ describe('MEMORY full integration req/response', () => {
   it('test request response with middlewares', testMiddlewares);
   it('test request response stellar error', testRequestErrorResponse);
 });
+
+
+// describe('MEMORY jsonified full integration req/response', () => {
+//   beforeAll(() => {
+//     doBeforeAll(jsonifiedFactory);
+//   });
+//
+//   afterAll(() => {
+//     doAfterAll(_.noop);
+//   });
+//
+//   it('test request response', testRequestResponse);
+//   it('test request and raw response', testRawRequestResponse());
+//   it('test request response across two queues', testRequestResponseOverTwoQueues);
+//   it('test request response with middlewares', testMiddlewares);
+//   it('test request response stellar error', testRequestErrorResponse);
+// });
