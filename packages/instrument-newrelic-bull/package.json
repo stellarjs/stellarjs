@@ -19,7 +19,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/mw-newrelic-bull.xml",
+    "output": "../../.artifacts/test_results/jest/mw-newrelic-bull.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

@@ -50,7 +50,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/abstract-transport.xml",
+    "output": "../../.artifacts/test_results/jest/abstract-transport.xml",
     "usePathForSuiteName": "true"
   },
   "devDependencies": {

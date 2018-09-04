@@ -22,7 +22,7 @@
   },
   "jest-junit": {
     "suiteName": "jest tests",
-    "output": "../../.artifacts/test-results/transport-axios.xml",
+    "output": "../../.artifacts/test_results/jest/transport-axios.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
