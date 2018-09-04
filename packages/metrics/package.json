@@ -34,7 +34,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/metrics.xml",
+    "output": "../../.artifacts/test_results/jest/metrics.xml",
     "usePathForSuiteName": "true"
   },
   "devDependencies": {

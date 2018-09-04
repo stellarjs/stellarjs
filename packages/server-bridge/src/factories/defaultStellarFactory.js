@@ -1,12 +1,12 @@
 import { configureStellar } from '@stellarjs/core';
 import transportFactory from '@stellarjs/transport-bull';
 
-let stellarFactory = null;
-export default function connectToMicroservices({ log }) {
-  if (!stellarFactory) {
+const stellarFactories = {};
+export default function connectToMicroservices({ log, sourcePrefix = `bridge-` }) {
+  if (!stellarFactories[sourcePrefix]) {
     // eslint-disable-next-line better-mutation/no-mutation
-    stellarFactory = configureStellar({ log, transportFactory, sourcePrefix: `bridge-` });
+    stellarFactories[sourcePrefix] = configureStellar({ log, transportFactory, sourcePrefix });
   }
 
-  return stellarFactory;
+  return stellarFactories[sourcePrefix];
 }

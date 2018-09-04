@@ -50,7 +50,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/stellar-error.xml",
+    "output": "../../.artifacts/test_results/jest/stellar-error.xml",
     "usePathForSuiteName": "true"
   },
   "devDependencies": {

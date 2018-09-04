@@ -4,33 +4,21 @@ import last from 'lodash/last';
 import size from 'lodash/size';
 import { WebsocketTransport } from '@stellarjs/transport-socket';
 
-import defaultStartSessionFactory from './factories/startSessionFactory';
-import defaultHandleMessageFactory from './factories/handleMessageFactory';
-import defaultReportErrorFactory from './factories/reportErrorFactory';
 import defaultSendResponseFactory from './factories/socketSendResponseFactory';
-import defaultCallHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getTxName from './getTxName';
-import getConfigWithDefaults from './getConfigWithDefaults';
+import configureTaskHandlers from './configureTaskHandlers';
 
-export default function attachEngineIoBridgeToServer(originalConfig) {
-  const config = getConfigWithDefaults(originalConfig);
+export default function attachEngineIoBridgeToServer(config) {
+  const { server, log } = config;
+
   const {
-    server,
-    log,
-    instrumentation,
     stellarRequest,
-    reportErrorFactory = defaultReportErrorFactory,
-    startSessionFactory = defaultStartSessionFactory,
-    handleMessageFactory = defaultHandleMessageFactory,
-    callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
-    sendResponseFactory = defaultSendResponseFactory,
-  } = config;
-
-  const reportError = reportErrorFactory(config);
-  const startSession = startSessionFactory(config);
-  const callHandlersSerially = callHandlersSeriallyFactory(config);
-  const sendResponse = sendResponseFactory(config);
-  const handleMessage = handleMessageFactory({ ...config, sendResponse });
+    startSession,
+    callHandlersSerially,
+    handleMessage,
+    sendResponse,
+    reportError,
+    instrumentation } = configureTaskHandlers(config, defaultSendResponseFactory);
 
   const sessions = {};
   function onClose(session) {

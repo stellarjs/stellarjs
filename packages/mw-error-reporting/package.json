@@ -19,7 +19,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/mw-error-reporting.xml",
+    "output": "../../.artifacts/test_results/jest/mw-error-reporting.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

@@ -1,35 +1,25 @@
 import bodyParser from 'body-parser';
 
 import join from 'lodash/join';
+import trim from 'lodash/trim';
 import split from 'lodash/split';
 import nanoid from 'nanoid';
 
-import defaultHandleMessageFactory from './factories/handleMessageFactory';
-import defaultReportErrorFactory from './factories/reportErrorFactory';
 import defaultSendResponseFactory from './factories/httpSendResponseFactory';
-import defaultStartSessionFactory from './factories/startSessionFactory';
-import defaultCallHandlersSeriallyFactory from './factories/callHandlersSeriallyFactory';
 import getTxName from './getTxName';
-import getConfigWithDefaults from './getConfigWithDefaults';
+import configureTaskHandlers from './configureTaskHandlers';
 
-export default function attachHttpBridgeToServer(originalConfig) {
-  const config = getConfigWithDefaults(originalConfig);
+export default function attachHttpBridgeToServer(config) {
+  const { router, basePath = '' } = config;
+
   const {
-    router,
-    instrumentation,
     stellarRequest,
-    reportErrorFactory = defaultReportErrorFactory,
-    startSessionFactory = defaultStartSessionFactory,
-    handleMessageFactory = defaultHandleMessageFactory,
-    callHandlersSeriallyFactory = defaultCallHandlersSeriallyFactory,
-    sendResponseFactory = defaultSendResponseFactory,
-  } = config;
-
-  const reportError = reportErrorFactory(config);
-  const startSession = startSessionFactory(config);
-  const callHandlersSerially = callHandlersSeriallyFactory(config);
-  const sendResponse = sendResponseFactory(config);
-  const handleMessage = handleMessageFactory({ ...config, sendResponse });
+    startSession,
+    callHandlersSerially,
+    handleMessage,
+    sendResponse,
+    reportError,
+    instrumentation } = configureTaskHandlers(config, defaultSendResponseFactory);
 
   function handleProcessingError(e, session, command, next) {
     instrumentation.done(e);
@@ -68,5 +58,8 @@ export default function attachHttpBridgeToServer(originalConfig) {
   }
 
   router.use(bodyParser.json());
-  router.post('/stellarRequest/*', onHttpRequest);
+
+  const trimmedBasePath = trim(basePath);
+  const routerPattern = trimmedBasePath.length ? `/${trimmedBasePath}/*` : '/*';
+  router.post(routerPattern, onHttpRequest);
 }

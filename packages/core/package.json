@@ -50,7 +50,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/core.xml",
+    "output": "../../.artifacts/test_results/jest/core.xml",
     "usePathForSuiteName": "true"
   },
   "devDependencies": {

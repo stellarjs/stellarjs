@@ -22,7 +22,7 @@
   },
   "jest-junit": {
     "suiteName": "jest tests",
-    "output": "../../.artifacts/test-results/transport-socket.xml",
+    "output": "../../.artifacts/test_results/jest/transport-socket.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

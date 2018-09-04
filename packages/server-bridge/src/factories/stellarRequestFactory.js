@@ -6,7 +6,8 @@ import defaultStellarFactory from './defaultStellarFactory';
 
 export default function stellarRequestFactory({
                                          log,
-                                         stellarFactory = defaultStellarFactory({ log }),
+                                         sourcePrefix,
+                                         stellarFactory = defaultStellarFactory({ log, sourcePrefix }),
                                          middlewares = [],
                                          bridgedUrlPatterns = /.*/,
                                      }) {
