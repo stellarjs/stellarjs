@@ -11,7 +11,7 @@ function factory(config) {
         const router = express();
         router.use(bodyParser.json());
         const expressTransport = expressFactory({ ...config, router }, true);
-        router.listen(9887);
+        router.listen(9888);
 
         return expressTransport;
     }
