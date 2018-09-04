@@ -9,28 +9,25 @@ import clientFactory from '@stellarjs/client-axios';
 import attachEngineIoBridgeToServer from '../src/attachEngineIoBridgeToServer';
 
 
-function startServer({ errorHandler, stellarRequest }) {
+function startServer({ errorHandler }) {
   const app = express();
-  const server = http.createServer(app);
-  server.listen(8093);
-  const httpRouter = express.Router();
+  const server = http.createServer(app).listen(8093);
 
-  const bridgeConfig = {
+  // http server
+  const httpRouter = express.Router();
+  attachHttpBridgeToServer({
     router: httpRouter,
     log: console,
     sourcePrefix: 'express-',
-    stellarRequest,
     handleMessageFactory,
     errorHandlers: [errorHandler],
-  };
-
-  attachHttpBridgeToServer(bridgeConfig);
+  });
   app.use('/http', httpRouter);
 
+  // engine.io server
   const engineIoServer = engine.attach(server, { transports: ['websocket', 'polling'] }, () => {
     console.info('@Bridge: Server is running');
   });
-
   attachEngineIoBridgeToServer({
     server: engineIoServer,
     sourcePrefix: 'engineio-',
