@@ -1,10 +1,9 @@
+import _ from 'lodash';
+
 import {
   doAfterAll, doBeforeAll, testMiddlewares, testRawRequestResponse, testRequestErrorResponse, testRequestResponse,
   testRequestResponseOverTwoQueues,
 } from '../../../specs/requests.test';
-
-import _ from 'lodash';
-
 import { factory } from './helpers';
 
 describe('MEMORY full integration req/response', () => {
