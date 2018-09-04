@@ -1,8 +1,8 @@
 import axios from 'axios';
 import express from 'express';
 import bodyParser from 'body-parser';
-import axiosFactory from '../../transport-axios/src';
-import expressFactory from '../src';
+import axiosFactory from '../src';
+import expressFactory from '../../transport-express/src';
 
 const log = console;
 
