@@ -22,7 +22,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/client-axios.xml",
+    "output": "../../.artifacts/test_results/jest/client-axios.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

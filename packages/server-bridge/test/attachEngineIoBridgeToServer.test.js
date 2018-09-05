@@ -22,9 +22,9 @@ const clearRedis = (redisClient) => {
 describe('attachEngineIoBridgeToServer', () => {
   let redisClient;
   let instrumentation = null;
-  let errorHandler = jest.fn();
-  let offlineFn = jest.fn();
-  let mw = jest.fn((req, next) => next());
+  const errorHandler = jest.fn();
+  const offlineFn = jest.fn();
+  const mw = jest.fn((req, next) => next());
   let server;
 
   beforeAll(async () => {
@@ -38,34 +38,34 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     attachEngineIoBridgeToServer({
-                                   server,
-                                   log: console,
-                                   instrumentation,
-                                   errorHandlers: [errorHandler],
-                                   handleMessageFactory,
-                                   middlewares: [{ match: /.*/, mw }],
-                                   newSessionHandlers: [
-                                     ({ log, request, session }) => {
-                                       const parsedUrl = url.parse(request.url, true);
-                                       const userId = parsedUrl.query['x-auth-user'];
-                                       const queryParams =
+      server,
+      log: console,
+      instrumentation,
+      errorHandlers: [errorHandler],
+      handleMessageFactory,
+      middlewares: [{ match: /.*/, mw }],
+      newSessionHandlers: [
+        ({ log, request, session }) => {
+          const parsedUrl = url.parse(request.url, true);
+          const userId = parsedUrl.query['x-auth-user'];
+          const queryParams =
                                          parsedUrl.query;
 
-                                       if (userId === '3') {
-                                         throw new StellarError('Authentication Error');
-                                       } else if (userId === '4') {
-                                         throw new Error('Other Error');
-                                       }
+          if (userId === '3') {
+            throw new StellarError('Authentication Error');
+          } else if (userId === '4') {
+            throw new Error('Other Error');
+          }
 
-                                       console.info(`QueryParams: ${JSON.stringify(queryParams)}`);
-                                       return {
-                                         offlineFn,
-                                         authenticatedUserId: userId,
-                                         ..._.omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type'])
-                                       };
-                                     },
-                                   ],
-                                 });
+          console.info(`QueryParams: ${JSON.stringify(queryParams)}`);
+          return {
+            offlineFn,
+            authenticatedUserId: userId,
+            ..._.omit(queryParams, ['x-auth-user', 'x-auth-token', 'x-auth-token-type']),
+          };
+        },
+      ],
+    });
 
     const stellarFactory = defaultStellarFactory({ log: console });
 
@@ -198,7 +198,6 @@ describe('attachEngineIoBridgeToServer', () => {
             extraParam: 1,
           },
         });
-
       } catch (e) {
         console.error(e);
       }
@@ -393,7 +392,7 @@ describe('attachEngineIoBridgeToServer', () => {
         })
         .then(() => {
           expect(errorHandler).not.toHaveBeenCalled();
-          done()
+          done();
         });
     });
 

@@ -19,7 +19,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/mw-log-trace.xml",
+    "output": "../../.artifacts/test_results/jest/mw-log-trace.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

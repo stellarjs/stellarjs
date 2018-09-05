@@ -6,6 +6,7 @@ import qs from 'qs';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import defaults from 'lodash/defaults';
+import noop from 'lodash/noop';
 import { configureStellar } from '@stellarjs/core';
 import StellarError from '@stellarjs/stellar-error';
 import transportFactory from '@stellarjs/transport-socket';
@@ -23,6 +24,27 @@ function _calcNextDelay(maxDelay, delay) {
   return nextDelay;
 }
 
+// A function that keeps trying, "toTry" until it returns true or has
+// tried "max" number of times. First retry has a delay of "delay".
+// "callback" is called upon success.
+function configureExponentialBackoff(maxDelay, log) {
+  return function exponentialBackoff(toTry, max, delay) {
+    log.info(`@StellarSocket._exponentialBackoff`, { max, delay, maxDelay });
+
+    toTry()
+      .catch(() => {
+        if (max > 0) {
+          setTimeout(() => {
+            const nextDelay = _calcNextDelay(maxDelay, delay);
+            this._exponentialBackoff(toTry, max - 1, nextDelay);
+          }, delay);
+        } else {
+          log.info('@StellarSocket._exponentialBackoff: we give up');
+        }
+      });
+  };
+}
+
 function stellarSocketFactory(eio, log = console) {
   const { stellarRequest } = configureStellar({ log, transportFactory });
   log.info('@StellarClient initialized');
@@ -35,41 +57,12 @@ function stellarSocketFactory(eio, log = console) {
     userId: null,
     sessionId: null,
     stellar: stellarRequest(),
-    tryToReconnect: true,
-
-    // A function that keeps trying, "toTry" until it returns true or has
-    // tried "max" number of times. First retry has a delay of "delay".
-    // "callback" is called upon success.
-    _exponentialBackoff(toTry, max, delay, maxDelay, callback) {
-      log.info(`@StellarSocket._exponentialBackoff`, { max, delay, tryToReconnect: this.tryToReconnect });
-      if (!this.tryToReconnect) {
-        return;
-      }
-
-      toTry()
-      .then((result) => {
-        if (callback) {
-          return callback(result);
-        }
-        return undefined;
-      })
-      .catch(() => {
-        if (max > 0) {
-          setTimeout(() => {
-            const nextDelay = _calcNextDelay(maxDelay, delay);
-            this._exponentialBackoff(toTry, max - 1, nextDelay, callback);
-          }, delay);
-        } else {
-          log.info('@StellarSocket._exponentialBackoff: we give up');
-        }
-      });
-    },
+    retry: configureExponentialBackoff(MAX_RECONNECT_INTERVAL, log),
 
     _reconnect(url, options) {
       const reconnectOptions = defaults({ userId: this.userId, sessionId: this.sessionId }, options);
       log.info(`@StellarSocket._reconnect`, { url, socketId: this.socket && this.socket.id, ...reconnectOptions });
-      this._exponentialBackoff(() => this._doConnect(url, reconnectOptions),
-          MAX_RETRIES, RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
+      this.retry(() => this._doConnect(url, reconnectOptions), MAX_RETRIES, RECONNECT_INTERVAL);
     },
 
     on(event, handler) {
@@ -88,12 +81,14 @@ function stellarSocketFactory(eio, log = console) {
     connect(url, options = {}) {
       log.info(`@StellarSocket.connect`, { url, options });
 
-      this.tryToReconnect = options.tryToReconnect !== false;
+      if (options.tryToReconnect === false) {
+        this.retry = noop;
+      }
 
       this.options = options;
 
-      return this
-        ._closeIfNeeded().then(() => {
+      return this._closeIfNeeded()
+        .then(() => {
           this.connectedOnce = false;
           return this._doConnect(url, options);
         })
@@ -102,11 +97,11 @@ function stellarSocketFactory(eio, log = console) {
           return result;
         })
         .catch((e) => {
-          log.info(`@StellarSocket connection failed`);
-          if (this.tryToReconnect) {
-            return this._reconnect(url, options);
+          log.warn(e, `@StellarSocket connection failed`);
+          if (this.retry === noop) {
+            throw e;
           }
-          throw e;
+          return this._reconnect(url, options);
         });
     },
     _closeIfNeeded() {
@@ -163,7 +158,7 @@ function stellarSocketFactory(eio, log = console) {
 
           if (jam.messageType === 'error') {
             log.error(`@StellarSocket Error`, { m: jam.message });
-            this.tryToReconnect = false;
+            this.retry = noop;
             socketAttempt.close();
             const ctor = jam.errorType === 'StellarError' ? StellarError : Error;
             reject(new ctor('Authentication Error')); // eslint-disable-line new-cap
@@ -193,9 +188,7 @@ function stellarSocketFactory(eio, log = console) {
             this.trigger('close');
             this.state = 'disconnected';
             this.socket = null;
-            if (this.tryToReconnect) {
-              this._reconnect(url, { userId, token, secure, params });
-            }
+            this._reconnect(url, { userId, token, secure, params });
           }
         });
 
@@ -215,7 +208,7 @@ function stellarSocketFactory(eio, log = console) {
     },
 
     close() {
-      this.tryToReconnect = false;
+      this.retry = noop;
 
       if (this.socket) {
         log.info(`@StellarSocket: Close requested`, { socketId: this.socket && this.socket.id });

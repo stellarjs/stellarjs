@@ -22,7 +22,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/client-redux.xml",
+    "output": "../../.artifacts/test_results/jest/client-redux.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

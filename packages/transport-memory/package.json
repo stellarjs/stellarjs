@@ -19,7 +19,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/transport-memory.xml",
+    "output": "../../.artifacts/test_results/jest/transport-memory.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

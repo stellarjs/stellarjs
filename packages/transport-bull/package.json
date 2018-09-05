@@ -20,7 +20,7 @@
   },
   "jest-junit": {
     "suiteName": "jest tests",
-    "output": "../../.artifacts/test_results/transport-bull.xml",
+    "output": "../../.artifacts/test_results/jest/transport-bull.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
