@@ -79,9 +79,9 @@ describe('StellarHandler', () => {
           source: 'test',
           timestamp: expect.any(Number),
           traceId: '1',
-          type: 'response'
+          type: 'response',
         },
-        body: { text: 'world' }
+        body: { text: 'world' },
       };
 
       const mockFn = jest.fn();
@@ -103,17 +103,15 @@ describe('StellarHandler', () => {
       const req = { headers, body: { text: 'hello' } };
       const expectedResult = {
         headers: { id: '2', requestId: '1', source: 'test', timestamp: expect.any(Number), traceId: '1', type: 'response' },
-        body: { text: 'world' }
+        body: { text: 'world' },
       };
 
       let mwResult;
       const mw = jest.fn();
-      mw.mockImplementation((jobData, next, options, log) => {
-        return next().then((result) => {
-          mwResult = result;
-          return result;
-        });
-      });
+      mw.mockImplementation((jobData, next, options, log) => next().then((result) => {
+        mwResult = result;
+        return result;
+      }));
       stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
@@ -129,7 +127,7 @@ describe('StellarHandler', () => {
 
       expect(mw.mock.calls).toHaveLength(1);
       expect(mw.mock.calls[0]).toEqual([req, expect.any(Function), {}, console, transportMock]);
-      
+
       await Promise.delay(50);
       expect(mwResult).toEqual(expectedResult);
     });
@@ -146,9 +144,9 @@ describe('StellarHandler', () => {
           errorType: 'StellarError',
           timestamp: expect.any(Number),
           traceId: '1',
-          type: 'response'
+          type: 'response',
         },
-        body: { errors: { general: ['boo hoo'] }, message: 'boo hoo' }
+        body: { errors: { general: ['boo hoo'] }, message: 'boo hoo' },
       };
 
       const mw = jest.fn();
@@ -166,7 +164,7 @@ describe('StellarHandler', () => {
         expect(err).toEqual(expectedResult);
         expect(err.__stellarResponse).toEqual(expectedStellarResponse);
       }
-      
+
       expect(mockFn.mock.calls).toHaveLength(0);
 
       expect(mw.mock.calls).toHaveLength(1);
@@ -184,11 +182,11 @@ describe('StellarHandler', () => {
           errorType: 'StellarError',
           timestamp: expect.any(Number),
           traceId: '1',
-          type: 'response'
+          type: 'response',
         },
-        body: { errors: { general: ['boo hoo'] }, message: 'boo hoo' }
+        body: { errors: { general: ['boo hoo'] }, message: 'boo hoo' },
       };
-      
+
       const mw = jest.fn();
       mw.mockImplementation(() => {
         throw new StellarError('boo hoo');
@@ -224,20 +222,18 @@ describe('StellarHandler', () => {
           errorType: 'Error',
           timestamp: expect.any(Number),
           traceId: '1',
-          type: 'response'
+          type: 'response',
         },
-        body: { message: 'boo hoo' }
+        body: { message: 'boo hoo' },
       };
 
       let mwError;
 
       const mw = jest.fn();
-      mw.mockImplementation((jobData, next) => {
-        return next().catch((error) => {
-          mwError = error;
-          return Promise.reject(error);
-        });
-      });
+      mw.mockImplementation((jobData, next) => next().catch((error) => {
+        mwError = error;
+        return Promise.reject(error);
+      }));
       stellarHandler.use(/.*/, mw);
 
       const mockFn = jest.fn();
