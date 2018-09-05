@@ -217,12 +217,33 @@ describe('StellarRequest', () => {
       const stellarRequest = getStellarRequest();
       stellarRequest.transport.request.mockReturnValue(Promise.resolve({ headers: {}, body: { text: 'world' } }));
 
-      const result = await stellarRequest.getReactive('testservice:resource', { text: 'hello' });
+      const retval = stellarRequest.getReactive('testservice:resource', 'testservice:stream', { text: 'hello' }, _.noop);
+      const result = await retval.results;
 
       expect(result.body).toEqual({ text: 'world' });
       expectMethodMocksToHaveBeeenCalled(
         stellarRequest.transport,
-        { name: 'request', numCalls: 1, args: [[{ headers, body: { text: 'hello' } }]] },
+        { name: 'request',
+          numCalls: 1,
+          args: [[
+            { headers: {
+              channel: 'testservice:stream',
+              queueName: 'testservice:resource:subscribe',
+              id: '1',
+              traceId: '1',
+              source: 'test',
+              timestamp: expect.any(Number),
+              type: 'reactive',
+            },
+              body: { text: 'hello' } }]] },
+        {
+          name: 'subscribe',
+          numCalls: 1,
+          args: [[
+            'testservice:stream',
+            expect.any(Function),
+          ]],
+        },
         { name: 'generateId', numCalls: 2 });
     });
   });
