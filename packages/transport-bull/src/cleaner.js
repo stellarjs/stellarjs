@@ -1,6 +1,6 @@
 
 import Queue from 'bull';
-import forEach from 'lodash/foreach';
+import forEach from 'lodash/forEach';
 import keys from 'lodash/keys';
 
 import { DEFAULT_INTERVAL } from './intervals';
