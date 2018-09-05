@@ -48,7 +48,7 @@
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
     "jest": "^22.4.3",
-    "newrelic": "^2.2.0",
+    "newrelic": "^4.8.1",
     "rimraf": "^2.6.1"
   },
   "dependencies": {
