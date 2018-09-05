@@ -21,7 +21,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/server-bridge.xml",
+    "output": "../../.artifacts/test_results/jest/server-bridge.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

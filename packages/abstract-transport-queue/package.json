@@ -20,7 +20,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/abstract-transport-queue.xml",
+    "output": "../../.artifacts/test_results/jest/abstract-transport-queue.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

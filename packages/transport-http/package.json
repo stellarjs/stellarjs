@@ -22,7 +22,7 @@
   },
   "jest-junit": {
     "suiteName": "jest tests",
-    "output": "../../.artifacts/test-results/transport-http.xml",
+    "output": "../../.artifacts/test_results/jest/transport-http.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {

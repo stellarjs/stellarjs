@@ -22,7 +22,7 @@
   },
   "jest-junit": {
     "suiteName": "tests",
-    "output": "../../.artifacts/test_results/client-engine.io.xml",
+    "output": "../../.artifacts/test_results/jest/client-engine.io.xml",
     "usePathForSuiteName": "true"
   },
   "scripts": {
