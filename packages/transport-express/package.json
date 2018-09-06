@@ -15,7 +15,10 @@
     "collectCoverageFrom": [
       "src/*.js",
       "!src/index.js",
-      "!src/index.browser.js"
+      "!src/index.browser.js",
+      "../transport-axios/src/*.js",
+      "!../transport-axios/src/index.js",
+      "!../transport-axios/src/index.browser.js"
     ],
     "testEnvironment": "node",
     "coverageDirectory": "../../.artifacts/coverage/transport-express",
@@ -55,7 +58,6 @@
     "url": "https://github.com/stellarjs/stellarjs/issues"
   },
   "devDependencies": {
-    "@stellarjs/transport-axios": "^0.11.2",
     "axios": "^0.18.0",
     "babel-cli": "^6.24.1",
     "body-parser": "^1.18.2",

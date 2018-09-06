@@ -30,28 +30,44 @@ describe('Transport tests', () => {
       messagingInterface.addRequestHandler('url', _.noop);
     }).toThrow();
   });
-  
-  it('"generateId" throws exception', () => {
+
+  it('"subscribe" throws exception', () => {
     expect(() => {
-      messagingInterface.fireAndForget();
+      messagingInterface.subscribe();
     }).toThrow();
+  });
+
+  it('"subscribeGroup" throws exception', () => {
+    expect(() => {
+      messagingInterface.subscribeGroup();
+    }).toThrow();
+  });
+
+  it('generateId should return a valid id', () => {
+    expect(messagingInterface.generateId()).toMatch(/[A-Za-z0-9_~]+/);
+  });
+
+  it('getLocalHandler should return regiseted handler', () => {
+    messagingInterface.registries.requestHandlers['testUrl'] = true;
+    expect(messagingInterface.getLocalHandler({ headers: { queueName: 'testUrl' } })).toEqual(true);
+    expect(messagingInterface.getLocalHandler({ headers: { queueName: 'notTestUrl' } })).toBeUndefined();
   });
 
   it('"reset" throws exception', () => {
     messagingInterface.registries.yada = { hi: 'bye' };
     messagingInterface.registries.requestHandlers = { foo: 'bar' };
     messagingInterface.reset();
-    expect(messagingInterface.registries).toEqual({requestHandlers: {}, subscribers: {}, yada: {}});
+    expect(messagingInterface.registries).toEqual({ requestHandlers: {}, subscribers: {}, yada: {} });
   });
 
   it('"registerSubsriberHandler" adds a subscriber to the registry', () => {
     const result = messagingInterface.registerSubscriberHandler('channel', _.noop);
     expect(result).toBeInstanceOf(Function);
     expect(_.keys(messagingInterface.registries.subscribers)).toEqual(['channel']);
-    const subscriberIds = _.keys(messagingInterface.registries.subscribers['channel']);
+    const subscriberIds = _.keys(messagingInterface.registries.subscribers.channel);
     expect(subscriberIds).toHaveLength(1);
     expect(subscriberIds[0]).toMatch(/[\w\-]+/);
-    expect(messagingInterface.registries.subscribers.channel[subscriberIds[0]]).toEqual(_.noop)
+    expect(messagingInterface.registries.subscribers.channel[subscriberIds[0]]).toEqual(_.noop);
   });
 
 
@@ -59,7 +75,7 @@ describe('Transport tests', () => {
     messagingInterface.registerSubscriberHandler('channel', _.noop);
     messagingInterface.registerSubscriberHandler('channel', _.noop);
     expect(_.keys(messagingInterface.registries.subscribers)).toEqual(['channel']);
-    const subscriberIds = _.keys(messagingInterface.registries.subscribers['channel']);
+    const subscriberIds = _.keys(messagingInterface.registries.subscribers.channel);
     expect(subscriberIds).toHaveLength(2);
     expect(subscriberIds[0]).toMatch(/[\w\-]+/);
     expect(subscriberIds[1]).toMatch(/[\w\-]+/);
@@ -70,7 +86,7 @@ describe('Transport tests', () => {
   it('"registerSubscribeGroupHandler" should add registry entries', () => {
     const result = messagingInterface.registerSubscriberGroupHandler('groupId', 'channel', _.noop);
     expect(result).toBeInstanceOf(Function);
-    expect(messagingInterface.registries.subscribers).toEqual({ channel: { groupId: _.noop } })
+    expect(messagingInterface.registries.subscribers).toEqual({ channel: { groupId: _.noop } });
   });
 
   it('"registerSubscribeGroupHandler" should disallow multiple registry entries', () => {
@@ -82,7 +98,7 @@ describe('Transport tests', () => {
 
   it('"registerRequestHandler" should add a requestHandler registry entries', () => {
     messagingInterface.registerRequestHandler('url', _.noop);
-    expect(messagingInterface.registries.requestHandlers).toEqual({ url: _.noop })
+    expect(messagingInterface.registries.requestHandlers).toEqual({ url: _.noop });
   });
 
   it('"registerRequestHandler" should disallow multiple registry entries', () => {

@@ -1,6 +1,5 @@
 import eio from 'engine.io-client';
 
-import './eio-node-patch';
 import stellarSocketFactory from './stellarSocket';
 
 export function stellarSocket(log) {
