@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/client-axios",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -56,9 +56,9 @@
     "webpack": "2.5.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.11.2",
-    "@stellarjs/stellar-error": "^0.11.2",
-    "@stellarjs/transport-axios": "^0.11.2",
+    "@stellarjs/core": "^0.11.3",
+    "@stellarjs/stellar-error": "^0.11.3",
+    "@stellarjs/transport-axios": "^0.11.3",
     "axios": "^0.18.0",
     "lodash": "^4.17.4"
   }

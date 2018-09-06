@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/mw-log-summary",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [

@@ -1,6 +1,6 @@
 {
   "name": "@stellarjs/transport-axios",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -69,6 +69,6 @@
     "jest": "^22.0.4"
   },
   "dependencies": {
-    "@stellarjs/transport-http": "^0.11.2"
+    "@stellarjs/transport-http": "^0.11.3"
   }
 }
