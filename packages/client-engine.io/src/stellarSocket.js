@@ -10,40 +10,11 @@ import noop from 'lodash/noop';
 import { configureStellar } from '@stellarjs/core';
 import StellarError from '@stellarjs/stellar-error';
 import transportFactory from '@stellarjs/transport-socket';
+import configureExponentialBackoff from './exponentialBackoff';
 
 const MAX_RETRIES = 300;
 const RECONNECT_INTERVAL = 3000;
 const MAX_RECONNECT_INTERVAL = 20000;
-
-function _calcNextDelay(maxDelay, delay) {
-  const nextDelay = delay * 1.25;
-  if (nextDelay > maxDelay) {
-    return maxDelay;
-  }
-
-  return nextDelay;
-}
-
-// A function that keeps trying, "toTry" until it returns true or has
-// tried "max" number of times. First retry has a delay of "delay".
-// "callback" is called upon success.
-function configureExponentialBackoff(maxDelay, log) {
-  return function exponentialBackoff(toTry, max, delay) {
-    log.info(`@StellarSocket._exponentialBackoff`, { max, delay, maxDelay });
-
-    toTry()
-      .catch(() => {
-        if (max > 0) {
-          setTimeout(() => {
-            const nextDelay = _calcNextDelay(maxDelay, delay);
-            this._exponentialBackoff(toTry, max - 1, nextDelay);
-          }, delay);
-        } else {
-          log.info('@StellarSocket._exponentialBackoff: we give up');
-        }
-      });
-  };
-}
 
 function stellarSocketFactory(eio, log = console) {
   const { stellarRequest } = configureStellar({ log, transportFactory });
