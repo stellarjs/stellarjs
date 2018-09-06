@@ -58,6 +58,7 @@ class WebsocketTransport extends RemoteTransport {
   }
 
   registerSubscriber(channel) {
+    this.send({ headers: { channel, type: 'subscribe' } });
     return () => this.send({ headers: { channel, type: 'stopReactive' } });
   }
 

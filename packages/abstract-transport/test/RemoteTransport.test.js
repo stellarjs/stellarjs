@@ -8,24 +8,33 @@ describe('RemoteTransport', () => {
 
   beforeEach(() => {
     instance = new RemoteTransport('source', console);
+  });
+
+  function setupMock() {
     instance.remoteRequest = jest.fn();
     instance.remoteRequest.mockName('instance.remoteRequest');
+  }
+
+  it('should throw if remoteRequest is called', () => {
+    expect(() => instance.remoteRequest()).toThrow();
   });
 
   describe('requestResponse', () => {
+    beforeEach(setupMock);
+
     it('Should call enqueue, await a response, and then resolve once the response is received', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
       const responseInbox = `stlr:n:source:res`;
-      const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
-      const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' }};
+      const req = { headers: { id: 1, queueName }, body: { message: 'hello' } };
+      const res = { headers: { id: 2, requestId: 1, queueName: responseInbox }, body: { message: 'world' } };
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
       const response = instance.request(req, 100);
       await Promise.delay(50);
 
-      expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Object)] });
+      expect(instance.inflightRequests).toEqual({ 1: [expect.any(Function), expect.any(Function), expect.any(Object)] });
 
       instance._responseHandler(res);
 
@@ -37,7 +46,7 @@ describe('RemoteTransport', () => {
     it('Should call enqueue, await a response, and then timeout', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
+      const req = { headers: { id: 1, queueName }, body: { message: 'hello' } };
       const timeoutError = new StellarError(`@RemoteTransport: TIMEOUT after 500ms. requestId=1`);
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
@@ -45,7 +54,7 @@ describe('RemoteTransport', () => {
       const response = instance.request(req, 500);
       await Promise.delay(50);
 
-      expect(instance.inflightRequests).toEqual({ '1': [expect.any(Function), expect.any(Function), expect.any(Object)] });
+      expect(instance.inflightRequests).toEqual({ 1: [expect.any(Function), expect.any(Function), expect.any(Object)] });
 
       await expect(response).rejects.toEqual(timeoutError);
       expect(instance.remoteRequest.mock.calls).toEqual([[req]]);
@@ -55,7 +64,7 @@ describe('RemoteTransport', () => {
     it('Should call enqueue, await a response, and never timeout', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const req = { headers: { id: 1, queueName }, body: { message: 'hello' }};
+      const req = { headers: { id: 1, queueName }, body: { message: 'hello' } };
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
@@ -63,19 +72,21 @@ describe('RemoteTransport', () => {
       await Promise.delay(50);
 
       expect(instance.remoteRequest.mock.calls).toEqual([[req]]);
-      expect(instance.inflightRequests).toEqual({1: [expect.any(Function), expect.any(Function), undefined]});
+      expect(instance.inflightRequests).toEqual({ 1: [expect.any(Function), expect.any(Function), undefined] });
 
       await Promise.delay(3000);
 
-      expect(instance.inflightRequests).toEqual({1: [expect.any(Function), expect.any(Function), undefined]});
+      expect(instance.inflightRequests).toEqual({ 1: [expect.any(Function), expect.any(Function), undefined] });
     });
   });
 
   describe('fireAndForget', () => {
+    beforeEach(setupMock);
+
     it('Should call enqueue but not await a response', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const req = { headers: { queueName }, body: { foo: 'bar' }};
+      const req = { headers: { queueName }, body: { foo: 'bar' } };
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
@@ -89,7 +100,7 @@ describe('RemoteTransport', () => {
     it('Multiple calls must not call process again', async () => {
       const serviceName = 'serviceName';
       const queueName = `${serviceName}:queueName`;
-      const req = { headers: { queueName }, body: { foo: 'bar' }};
+      const req = { headers: { queueName }, body: { foo: 'bar' } };
 
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
@@ -100,11 +111,13 @@ describe('RemoteTransport', () => {
       expect(instance.inflightRequests).toEqual({});
 
 
-      expect(instance.remoteRequest.mock.calls).toEqual([[req],[req],[req]]);
+      expect(instance.remoteRequest.mock.calls).toEqual([[req], [req], [req]]);
     });
   });
 
   describe('reset', () => {
+    beforeEach(setupMock);
+
     it('should reset ok', async () => {
       instance.remoteRequest.mockReturnValue(Promise.resolve(true));
 
