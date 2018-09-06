@@ -1,7 +1,6 @@
 
 import Queue from 'bull';
 import forEach from 'lodash/forEach';
-import keys from 'lodash/keys';
 
 import { DEFAULT_INTERVAL } from './intervals';
 
@@ -21,8 +20,7 @@ function runSubscriberCleaning(transport, log) {
     'stlr:queues:remover': () => transport._removeUnusedQueues('stlr:*:req'),
   };
 
-  forEach(keys(jobs), (jobName) => {
-    const job = jobs[jobName];
+  forEach(jobs, (job, jobName) => {
     queue.process(jobName, job);
     queue.add(jobName, { action: 'run' }, repeatableJobOptions);
     log.info(`@${jobName}: job is scheduled to run with CRON expression ${cron}`);
