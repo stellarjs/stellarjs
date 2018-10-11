@@ -41,8 +41,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/client-axios": "^0.11.2",
-    "@stellarjs/client-engine.io": "^0.11.2",
+    "@stellarjs/client-axios": "0.11.2",
+    "@stellarjs/client-engine.io": "0.11.2",
     "axios": "^0.18.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
@@ -60,11 +60,11 @@
     "url": "^0.11.0"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.11.2",
-    "@stellarjs/mw-log-trace": "^0.11.2",
-    "@stellarjs/stellar-error": "^0.11.2",
-    "@stellarjs/transport-bull": "^0.11.2",
-    "@stellarjs/transport-socket": "^0.11.2",
+    "@stellarjs/core": "0.11.2",
+    "@stellarjs/mw-log-trace": "0.11.2",
+    "@stellarjs/stellar-error": "0.11.2",
+    "@stellarjs/transport-bull": "0.11.2",
+    "@stellarjs/transport-socket": "0.11.2",
     "bluebird": "^3.4.7",
     "body-parser": "^1.18.3",
     "engine.io": "~3.2.0",

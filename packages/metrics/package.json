@@ -38,8 +38,8 @@
     "usePathForSuiteName": "true"
   },
   "devDependencies": {
-    "@stellarjs/core": "^0.11.2",
-    "@stellarjs/transport-memory": "^0.11.2",
+    "@stellarjs/core": "0.11.2",
+    "@stellarjs/transport-memory": "0.11.2",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
     "bluebird": "^3.4.7",

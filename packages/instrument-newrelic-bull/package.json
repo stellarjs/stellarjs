@@ -38,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@stellarjs/transport-bull": "^0.11.2",
+    "@stellarjs/transport-bull": "0.11.2",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",

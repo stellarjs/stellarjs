@@ -56,9 +56,9 @@
     "webpack": "2.5.1"
   },
   "dependencies": {
-    "@stellarjs/core": "^0.11.2",
-    "@stellarjs/stellar-error": "^0.11.2",
-    "@stellarjs/transport-axios": "^0.11.2",
+    "@stellarjs/core": "0.11.2",
+    "@stellarjs/stellar-error": "0.11.2",
+    "@stellarjs/transport-axios": "0.11.2",
     "axios": "^0.18.0",
     "lodash": "^4.17.4"
   }

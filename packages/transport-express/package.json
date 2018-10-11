@@ -55,7 +55,7 @@
     "url": "https://github.com/stellarjs/stellarjs/issues"
   },
   "devDependencies": {
-    "@stellarjs/transport-axios": "^0.11.2",
+    "@stellarjs/transport-axios": "0.11.2",
     "axios": "^0.18.0",
     "babel-cli": "^6.24.1",
     "body-parser": "^1.18.2",
@@ -70,6 +70,6 @@
     "jest": "^22.0.4"
   },
   "dependencies": {
-    "@stellarjs/transport-http": "^0.11.2"
+    "@stellarjs/transport-http": "0.11.2"
   }
 }
