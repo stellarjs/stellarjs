@@ -59,7 +59,7 @@
     "@stellarjs/core": "^0.11.3",
     "@stellarjs/stellar-error": "^0.11.3",
     "@stellarjs/transport-axios": "^0.11.3",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "lodash": "^4.17.4"
   }
 }

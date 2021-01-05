@@ -58,7 +58,7 @@
     "url": "https://github.com/stellarjs/stellarjs/issues"
   },
   "devDependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "babel-cli": "^6.24.1",
     "body-parser": "^1.18.2",
     "eslint": "^3.19.0",
