@@ -51,7 +51,7 @@
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
     "jest": "^22.4.3",
-    "nanoid": "^1.2.1",
+    "nanoid": "^3.1.31",
     "rimraf": "^2.6.1",
     "webpack": "2.5.1"
   },
