@@ -1,8 +1,8 @@
 /**
  * Created by arolave on 05/10/2016.
  */
-import assign from 'lodash/assign';
-import includes from 'lodash/includes';
+// eslint-disable-next-line lodash/import-scope
+import { assign, includes } from 'lodash';
 
 import StellarHandler from './StellarHandler';
 import StellarPubSub from './StellarPubSub';

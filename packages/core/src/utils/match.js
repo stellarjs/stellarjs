@@ -1,6 +1,6 @@
-import isArray from 'lodash/isArray';
-import isString from 'lodash/isString';
-import some from 'lodash/some';
+// eslint-disable-next-line lodash/import-scope
+import { isArray, isString, some } from 'lodash';
+
 
 export default function match(url, patternOrArray) {
   if (patternOrArray === undefined) {

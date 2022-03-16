@@ -1,7 +1,8 @@
 /**
  * Created by arolave on 02/10/2016.
  */
-import includes from 'lodash/includes';
+// eslint-disable-next-line lodash/import-scope
+import { includes } from 'lodash';
 
 import StellarCore from './StellarCore';
 
