@@ -23,5 +23,5 @@ describe('MEMORY full integration pub/sub app', () => {
   it('test pub sub 1 subscriber', testPubSubWith1Subscriber);
   it('test pub sub 3 subscriber', testPubSubWith3Subscribers);
   it('test pub sub one repeat subscribers, same transport', testPubSubWithOneRepeatSubscribersOnSameTransport);
-  it('test pub sub one repeat subscribers, different transport', testPubSubWithOneRepeatSubscribersOnDifferentTransport(({ source, log }) => new MemoryTransport(source, log, false)));
+  xit('test pub sub one repeat subscribers, different transport', testPubSubWithOneRepeatSubscribersOnDifferentTransport(({ source, log }) => new MemoryTransport(source, log, false)));
 });
