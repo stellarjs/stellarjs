@@ -1,4 +1,4 @@
-import { Transport } from '@stellarjs/abstract-transport';
+import { Transport } from '@gf-stellarjs/abstract-transport';
 
 class HttpTransport extends Transport {
   getHttpMethodAndUrlFromQueueName(queueName) { // eslint-disable-line class-methods-use-this

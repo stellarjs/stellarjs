@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
-import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
+import RedisClient from '@gf-stellarjs/transport-bull/lib-es6/config-redisclient';
 import express from 'express';
 import http from 'http';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import nanoid from 'nanoid';
-import clientFactory from '@stellarjs/client-axios';
-import StellarError from '@stellarjs/stellar-error';
+import clientFactory from '@gf-stellarjs/client-axios';
+import StellarError from '@gf-stellarjs/stellar-error';
 
 import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';

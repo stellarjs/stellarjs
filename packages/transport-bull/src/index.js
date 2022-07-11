@@ -1,7 +1,7 @@
 /**
  * Created by arolave on 06/10/2016.
  */
-import transportFactoryConfig from '@stellarjs/abstract-transport-queue';
+import transportFactoryConfig from '@gf-stellarjs/abstract-transport-queue';
 
 import BullRedisQueueSystem from './BullRedisQueueSystem';
 import startCleaner from './cleaner';

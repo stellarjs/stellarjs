@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 
 import Transport from './Transport';
 

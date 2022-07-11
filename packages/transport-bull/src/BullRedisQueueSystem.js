@@ -9,7 +9,7 @@ import map from 'lodash/map';
 import size from 'lodash/size';
 import split from 'lodash/split';
 import Promise from 'bluebird';
-import { QueueSystem } from '@stellarjs/abstract-transport-queue';
+import { QueueSystem } from '@gf-stellarjs/abstract-transport-queue';
 
 import RedisClient from './config-redisclient';
 import redisConfig from './config-redis';

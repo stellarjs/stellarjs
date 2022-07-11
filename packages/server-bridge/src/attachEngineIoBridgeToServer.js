@@ -2,7 +2,7 @@ import forEach from 'lodash/forEach';
 import invoke from 'lodash/invoke';
 import last from 'lodash/last';
 import size from 'lodash/size';
-import { WebsocketTransport } from '@stellarjs/transport-socket';
+import { WebsocketTransport } from '@gf-stellarjs/transport-socket';
 
 import defaultSendResponseFactory from './factories/socketSendResponseFactory';
 import getTxName from './getTxName';

@@ -1,7 +1,7 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 
 import defaults from 'lodash/defaults';
 // eslint-disable-next-line lodash/import-scope

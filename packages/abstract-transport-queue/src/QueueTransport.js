@@ -1,4 +1,4 @@
-import { RemoteTransport } from '@stellarjs/abstract-transport';
+import { RemoteTransport } from '@gf-stellarjs/abstract-transport';
 
 import Promise from 'bluebird';
 

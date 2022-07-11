@@ -1,8 +1,8 @@
 /**
  * Created by ozsayag on 26/06/2017.
  */
-import { StellarRequest, StellarHandler, StellarPubSub } from '@stellarjs/core';
-import { MemoryTransport } from '@stellarjs/transport-memory';
+import { StellarRequest, StellarHandler, StellarPubSub } from '@gf-stellarjs/core';
+import { MemoryTransport } from '@gf-stellarjs/transport-memory';
 import Promise from 'bluebird';
 
 import runMetrics, { resetMetrics, middleware, getMetrics } from '../src';

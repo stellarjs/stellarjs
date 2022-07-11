@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
 
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 import { default as StellarRequest } from '../src/StellarRequest';
 
 import { expectMethodMocksToHaveBeeenCalled } from './helpers';

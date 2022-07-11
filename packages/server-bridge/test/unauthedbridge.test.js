@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import express from 'express';
 import http from 'http';
-import clientFactory from '@stellarjs/client-axios';
+import clientFactory from '@gf-stellarjs/client-axios';
 
 import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';
 import handleMessageFactory from './utils/handleMessageFactory';

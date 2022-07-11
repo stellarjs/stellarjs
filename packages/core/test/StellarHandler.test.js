@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 import { transportMockFactory } from './mocks';
 import StellarHandler from '../src/StellarHandler';
 

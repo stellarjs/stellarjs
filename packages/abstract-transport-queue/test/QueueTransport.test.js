@@ -2,7 +2,7 @@ import _ from 'lodash';
 import _fp from 'lodash/fp';
 import Promise from 'bluebird';
 import QueueTransport from '../src/QueueTransport';
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 
 function expectSubscriberRegistry(subscriberRegistry, ...expectedSubscribers) {
   const subscriberIds = _.map(expectedSubscribers, ({ channel, numSubscribers }) =>

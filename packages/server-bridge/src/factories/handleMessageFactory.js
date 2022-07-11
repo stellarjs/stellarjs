@@ -1,4 +1,4 @@
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 
 import head from 'lodash/head';
 import last from 'lodash/last';

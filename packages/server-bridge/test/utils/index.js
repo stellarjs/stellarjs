@@ -1,8 +1,8 @@
 /**
  * Created by arolave on 06/10/2016.
  */
-import StellarError from '@stellarjs/stellar-error';
-import { stellarAppPubSub, stellarHandler } from '@stellarjs/core';
+import StellarError from '@gf-stellarjs/stellar-error';
+import { stellarAppPubSub, stellarHandler } from '@gf-stellarjs/core';
 import url from 'url';
 import omit from 'lodash/omit';
 

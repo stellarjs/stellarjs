@@ -1,4 +1,4 @@
-import { StellarPubSub } from '@stellarjs/core';
+import { StellarPubSub } from '@gf-stellarjs/core';
 
 import transportFactory from '../src';
 import RedisClient from '../src/config-redisclient';

@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 
-import { StellarPubSub } from '@stellarjs/core';
+import { StellarPubSub } from '@gf-stellarjs/core';
 
 import { log, getChannelName, closeTransport, transportGenerator } from './helpers';
 

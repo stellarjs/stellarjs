@@ -15,7 +15,7 @@ function webpackConfig(context) {
     output: {
       path: path.resolve(context, 'lib'),
       filename: '[name].browser.js',
-      library: `@stellarjs/${last(context.split('/'))}`,
+      library: `@gf-stellarjs/${last(context.split('/'))}`,
       libraryTarget: 'umd',
     },
     externals: [nodeExternals({ modulesFromFile: true })], // in order to ignore all modules in node_modules folder
