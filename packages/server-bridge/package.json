@@ -55,7 +55,7 @@
     "eslint-plugin-lodash": "2.4.4",
     "eslint-plugin-promise": "3.5.0",
     "jest": "^22.4.3",
-    "jsonwebtoken": "^8.2.1",
+    "jsonwebtoken": "^9.0.0",
     "rimraf": "^2.6.1",
     "url": "^0.11.0"
   },
