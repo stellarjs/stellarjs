@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/core",
-  "version": "0.11.4-0",
+  "version": "0.11.5-0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -54,7 +54,7 @@
     "usePathForSuiteName": "true"
   },
   "devDependencies": {
-    "@gf-stellarjs/abstract-transport": "^0.11.4-0",
+    "@gf-stellarjs/abstract-transport": "^0.11.5-0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
     "eslint": "^3.19.0",
@@ -68,7 +68,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@gf-stellarjs/stellar-error": "^0.11.4-0",
+    "@gf-stellarjs/stellar-error": "^0.11.5-0",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "nanoid": "^1.2.1",
