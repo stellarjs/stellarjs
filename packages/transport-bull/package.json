@@ -65,7 +65,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@gf-stellarjs/abstract-transport-queue": "^0.11.4-0",
+    "@gf-stellarjs/abstract-transport-queue": "^0.11.5-0",
     "@gf-stellarjs/core": "^0.11.4-0",
     "bluebird": "^3.4.7",
     "bull": "3.3.6",
