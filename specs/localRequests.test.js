@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
-import { StellarRequest, StellarHandler } from '@stellarjs/core';
+import { StellarRequest, StellarHandler } from '@gf-stellarjs/core';
 
 import { log, getResourceName, closeTransport, transportGenerator, getChannelName } from './helpers';
 import StellarError from '../packages/stellar-error/lib-es6';

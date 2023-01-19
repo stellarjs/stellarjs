@@ -3,9 +3,9 @@
  */
 
 import Promise from 'bluebird';
-import StellarError from '@stellarjs/stellar-error';
-import { StellarHandler, StellarRequest } from '@stellarjs/core';
-import { MemoryTransport } from '@stellarjs/transport-memory';
+import StellarError from '@gf-stellarjs/stellar-error';
+import { StellarHandler, StellarRequest } from '@gf-stellarjs/core';
+import { MemoryTransport } from '@gf-stellarjs/transport-memory';
 import middleware from '../src';
 
 describe('Error Reporting middleware', () => {

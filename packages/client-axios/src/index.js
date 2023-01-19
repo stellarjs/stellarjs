@@ -1,5 +1,5 @@
-import transportFactory from '@stellarjs/transport-axios';
-import { configureStellar } from '@stellarjs/core';
+import transportFactory from '@gf-stellarjs/transport-axios';
+import { configureStellar } from '@gf-stellarjs/core';
 import axios from 'axios';
 
 export default function clientFactory({ token, baseURL }, log) {

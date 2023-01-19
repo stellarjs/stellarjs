@@ -1,4 +1,4 @@
-import HttpTransport from '@stellarjs/transport-http';
+import HttpTransport from '@gf-stellarjs/transport-http';
 
 class AxiosTransport extends HttpTransport {
   constructor(axios, source, log, requestTimeout, baseURL) {

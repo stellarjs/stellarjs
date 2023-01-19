@@ -2,8 +2,8 @@ import _ from 'lodash';
 import http from 'http';
 import express from 'express';
 import engine from 'engine.io';
-import httpClient from '@stellarjs/client-axios';
-import { stellarSocket } from '@stellarjs/client-engine.io';
+import httpClient from '@gf-stellarjs/client-axios';
+import { stellarSocket } from '@gf-stellarjs/client-engine.io';
 
 import handleMessageFactory from './utils/handleMessageFactory';
 import attachHttpBridgeToServer from '../src/attachHttpBridgeToServer';

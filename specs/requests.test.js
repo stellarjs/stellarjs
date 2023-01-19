@@ -2,8 +2,8 @@
 
 import _ from 'lodash';
 import Promise from 'bluebird';
-import StellarError from '@stellarjs/stellar-error';
-import { StellarRequest, StellarHandler } from '@stellarjs/core';
+import StellarError from '@gf-stellarjs/stellar-error';
+import { StellarRequest, StellarHandler } from '@gf-stellarjs/core';
 
 import { log, getResourceName, closeTransport, transportGenerator } from './helpers';
 

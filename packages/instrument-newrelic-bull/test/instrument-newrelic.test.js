@@ -1,4 +1,4 @@
-import { BullRedisQueueSystem } from '@stellarjs/transport-bull';
+import { BullRedisQueueSystem } from '@gf-stellarjs/transport-bull';
 import get from 'lodash/get';
 import instrumentBullRedisQueueSystem from '../src';
 

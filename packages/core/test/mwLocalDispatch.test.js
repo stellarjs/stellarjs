@@ -1,5 +1,5 @@
 import mwLocalDispatchFactory from '../src/mwLocalDispatch';
-import { Transport } from '@stellarjs/abstract-transport';
+import { Transport } from '@gf-stellarjs/abstract-transport';
 
 describe('local dispatch middleware', () => {
   const transport = new Transport();

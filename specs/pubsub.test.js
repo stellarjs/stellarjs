@@ -2,7 +2,7 @@
 
 import Promise from 'bluebird';
 
-import { StellarPubSub } from '@stellarjs/core';
+import { StellarPubSub } from '@gf-stellarjs/core';
 import { transportGenerator, closeTransport, log, getChannelName } from './helpers';
 
 const apps = {

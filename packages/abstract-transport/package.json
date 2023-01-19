@@ -1,6 +1,6 @@
 {
-  "name": "@stellarjs/abstract-transport",
-  "version": "0.11.3",
+  "name": "@gf-stellarjs/abstract-transport",
+  "version": "0.11.4-0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -67,7 +67,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@stellarjs/stellar-error": "^0.11.3",
+    "@gf-stellarjs/stellar-error": "^0.11.4-0",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "nanoid": "^1.2.1"

@@ -7,9 +7,9 @@ import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 import defaults from 'lodash/defaults';
 import noop from 'lodash/noop';
-import { configureStellar } from '@stellarjs/core';
-import StellarError from '@stellarjs/stellar-error';
-import transportFactory from '@stellarjs/transport-socket';
+import { configureStellar } from '@gf-stellarjs/core';
+import StellarError from '@gf-stellarjs/stellar-error';
+import transportFactory from '@gf-stellarjs/transport-socket';
 import configureExponentialBackoff from './exponentialBackoff';
 
 const MAX_RETRIES = 300;

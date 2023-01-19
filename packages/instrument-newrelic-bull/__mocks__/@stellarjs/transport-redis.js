@@ -1,4 +1,4 @@
-const transport = jest.genMockFromModule('@stellarjs/transport-redis');
+const transport = jest.genMockFromModule('@gf-stellarjs/transport-redis');
 
 class RedisTransport {}
 RedisTransport.prototype.enqueue = jest.fn();

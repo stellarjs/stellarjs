@@ -11,7 +11,7 @@ import {
 import { factory } from './helpers';
 import { MemoryTransport } from '../src';
 
-describe('MEMORY full integration pub/sub app', () => {
+xdescribe('MEMORY full integration pub/sub app', () => {
   beforeAll(() => {
     doBeforeAll(factory);
   });

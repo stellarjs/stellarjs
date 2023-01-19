@@ -5,8 +5,8 @@ import nanoid from 'nanoid';
 import values from 'lodash/values';
 import isFunction from 'lodash/isFunction';
 
-import { standardizeObjectFactory } from '@stellarjs/core';
-import { Transport } from '@stellarjs/abstract-transport';
+import { standardizeObjectFactory } from '@gf-stellarjs/core';
+import { Transport } from '@gf-stellarjs/abstract-transport';
 import { EventEmitter } from 'events';
 
 class MemoryTransport extends Transport {

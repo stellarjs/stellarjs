@@ -1,4 +1,4 @@
-import { mwLogTraceFactory } from '@stellarjs/mw-log-trace';
+import { mwLogTraceFactory } from '@gf-stellarjs/mw-log-trace';
 import assign from 'lodash/assign';
 import forEach from 'lodash/forEach';
 

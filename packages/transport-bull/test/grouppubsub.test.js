@@ -1,7 +1,7 @@
 import child_process from 'child_process';
 import EventEmitter from 'events';
 
-import { StellarPubSub } from '@stellarjs/core';
+import { StellarPubSub } from '@gf-stellarjs/core';
 import Promise from 'bluebird';
 import _ from 'lodash';
 

@@ -1,5 +1,5 @@
-import { configureStellar } from '@stellarjs/core';
-import transportFactory from '@stellarjs/transport-bull';
+import { configureStellar } from '@gf-stellarjs/core';
+import transportFactory from '@gf-stellarjs/transport-bull';
 
 const stellarFactories = {};
 export default function connectToMicroservices({ log, sourcePrefix = `bridge-` }) {

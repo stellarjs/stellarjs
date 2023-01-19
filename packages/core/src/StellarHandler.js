@@ -1,7 +1,8 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-import lowerCase from 'lodash/lowerCase';
+// eslint-disable-next-line lodash/import-scope
+import { lowerCase } from 'lodash';
 
 import StellarCore from './StellarCore';
 

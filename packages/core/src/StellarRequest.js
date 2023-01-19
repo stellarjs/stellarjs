@@ -1,12 +1,11 @@
 /**
  * Created by arolave on 25/09/2016.
  */
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 
 import defaults from 'lodash/defaults';
-import get from 'lodash/get';
-import includes from 'lodash/includes';
-import lowerCase from 'lodash/lowerCase';
+// eslint-disable-next-line lodash/import-scope
+import { get, includes, lowerCase } from 'lodash';
 
 import StellarCore from './StellarCore';
 import StellarPubSub from './StellarPubSub';
@@ -72,9 +71,9 @@ export default class StellarRequest extends StellarCore {
 
     const requestMws = buildFinalMws(
       req => me.transport
-          .request(req)
-          .catch(error => (error.__stellarResponse ? error.__stellarResponse : me._prepareResponse(req, error)))
-          .then(res => responseHandler(res))
+        .request(req)
+        .catch(error => (error.__stellarResponse ? error.__stellarResponse : me._prepareResponse(req, error)))
+        .then(res => responseHandler(res))
     );
     this.requestMiddlewares = this.handlerChain.concat(requestMws);
 
@@ -103,22 +102,22 @@ export default class StellarRequest extends StellarCore {
   getReactive(url, channel, body, reactiveHandler, options = {}) {
     return {
       results: this._doQueueRequest(`${url}:subscribe`,
-                                    body,
-                                    { type: 'reactive', channel },
-                                    options),
+        body,
+        { type: 'reactive', channel },
+        options),
       onStop: this.pubsub.subscribe(channel,
-                                    (command, ch) => reactiveHandler(command.body,
-                                                                     get(command, 'headers.action'),
-                                                                     ch),
-                                    defaults({ responseType: 'raw' }, options)),
+          (command, ch) => reactiveHandler(command.body,
+                                           get(command, 'headers.action'),
+                                           ch),
+          defaults({ responseType: 'raw' }, options)),
     };
   }
 
   request(url, method, body, options = {}) {
     return this._doQueueRequest(`${url}:${lowerCase(method)}`,
-                                body,
-                                { type: options.requestOnly ? 'fireAndForget' : 'request' },
-                                options);
+      body,
+      { type: options.requestOnly ? 'fireAndForget' : 'request' },
+      options);
   }
 
   _doQueueRequest(queueName, body = {}, { type, channel }, options = {}) {

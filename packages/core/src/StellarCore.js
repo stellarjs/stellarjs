@@ -3,11 +3,8 @@
  */
 import Promise from 'bluebird';
 
-import assign from 'lodash/assign';
-import merge from 'lodash/merge';
-import get from 'lodash/get';
-import includes from 'lodash/includes';
-import pick from 'lodash/pick';
+// eslint-disable-next-line lodash/import-scope
+import { assign, merge, get, includes, pick } from 'lodash';
 
 import getUri from './utils/getUri';
 import match from './utils/match';

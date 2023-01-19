@@ -1,8 +1,8 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
 import url from 'url';
-import StellarError from '@stellarjs/stellar-error';
-import RedisClient from '@stellarjs/transport-bull/lib-es6/config-redisclient';
+import StellarError from '@gf-stellarjs/stellar-error';
+import RedisClient from '@gf-stellarjs/transport-bull/lib-es6/config-redisclient';
 import engine from 'engine.io';
 import defaultStellarFactory from '../src/factories/defaultStellarFactory';
 
@@ -29,7 +29,7 @@ describe('attachEngineIoBridgeToServer', () => {
   let server;
 
   beforeAll(async () => {
-    jest.unmock('@stellarjs/transport-bull');
+    jest.unmock('@gf-stellarjs/transport-bull');
     await clearRedis(redisClient);
     await Promise.delay(100);
     instrumentation = instrumentationMockFactory({ log: console });
@@ -117,7 +117,7 @@ describe('attachEngineIoBridgeToServer', () => {
 
   describe('call server', () => {
     it('on auth error dont reconnect', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       try {
         await stellarSocket.connect('localhost:8091', {
           secure: false,
@@ -134,7 +134,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('on other error reconnect automatically', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       try {
         await stellarSocket.connect('localhost:8091', {
           secure: false,
@@ -153,7 +153,7 @@ describe('attachEngineIoBridgeToServer', () => {
 
     it('instrumentation numOfConnectedClients should work on connection error', async () => {
       expect(instrumentation.numOfConnectedClients.mock.calls).toEqual([]);
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       try {
         await stellarSocket.connect('localhost:8091', {
           secure: false,
@@ -172,7 +172,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('instrumentation numOfConnectedClients should work', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       await stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -193,7 +193,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('request response should work', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       try {
         await stellarSocket.connect('localhost:8091', {
           secure: false,
@@ -217,7 +217,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('fireForget should work', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       try {
         await stellarSocket.connect('localhost:8091', {
           secure: false,
@@ -243,7 +243,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('sessionId set - sessionId should equal sessionId header', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       await stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -265,7 +265,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('no sessionId set - sessionId should equal to socketId ', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       await stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -286,7 +286,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('custom timeout should extend normal timeout', (done) => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -305,7 +305,7 @@ describe('attachEngineIoBridgeToServer', () => {
     }, 40 * 1000);
 
     it('custom timeout should expire', (done) => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -329,7 +329,7 @@ describe('attachEngineIoBridgeToServer', () => {
     it('should subscribe', (done) => {
       let reactiveResolve;
       const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -363,7 +363,7 @@ describe('attachEngineIoBridgeToServer', () => {
       let reactiveResolve;
       let stopper;
       const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -407,7 +407,7 @@ describe('attachEngineIoBridgeToServer', () => {
       let reactiveResolve;
       const reactivePromise = new Promise((resolve) => { reactiveResolve = resolve; });
 
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -464,7 +464,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('request response should bridge application errors', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       await stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -483,7 +483,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('should report bridge messageHandling errors', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       await stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',
@@ -502,7 +502,7 @@ describe('attachEngineIoBridgeToServer', () => {
     });
 
     it('should call offlineFn when the socket closes', async () => {
-      const stellarSocket = require('@stellarjs/client-engine.io').stellarSocket();
+      const stellarSocket = require('@gf-stellarjs/client-engine.io').stellarSocket();
       await stellarSocket.connect('localhost:8091', {
         secure: false,
         userId: '123',

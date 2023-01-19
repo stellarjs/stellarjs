@@ -5,7 +5,7 @@ import _ from 'lodash';
 import Promise from 'bluebird';
 import qs from 'qs';
 import nanoid from 'nanoid';
-import StellarError from '@stellarjs/stellar-error';
+import StellarError from '@gf-stellarjs/stellar-error';
 import stellarSocketFactory from '../src/stellarSocket';
 
 let lastInstance;
