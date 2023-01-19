@@ -1,4 +1,5 @@
-import get from 'lodash/get';
+// eslint-disable-next-line lodash/import-scope
+import { get } from 'lodash';
 import isFunction from 'lodash/isFunction';
 import standardizeObjectFactory from './utils/standardizeObject';
 
