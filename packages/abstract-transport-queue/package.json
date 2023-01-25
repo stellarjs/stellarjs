@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/abstract-transport-queue",
-  "version": "0.11.4-0",
+  "version": "0.11.5-0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
