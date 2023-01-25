@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/client-redux",
-  "version": "0.11.4-0",
+  "version": "0.11.4",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@gf-stellarjs/client-engine.io": "^0.11.4-0",
+    "@gf-stellarjs/client-engine.io": "^0.11.4",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
     "eslint": "^3.19.0",
@@ -56,7 +56,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@gf-stellarjs/core": "^0.11.4-0",
+    "@gf-stellarjs/core": "^0.11.4",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "nanoid": "^1.2.1"
