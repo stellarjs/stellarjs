@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/client-engine.io",
-  "version": "0.11.5-0",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -56,9 +56,9 @@
     "webpack": "2.5.1"
   },
   "dependencies": {
-    "@gf-stellarjs/core": "^0.11.5-0",
-    "@gf-stellarjs/stellar-error": "^0.11.5-0",
-    "@gf-stellarjs/transport-socket": "^0.11.5-0",
+    "@gf-stellarjs/core": "^1.0.0",
+    "@gf-stellarjs/stellar-error": "^1.0.0",
+    "@gf-stellarjs/transport-socket": "^1.0.0",
     "bluebird": "^3.4.7",
     "engine.io-client": "~3.2.1",
     "lodash": "^4.17.4",

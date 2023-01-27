@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/instrument-newrelic-bull",
-  "version": "0.11.5-0",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -38,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@gf-stellarjs/transport-bull": "^0.11.5-0",
+    "@gf-stellarjs/transport-bull": "^1.0.0",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",

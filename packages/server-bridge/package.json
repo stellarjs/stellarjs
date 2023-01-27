@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/server-bridge",
-  "version": "0.11.5-0",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -41,8 +41,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@gf-stellarjs/client-axios": "^0.11.5-0",
-    "@gf-stellarjs/client-engine.io": "^0.11.5-0",
+    "@gf-stellarjs/client-axios": "^1.0.0",
+    "@gf-stellarjs/client-engine.io": "^1.0.0",
     "axios": "^0.18.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^22.0.4",
@@ -60,11 +60,11 @@
     "url": "^0.11.0"
   },
   "dependencies": {
-    "@gf-stellarjs/core": "^0.11.5-0",
-    "@gf-stellarjs/mw-log-trace": "^0.11.5-0",
-    "@gf-stellarjs/stellar-error": "^0.11.5-0",
-    "@gf-stellarjs/transport-bull": "^0.11.5-0",
-    "@gf-stellarjs/transport-socket": "^0.11.5-0",
+    "@gf-stellarjs/core": "^1.0.0",
+    "@gf-stellarjs/mw-log-trace": "^1.0.0",
+    "@gf-stellarjs/stellar-error": "^1.0.0",
+    "@gf-stellarjs/transport-bull": "^1.0.0",
+    "@gf-stellarjs/transport-socket": "^1.0.0",
     "bluebird": "^3.4.7",
     "body-parser": "^1.18.3",
     "engine.io": "~3.2.0",

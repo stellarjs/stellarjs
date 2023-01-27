@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/mw-error-reporting",
-  "version": "0.11.5-0",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -38,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@gf-stellarjs/transport-memory": "^0.11.5-0",
+    "@gf-stellarjs/transport-memory": "^1.0.0",
     "babel-cli": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
@@ -51,7 +51,7 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@gf-stellarjs/core": "^0.11.5-0",
+    "@gf-stellarjs/core": "^1.0.0",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4"
   }
