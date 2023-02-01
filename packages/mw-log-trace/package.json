@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/mw-log-trace",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [

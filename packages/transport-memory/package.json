@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/transport-memory",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -50,8 +50,8 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@gf-stellarjs/abstract-transport": "^1.0.0",
-    "@gf-stellarjs/core": "^1.0.0",
+    "@gf-stellarjs/abstract-transport": "^1.0.1",
+    "@gf-stellarjs/core": "^1.0.1",
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
     "nanoid": "^1.2.1"

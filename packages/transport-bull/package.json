@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/transport-bull",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -65,8 +65,8 @@
     "rimraf": "^2.6.1"
   },
   "dependencies": {
-    "@gf-stellarjs/abstract-transport-queue": "^1.0.0",
-    "@gf-stellarjs/core": "^1.0.0",
+    "@gf-stellarjs/abstract-transport-queue": "^1.0.1",
+    "@gf-stellarjs/core": "^1.0.1",
     "bluebird": "^3.4.7",
     "bull": "3.3.6",
     "ioredis": "^2.4.0",
