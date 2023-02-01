@@ -8,7 +8,7 @@ import map from 'lodash/map';
 
 import getServiceInbox from './utils/getServiceInbox';
 
-const STELLAR_CONCURRENCY = process.env.STELLAR_CONCURRENCY || 100;
+const STELLAR_CONCURRENCY = Number(process.env.STELLAR_CONCURRENCY) || 100;
 
 export default class QueueTransport extends RemoteTransport {
   constructor(queueSystem, source, log, requestTimeout) {

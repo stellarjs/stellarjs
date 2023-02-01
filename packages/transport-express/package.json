@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/transport-express",
-  "version": "0.11.4-0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "browser": "lib/index.browser.js",
@@ -72,6 +72,6 @@
     "jest": "^22.0.4"
   },
   "dependencies": {
-    "@gf-stellarjs/transport-http": "^0.11.4-0"
+    "@gf-stellarjs/transport-http": "^1.0.1"
   }
 }

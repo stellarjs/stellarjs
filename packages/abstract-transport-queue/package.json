@@ -1,6 +1,6 @@
 {
   "name": "@gf-stellarjs/abstract-transport-queue",
-  "version": "0.11.4-0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "lib-es6/index.js",
   "src": [
@@ -54,8 +54,8 @@
     "url": "^0.11.0"
   },
   "dependencies": {
-    "@gf-stellarjs/abstract-transport": "^0.11.4-0",
-    "@gf-stellarjs/stellar-error": "^0.11.4-0",
+    "@gf-stellarjs/abstract-transport": "^1.0.1",
+    "@gf-stellarjs/stellar-error": "^1.0.1",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
     "nanoid": "^1.2.1"
